@@ -3,7 +3,7 @@ import { pool } from "../config/db.js";
 
 export const signupModel = async (data: SignupSchema) => {
   const { username, email, password } = data;
-  console.log(typeof password);
+
   const query = `
     INSERT INTO users (username, email, password)
     VALUES ($1, $2, $3)

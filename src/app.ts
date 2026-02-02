@@ -1,6 +1,9 @@
 import type { Express } from "express";
+import { router } from "./routes/auth-routes.js";
 import express from "express";
-import dotenv from "dotenv";
-dotenv.config();
 
 export const app: Express = express();
+
+app.use(express.json());
+
+app.use("/", router);

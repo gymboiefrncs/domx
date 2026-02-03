@@ -5,7 +5,7 @@ export const signupController = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const result = await signupService(req.body);
     res

@@ -22,6 +22,18 @@ export const signupModel = async (
   return result.rows[0]!;
 };
 
+export const getUserByEmail = async (
+  email: string,
+): Promise<Pick<User, "email" | "password" | "username"> | undefined> => {
+  const query = "SELECT email, password, username FROM users WHERE email = $1";
+
+  const values = [email];
+  const result = await pool.query<
+    Pick<User, "email" | "password" | "username">
+  >(query, values);
+  return result.rows[0];
+};
+
 export const userExistsByEmail = async (email: string): Promise<boolean> => {
   const query = "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)";
   const values = [email];

@@ -1,7 +1,11 @@
-import { signupModel, userExistsByEmail } from "../models/auth-model.js";
+import {
+  getUserByEmail,
+  signupModel,
+  userExistsByEmail,
+} from "../models/auth-model.js";
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
-import { ConflictError } from "../utils/error.js";
+import { ConflictError, UnauthorizedError } from "../utils/error.js";
 import type { User } from "../common/types.js";
 
 export const signupService = async (
@@ -16,7 +20,6 @@ export const signupService = async (
 
   const { password, ...rest } = data;
 
-  // limit salt rounds between 10 and 15 to balance security and performance
   const saltRoundsEnv = process.env.BCRYPT_SALT_ROUNDS;
   let saltRounds = 10;
   const MIN_SALT_ROUNDS = 10;
@@ -35,4 +38,18 @@ export const signupService = async (
 
   const result = await signupModel(hash, rest);
   return result;
+};
+
+export const loginService = async (
+  data: Pick<User, "email" | "password">,
+): Promise<Pick<User, "username" | "email">> => {
+  const user = await getUserByEmail(data.email);
+
+  if (!user) throw new UnauthorizedError("Invalid credentials");
+
+  const passwordMatch = await bcrypt.compare(data.password, user.password);
+
+  if (!passwordMatch) throw new UnauthorizedError("Invalid credentials");
+
+  return { username: user.username, email: user.email };
 };

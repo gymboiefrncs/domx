@@ -29,4 +29,15 @@ export const signupSchema = z.object({
     ),
 });
 
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Invalid email address")
+    .toLowerCase(),
+  password: z.string().min(1, "Password is required"),
+});
+
 export type SignupSchema = z.infer<typeof signupSchema>;
+export type LoginSchema = z.infer<typeof loginSchema>;

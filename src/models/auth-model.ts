@@ -5,20 +5,17 @@ import type { User } from "../common/types.js";
 export const signupModel = async (
   hashedPassword: string,
   data: Omit<SignupSchema, "password">,
-): Promise<Pick<User, "username" | "email">> => {
+): Promise<Pick<User, "id" | "email">> => {
   const { username, email } = data;
 
   const query = `
     INSERT INTO users (username, email, password)
     VALUES ($1, $2, $3)
-    RETURNING username, email
+    RETURNING id, email
   `;
 
   const values = [username, email, hashedPassword];
-  const result = await pool.query<Pick<User, "username" | "email">>(
-    query,
-    values,
-  );
+  const result = await pool.query<Pick<User, "id" | "email">>(query, values);
   return result.rows[0]!;
 };
 

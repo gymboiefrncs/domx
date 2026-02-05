@@ -8,7 +8,7 @@ import {
   signupValidator,
 } from "../validators/auth-validator.js";
 
-export const router: Router = express.Router();
+export const authRouter: Router = express.Router();
 
-router.post("/api/auth/signup", signupValidator, signupController);
-router.post("/api/auth/login", loginValidator, loginController);
+authRouter.post("/api/auth/signup", signupValidator, signupController);
+authRouter.post("/api/auth/login", loginValidator, loginController);

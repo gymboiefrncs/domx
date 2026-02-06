@@ -5,20 +5,26 @@ import {
   markUserVerified,
 } from "../models/verification-model.js";
 import crypto from "crypto";
+import { UnauthorizedError } from "../utils/error.js";
 
-export const verificationService = async (token: string) => {
+export const verificationService = async (token: string): Promise<void> => {
   if (typeof token !== "string" || !token.trim())
-    throw new Error("Invalid token");
+    throw new UnauthorizedError("Invalid token");
+
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   // find the user associated with the token
   const record = await findToken(hashedToken);
 
-  // if no user is found, or the token is invalid, expired, or already used, throw an error
-  if (!record) throw new Error("Invalid token");
-  if (record.used_at) throw new Error("Token has already been used");
-  if (record.expires_at < new Date()) throw new Error("Token has expired");
-  if (record.is_verified) throw new Error("User already verified");
+  // if no user is found, or is already verified or the token is invalid, expired, or already used, throw an error
+  if (
+    !record ||
+    record.used_at ||
+    record.expires_at < new Date() ||
+    record.is_verified
+  ) {
+    throw new UnauthorizedError("Invalid or expired token");
+  }
 
   /**
    * if everything is valid, mark the user as verified and the token as used

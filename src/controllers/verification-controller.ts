@@ -5,7 +5,7 @@ export const verificationController = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     await verificationService(req.body.token);
     res

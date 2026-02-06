@@ -2,12 +2,12 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const sendVerificationEmail = async (email: string, token: string) => {
+export const sendVerificationEmail = async (email: string, otp: string) => {
   await resend.emails.send({
     from: "Acme <onboarding@resend.dev>",
     to: email,
     subject: "Verify your email",
-    html: `<h3>${token}</h3> <br> here is your verification code, it will expire in 2 minutes.`,
+    html: `<h3>${otp}</h3> <br> here is your verification code, it will expire in 2 minutes.`,
   });
 };
 

@@ -11,7 +11,7 @@ export type User = {
 export type UserVerificationStatus = {
   user_id: string;
   expires_at: Date;
-  token: string;
+  otp_hash: string;
   used_at: Date | null;
   is_verified: boolean;
 };

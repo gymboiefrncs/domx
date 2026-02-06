@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
   verificationService,
   resendVerificationService,
-} from "../services/verification-sevice.js";
+} from "../services/verification-service.js";
 
 export const verificationController = async (
   req: Request,
@@ -10,7 +10,7 @@ export const verificationController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    await verificationService(req.body.token);
+    await verificationService(req.body.otp);
     res
       .status(200)
       .json({ success: true, message: "Email verified successfully" });

@@ -30,13 +30,18 @@ export const signupService = async (
       return { message: "Verification email sent. Please check your email" };
     }
 
-    const { otp, token, expiresAt } = await generateOTP();
+    const { otp, hashedOTP, expiresAt } = generateOTP();
 
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
 
-      await createVerificationToken(verification.id, token, expiresAt, client);
+      await createVerificationToken(
+        verification.id,
+        hashedOTP,
+        expiresAt,
+        client,
+      );
 
       await client.query("COMMIT");
 
@@ -64,7 +69,7 @@ export const signupService = async (
 
   const saltRoundsEnv = process.env.BCRYPT_SALT_ROUNDS;
 
-  const { otp, token, expiresAt } = await generateOTP();
+  const { otp, hashedOTP, expiresAt } = await generateOTP();
 
   let saltRounds = 10;
   const MIN_SALT_ROUNDS = 10;
@@ -86,7 +91,7 @@ export const signupService = async (
     await client.query("BEGIN");
 
     const result = await signupModel(hash, rest, client);
-    await createVerificationToken(result.id, token, expiresAt, client);
+    await createVerificationToken(result.id, hashedOTP, expiresAt, client);
 
     await client.query("COMMIT");
 

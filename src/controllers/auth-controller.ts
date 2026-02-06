@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { signupService, loginService } from "../services/auth-services.js";
+import { signupService, loginService } from "../services/auth-service.js";
 
 export const signupController = async (
   req: Request,

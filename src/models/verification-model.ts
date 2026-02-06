@@ -6,13 +6,14 @@ export const createVerificationToken = async (
   userId: string,
   token: string,
   expiresAt: Date,
+  client: PoolClient,
 ): Promise<void> => {
   const query = `
     INSERT INTO email_verification (user_id, token, expires_at)
     VALUES ($1, $2, $3)
   `;
   const values = [userId, token, expiresAt];
-  await pool.query(query, values);
+  await client.query(query, values);
 };
 
 export const findToken = async (

@@ -13,6 +13,7 @@ import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
+import { pool } from "../config/db.js";
 
 export const signupService = async (
   data: SignupSchema,
@@ -47,9 +48,22 @@ export const signupService = async (
   }
   const hash = await bcrypt.hash(password, saltRounds);
 
-  const result = await signupModel(hash, rest);
-  await createVerificationToken(result.id, token, expiresAt);
-  await sendVerificationEmail(result.email, otp);
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const result = await signupModel(hash, rest);
+    await createVerificationToken(result.id, token, expiresAt, client);
+    await sendVerificationEmail(result.email, otp);
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+
   return { message: "Verification email sent. Please check your email" };
 };
 

@@ -20,7 +20,7 @@ export const signupService = async (
   const userExists = await userExistsByEmail(data.email);
   if (userExists) {
     await sendAlreadyRegisteredEmail(data.email);
-    return { message: "unable to send email" };
+    return { message: "Verification email sent. Please check your email" };
   }
 
   const { password, ...rest } = data;

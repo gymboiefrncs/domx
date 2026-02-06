@@ -7,7 +7,7 @@ import {
 import crypto from "crypto";
 
 export const verificationService = async (token: string) => {
-  if (!token.trim() || typeof token !== "string")
+  if (typeof token !== "string" || !token.trim())
     throw new Error("Invalid token");
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 

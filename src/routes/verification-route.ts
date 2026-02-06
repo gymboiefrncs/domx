@@ -3,4 +3,4 @@ import { verificationController } from "../controllers/verification-controller.j
 
 export const verificationRouter: Router = express.Router();
 
-verificationRouter.post("/api/verify-email", verificationController);
+verificationRouter.post("/verify-email", verificationController);

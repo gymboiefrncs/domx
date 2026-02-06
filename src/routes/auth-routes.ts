@@ -10,5 +10,5 @@ import {
 
 export const authRouter: Router = express.Router();
 
-authRouter.post("/api/auth/signup", signupValidator, signupController);
-authRouter.post("/api/auth/login", loginValidator, loginController);
+authRouter.post("/auth/signup", signupValidator, signupController);
+authRouter.post("/auth/login", loginValidator, loginController);

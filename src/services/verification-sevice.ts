@@ -16,19 +16,6 @@ export const verificationService = async (token: string): Promise<void> => {
 
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-  // find the user associated with the token
-  const record = await findToken(hashedToken);
-
-  // if no user is found, or is already verified or the token is invalid, expired, or already used, throw an error
-  if (
-    !record ||
-    record.used_at ||
-    record.expires_at < new Date() ||
-    record.is_verified
-  ) {
-    throw new UnauthorizedError("Invalid or expired token");
-  }
-
   /**
    * if everything is valid, mark the user as verified and the token as used
    * wrap everthing in a transaction, all or nothing cuh
@@ -36,6 +23,19 @@ export const verificationService = async (token: string): Promise<void> => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+
+    // find the user associated with the token
+    const record = await findToken(hashedToken, client);
+
+    // if no user is found, or is already verified or the token is invalid, expired, or already used, throw an error
+    if (
+      !record ||
+      record.used_at ||
+      record.expires_at < new Date() ||
+      record.is_verified
+    ) {
+      throw new UnauthorizedError("Invalid or expired token");
+    }
 
     await markUserVerified(record.user_id, client);
     await markTokenUsed(hashedToken, client);

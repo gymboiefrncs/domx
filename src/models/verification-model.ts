@@ -1,5 +1,4 @@
 import type { PoolClient } from "pg";
-import { pool } from "../config/db.js";
 import type { UserVerificationStatus } from "../common/types.js";
 
 export const createVerificationToken = async (
@@ -18,6 +17,7 @@ export const createVerificationToken = async (
 
 export const findToken = async (
   token: string,
+  client: PoolClient,
 ): Promise<UserVerificationStatus | undefined> => {
   const query = `SELECT ev.user_id, ev.expires_at, ev.token, ev.used_at, u.is_verified 
   FROM email_verification ev 
@@ -25,7 +25,7 @@ export const findToken = async (
   WHERE ev.token = $1`;
 
   const values = [token];
-  const result = await pool.query<UserVerificationStatus>(query, values);
+  const result = await client.query<UserVerificationStatus>(query, values);
   return result.rows[0];
 };
 

@@ -5,6 +5,7 @@ export type User = {
   password: string;
   is_admin: boolean;
   created_at: Date;
+  is_verified: boolean;
 };
 
 export type UserVerificationStatus = {

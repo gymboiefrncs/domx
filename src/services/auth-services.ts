@@ -1,5 +1,6 @@
 import {
   getUserByEmail,
+  getVerificationStatus,
   signupModel,
   userExistsByEmail,
 } from "../models/auth-model.js";
@@ -19,11 +20,47 @@ export const signupService = async (
   data: SignupSchema,
 ): Promise<{ message: string }> => {
   const userExists = await userExistsByEmail(data.email);
+  const verification = await getVerificationStatus(data.email);
+
+  /**
+   * if use exists and is verified, send an email notifying them that they are already registered.
+   * if user exists but not verified, generae a new OTP, update verification and send a new verification email.
+   */
   if (userExists) {
-    await sendAlreadyRegisteredEmail(data.email);
-    return { message: "Verification email sent. Please check your email" };
+    if (!verification)
+      throw new Error("Something went wrong. Please try again later");
+
+    if (verification.is_verified) {
+      await sendAlreadyRegisteredEmail(verification.email);
+      return { message: "Verification email sent. Please check your email" };
+    }
+
+    const otp = crypto.randomBytes(3).toString("hex");
+    const token = crypto.createHash("sha256").update(otp).digest("hex");
+    const expiresAt = new Date(Date.now() + 1 * 60 * 1000);
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      await createVerificationToken(verification.id, token, expiresAt, client);
+      await sendVerificationEmail(verification.email, otp);
+
+      await client.query("COMMIT");
+
+      return { message: "A new verification code has been sent to your email" };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
+  // =================================================================================
+  /**
+   * if user doesnt exist, create user, generate OTP, save verification and send email
+   */
   const { password, ...rest } = data;
 
   const saltRoundsEnv = process.env.BCRYPT_SALT_ROUNDS;
@@ -31,7 +68,7 @@ export const signupService = async (
   const token = crypto.createHash("sha256").update(otp).digest("hex");
 
   // 15 mins from now
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 1 * 60 * 1000);
 
   let saltRounds = 10;
   const MIN_SALT_ROUNDS = 10;

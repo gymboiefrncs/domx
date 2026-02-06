@@ -39,3 +39,16 @@ export const userExistsByEmail = async (email: string): Promise<boolean> => {
 
   return result.rows[0].exists;
 };
+
+export const getVerificationStatus = async (
+  email: string,
+): Promise<Pick<User, "id" | "is_verified" | "email"> | undefined> => {
+  const query = "SELECT id, is_verified, email FROM users WHERE email = $1";
+  const values = [email];
+
+  const result = await pool.query<Pick<User, "id" | "is_verified" | "email">>(
+    query,
+    values,
+  );
+  return result.rows[0];
+};

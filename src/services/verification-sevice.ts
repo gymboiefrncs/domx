@@ -6,20 +6,19 @@ import {
   markUserVerified,
 } from "../models/verification-model.js";
 import crypto from "crypto";
-import { UnauthorizedError } from "../utils/error.js";
-import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { ValidationError } from "../utils/error.js";
+import {
+  sendAlreadyRegisteredEmail,
+  sendVerificationEmail,
+} from "../utils/sendEmail.js";
 import { getVerificationStatus } from "../models/auth-model.js";
 
 export const verificationService = async (token: string): Promise<void> => {
   if (typeof token !== "string" || !token.trim())
-    throw new UnauthorizedError("Invalid token");
+    throw new ValidationError("Invalid token");
 
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-  /**
-   * if everything is valid, mark the user as verified and the token as used
-   * wrap everthing in a transaction, all or nothing cuh
-   */
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -34,7 +33,7 @@ export const verificationService = async (token: string): Promise<void> => {
       record.expires_at < new Date() ||
       record.is_verified
     ) {
-      throw new UnauthorizedError("Invalid or expired token");
+      throw new ValidationError("Invalid or expired token");
     }
 
     await markUserVerified(record.user_id, client);
@@ -51,7 +50,12 @@ export const verificationService = async (token: string): Promise<void> => {
 
 export const resendVerificationService = async (email: string) => {
   const verification = await getVerificationStatus(email);
-  if (!verification || verification.is_verified) {
+  if (!verification) {
+    return { message: "If an account exists, a new code has been sent." };
+  }
+
+  if (verification.is_verified) {
+    await sendAlreadyRegisteredEmail(email);
     return { message: "If an account exists, a new code has been sent." };
   }
 
@@ -65,9 +69,14 @@ export const resendVerificationService = async (email: string) => {
   try {
     await client.query("BEGIN");
     await createVerificationToken(verification.id, token, expiresAt, client);
-    await sendVerificationEmail(verification.email, otp);
     await client.query("COMMIT");
-    return { message: "A fresh code has been sent to your email." };
+
+    await sendVerificationEmail(verification.email, otp);
+
+    return { message: "If an account exists, a new code has been sent." };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
   } finally {
     client.release();
   }

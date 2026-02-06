@@ -7,7 +7,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     from: "Acme <onboarding@resend.dev>",
     to: email,
     subject: "Verify your email",
-    html: `<h3>${token}</h3> <br> here is your verification code, it will expire in 15 minutes.`,
+    html: `<h3>${token}</h3> <br> here is your verification code, it will expire in 2 minutes.`,
   });
 };
 

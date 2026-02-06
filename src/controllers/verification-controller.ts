@@ -26,10 +26,10 @@ export const resendVerificationController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    await resendVerificationService(req.body.email);
+    const result = await resendVerificationService(req.body.email);
     res.status(200).json({
       success: true,
-      message: "If an account exists, a new code has been sent.",
+      message: result.message,
     });
     return;
   } catch (error) {

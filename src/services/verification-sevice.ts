@@ -1,11 +1,14 @@
 import { pool } from "../config/db.js";
 import {
+  createVerificationToken,
   findToken,
   markTokenUsed,
   markUserVerified,
 } from "../models/verification-model.js";
 import crypto from "crypto";
 import { UnauthorizedError } from "../utils/error.js";
+import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { getVerificationStatus } from "../models/auth-model.js";
 
 export const verificationService = async (token: string): Promise<void> => {
   if (typeof token !== "string" || !token.trim())
@@ -41,6 +44,30 @@ export const verificationService = async (token: string): Promise<void> => {
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const resendVerificationService = async (email: string) => {
+  const verification = await getVerificationStatus(email);
+  if (!verification || verification.is_verified) {
+    return { message: "If an account exists, a new code has been sent." };
+  }
+
+  // generate new otp
+  const otp = crypto.randomBytes(3).toString("hex");
+  const token = crypto.createHash("sha256").update(otp).digest("hex");
+  const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+
+  // 3. Update DB and send email
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await createVerificationToken(verification.id, token, expiresAt, client);
+    await sendVerificationEmail(verification.email, otp);
+    await client.query("COMMIT");
+    return { message: "A fresh code has been sent to your email." };
   } finally {
     client.release();
   }

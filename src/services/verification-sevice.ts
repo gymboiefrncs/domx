@@ -12,6 +12,7 @@ import {
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
 import { getVerificationStatus } from "../models/auth-model.js";
+import { generateOTP } from "../utils/generateOTP.js";
 
 export const verificationService = async (token: string): Promise<void> => {
   if (typeof token !== "string" || !token.trim())
@@ -60,9 +61,7 @@ export const resendVerificationService = async (email: string) => {
   }
 
   // generate new otp
-  const otp = crypto.randomBytes(3).toString("hex");
-  const token = crypto.createHash("sha256").update(otp).digest("hex");
-  const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+  const { otp, token, expiresAt } = await generateOTP();
 
   // 3. Update DB and send email
   const client = await pool.connect();

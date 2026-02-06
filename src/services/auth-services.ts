@@ -8,12 +8,12 @@ import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
 import type { User } from "../common/types.js";
-import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
 import { pool } from "../config/db.js";
+import { generateOTP } from "../utils/generateOTP.js";
 
 export const signupService = async (
   data: SignupSchema,
@@ -30,9 +30,7 @@ export const signupService = async (
       return { message: "Verification email sent. Please check your email" };
     }
 
-    const otp = crypto.randomBytes(3).toString("hex");
-    const token = crypto.createHash("sha256").update(otp).digest("hex");
-    const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+    const { otp, token, expiresAt } = await generateOTP();
 
     const client = await pool.connect();
     try {
@@ -65,11 +63,8 @@ export const signupService = async (
   const { password, ...rest } = data;
 
   const saltRoundsEnv = process.env.BCRYPT_SALT_ROUNDS;
-  const otp = crypto.randomBytes(3).toString("hex");
-  const token = crypto.createHash("sha256").update(otp).digest("hex");
 
-  // 2 min from now
-  const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+  const { otp, token, expiresAt } = await generateOTP();
 
   let saltRounds = 10;
   const MIN_SALT_ROUNDS = 10;

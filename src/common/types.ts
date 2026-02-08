@@ -14,4 +14,5 @@ export type UserVerificationStatus = {
   otp_hash: string;
   used_at: Date | null;
   is_verified: boolean;
+  retries: number;
 };

@@ -6,17 +6,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
+    "lint": "eslint .",
     "build": "tsc"
   },
   "keywords": [],
   "type": "module",
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.29.1+sha512.48dae233635a645768a3028d19545cacc1688639eeb1f3734e42d6d6b971afbf22aa1ac9af52a173d9c3a20c15857cfa400f19994d79a2f626fcc73fccda9bbc",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "pg": "^8.18.0",
     "resend": "^6.9.1",
     "zod": "^4.3.6"

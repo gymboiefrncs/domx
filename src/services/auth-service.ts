@@ -3,7 +3,10 @@ import {
   getVerificationStatus,
   signupModel,
 } from "../models/auth-model.js";
-import { createVerificationToken } from "../models/verification-model.js";
+import {
+  createVerificationToken,
+  invalidateAllTokensForUser,
+} from "../models/verification-model.js";
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
@@ -15,15 +18,18 @@ import {
 import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
 
+/**
+ * Handles user registration logic.
+ * Workflow:
+ * 1. If verified: notify user they already have an account.
+ * 2. If unverified: rotate OTP tokens and resend email.
+ * 3. If new: hash password, create user, and send initial OTP.
+ */
 export const signupService = async (
   data: SignupSchema,
 ): Promise<{ message: string }> => {
   const verification = await getVerificationStatus(data.email);
 
-  /**
-   * if user exists and is verified, send an email notifying them that they are already registered.
-   * if user exists but not verified, generae a new OTP, update verification and send a new verification email.
-   */
   if (verification) {
     if (verification.is_verified) {
       await sendAlreadyRegisteredEmail(verification.email);
@@ -36,6 +42,8 @@ export const signupService = async (
     try {
       await client.query("BEGIN");
 
+      // invalidate all previous tokens for the user before creating a new one
+      await invalidateAllTokensForUser(verification.id, client);
       await createVerificationToken(
         verification.id,
         hashedOTP,
@@ -61,32 +69,17 @@ export const signupService = async (
     }
   }
 
-  // =================================================================================
-  /**
-   * if user doesnt exist, create user, generate OTP, save verification and send email
-   */
+  // new User Registration Path
   const { password, ...rest } = data;
+  const { otp, hashedOTP, expiresAt } = generateOTP();
 
-  const saltRoundsEnv = process.env.BCRYPT_SALT_ROUNDS;
+  const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS);
+  const saltRounds =
+    saltRoundsEnv >= 10 && saltRoundsEnv <= 15 ? saltRoundsEnv : 10;
 
-  const { otp, hashedOTP, expiresAt } = await generateOTP();
-
-  let saltRounds = 10;
-  const MIN_SALT_ROUNDS = 10;
-  const MAX_SALT_ROUNDS = 15;
-  if (saltRoundsEnv !== undefined) {
-    const parsedSaltRounds = Number(saltRoundsEnv);
-    if (
-      Number.isInteger(parsedSaltRounds) &&
-      parsedSaltRounds >= MIN_SALT_ROUNDS &&
-      parsedSaltRounds <= MAX_SALT_ROUNDS
-    ) {
-      saltRounds = parsedSaltRounds;
-    }
-  }
   const hash = await bcrypt.hash(password, saltRounds);
-
   const client = await pool.connect();
+
   try {
     await client.query("BEGIN");
 
@@ -99,6 +92,7 @@ export const signupService = async (
   } catch (error) {
     await client.query("ROLLBACK");
 
+    // unique constraint violation. prevents leaking user existence
     if ((error as any).code === "23505") {
       return { message: "Verification email sent. Please check your email" };
     }

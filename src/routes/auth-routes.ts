@@ -1,4 +1,5 @@
 import express, { type Router } from "express";
+import rateLimit from "express-rate-limit";
 import {
   loginController,
   signupController,
@@ -10,5 +11,13 @@ import {
 
 export const authRouter: Router = express.Router();
 
-authRouter.post("/auth/signup", signupValidator, signupController);
-authRouter.post("/auth/login", loginValidator, loginController);
+const authLimiter = rateLimit({
+  windowMs: 2 * 60 * 1000,
+  max: 2,
+  message: "Too many requests, please try again after 2 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+authRouter.post("/auth/signup", authLimiter, signupValidator, signupController);
+authRouter.post("/auth/login", authLimiter, loginValidator, loginController);

@@ -10,7 +10,7 @@ export const verificationController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    await verificationService(req.body.otp);
+    await verificationService(req.body);
     res
       .status(200)
       .json({ success: true, message: "Email verified successfully" });

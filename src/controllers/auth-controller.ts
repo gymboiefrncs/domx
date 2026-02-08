@@ -8,7 +8,10 @@ export const signupController = async (
 ): Promise<void> => {
   try {
     const result = await signupService(req.body);
-    res.status(201).json({ success: true, message: result.message });
+    res.status(201).json({
+      success: result.ok,
+      message: result.ok ? result.message : result.reason,
+    });
     return;
   } catch (error) {
     next(error);

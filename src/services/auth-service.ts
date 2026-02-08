@@ -10,7 +10,7 @@ import {
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
-import type { User } from "../common/types.js";
+import type { Result, User } from "../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
@@ -25,15 +25,16 @@ import { generateOTP } from "../utils/generateOTP.js";
  * 2. If unverified: rotate OTP tokens and resend email.
  * 3. If new: hash password, create user, and send initial OTP.
  */
-export const signupService = async (
-  data: SignupSchema,
-): Promise<{ message: string }> => {
+export const signupService = async (data: SignupSchema): Promise<Result> => {
   const verification = await getVerificationStatus(data.email);
 
   if (verification) {
     if (verification.is_verified) {
       await sendAlreadyRegisteredEmail(verification.email);
-      return { message: "Verification email sent. Please check your email" };
+      return {
+        ok: true,
+        message: "Verification email sent. Please check your email",
+      };
     }
 
     const { otp, hashedOTP, expiresAt } = generateOTP();
@@ -54,14 +55,20 @@ export const signupService = async (
       await client.query("COMMIT");
 
       await sendVerificationEmail(verification.email, otp);
-      return { message: "Verification email sent. Please check your email" };
+      return {
+        ok: true,
+        message: "Verification email sent. Please check your email",
+      };
     } catch (error) {
       await client.query("ROLLBACK");
 
       // unique constraint violation
       if ((error as any).code === "23505") {
         await sendAlreadyRegisteredEmail(data.email);
-        return { message: "Verification email sent. Please check your email" };
+        return {
+          ok: true,
+          message: "Verification email sent. Please check your email",
+        };
       }
       throw error;
     } finally {
@@ -94,7 +101,10 @@ export const signupService = async (
 
     // unique constraint violation. prevents leaking user existence
     if ((error as any).code === "23505") {
-      return { message: "Verification email sent. Please check your email" };
+      return {
+        ok: true,
+        message: "Verification email sent. Please check your email",
+      };
     }
 
     throw error;
@@ -102,7 +112,10 @@ export const signupService = async (
     client.release();
   }
 
-  return { message: "Verification email sent. Please check your email" };
+  return {
+    ok: true,
+    message: "Verification email sent. Please check your email",
+  };
 };
 
 export const loginService = async (

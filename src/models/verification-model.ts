@@ -17,36 +17,37 @@ export const createVerificationToken = async (
 
 export const incrementTokenRetries = async (
   userId: string,
+  id: string,
   client: PoolClient,
 ): Promise<number | undefined> => {
-  const query = `UPDATE email_verification SET retries = retries + 1 WHERE user_id = $1 RETURNING retries`;
-  const values = [userId];
+  const query = `UPDATE email_verification SET retries = retries + 1 WHERE user_id = $1 AND id = $2 RETURNING retries`;
+  const values = [userId, id];
   const result = await client.query<{ retries: number }>(query, values);
   return result.rows[0]?.retries;
 };
 
 export const findToken = async (
   email: string,
-  hashedOTP: string,
   client: PoolClient,
 ): Promise<UserVerificationStatus | undefined> => {
-  const query = `SELECT ev.user_id, ev.expires_at, ev.otp_hash, ev.used_at, ev.retries, u.is_verified
+  const query = `SELECT ev.id, ev.user_id, ev.expires_at, ev.otp_hash, ev.used_at, ev.retries, u.is_verified
   FROM email_verification ev 
   JOIN users u ON ev.user_id = u.id 
-  WHERE u.email = $1 AND ev.otp_hash = $2`;
+  WHERE u.email = $1 ORDER BY ev.created_at DESC LIMIT 1`;
 
-  const values = [email, hashedOTP];
+  const values = [email];
   const result = await client.query<UserVerificationStatus>(query, values);
   return result.rows[0];
 };
 
 export const markTokenUsed = async (
+  userId: string,
   hashedOTP: string,
   client: PoolClient,
 ): Promise<void> => {
   await client.query(
-    `UPDATE email_verification SET used_at = NOW() WHERE otp_hash = $1`,
-    [hashedOTP],
+    `UPDATE email_verification SET used_at = NOW() WHERE user_id = $1 AND otp_hash = $2`,
+    [userId, hashedOTP],
   );
 };
 

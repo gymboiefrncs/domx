@@ -10,10 +10,11 @@ export const verificationController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    await verificationService(req.body);
-    res
-      .status(200)
-      .json({ success: true, message: "Email verified successfully" });
+    const result = await verificationService(req.body);
+    res.status(200).json({
+      success: result.ok,
+      message: result.ok ? result.message : result.reason,
+    });
     return;
   } catch (error) {
     next(error);
@@ -28,8 +29,8 @@ export const resendVerificationController = async (
   try {
     const result = await resendVerificationService(req.body.email);
     res.status(200).json({
-      success: true,
-      message: result.message,
+      success: result.ok,
+      message: result.ok ? result.message : result.reason,
     });
     return;
   } catch (error) {

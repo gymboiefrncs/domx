@@ -9,6 +9,7 @@ export type User = {
 };
 
 export type UserVerificationStatus = {
+  id: string;
   user_id: string;
   expires_at: Date;
   otp_hash: string;
@@ -16,3 +17,7 @@ export type UserVerificationStatus = {
   is_verified: boolean;
   retries: number;
 };
+
+export type Result =
+  | { ok: true; message: string }
+  | { ok: false; reason: string };

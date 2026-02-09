@@ -36,6 +36,8 @@ export const verificationService = async ({
   const client = await pool.connect();
 
   try {
+    await client.query("BEGIN");
+
     // find the user associated with the OTP
     const record = await findToken(email, client);
 
@@ -52,7 +54,11 @@ export const verificationService = async ({
       return { ok: false, reason: "OTP is invalid or expired" };
     }
 
-    await client.query("BEGIN");
+    if (record.otp_hash !== hashedOTP) {
+      await incrementTokenRetries(record.user_id, record.id, client);
+      await client.query("COMMIT");
+      return { ok: false, reason: "OTP is invalid or expired" };
+    }
 
     // invalidate all tokens after 5 failed attempts to prevent brute force attacks
     if (record.retries >= 5) {
@@ -62,12 +68,6 @@ export const verificationService = async ({
         ok: false,
         reason: "OTP is invalid or expired",
       };
-    }
-
-    if (record.otp_hash !== hashedOTP) {
-      await incrementTokenRetries(record.user_id, record.id, client);
-      await client.query("COMMIT");
-      return { ok: false, reason: "OTP is invalid or expired" };
     }
 
     await markUserVerified(record.user_id, client);

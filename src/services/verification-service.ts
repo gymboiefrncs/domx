@@ -43,35 +43,56 @@ export const verificationService = async ({
 
     // ensure a verification request actually exists
     if (!record) {
+      await client.query("ROLLBACK");
       return {
         ok: false,
         reason: "OTP is invalid or expired",
       };
     }
 
-    // verify lifecyle status: used and expired tokens are invalid
+    // verify lifecycle status: used and expired tokens are invalid
     if (record.used_at || record.expires_at < new Date()) {
+      await client.query("ROLLBACK");
       return { ok: false, reason: "OTP is invalid or expired" };
     }
 
-    if (record.otp_hash !== hashedOTP) {
-      await incrementTokenRetries(record.user_id, record.id, client);
+    // to prevent timing attacks
+    const isMatch = crypto.timingSafeEqual(
+      Buffer.from(record.otp_hash, "hex"),
+      Buffer.from(hashedOTP, "hex"),
+    );
+
+    if (!isMatch) {
+      const newRetryCount = await incrementTokenRetries(
+        record.user_id,
+        record.id,
+        client,
+      );
+
+      if (!newRetryCount) {
+        await client.query("ROLLBACK");
+        return {
+          ok: false,
+          reason: "OTP is invalid or expired",
+        };
+      }
+
+      // invalidate all tokens after 5 failed attempts to prevent brute force attacks
+      if (newRetryCount >= 5) {
+        await invalidateAllTokensForUser(record.user_id, client);
+        await client.query("COMMIT");
+        return {
+          ok: false,
+          reason: "OTP is invalid or expired",
+        };
+      }
+
       await client.query("COMMIT");
       return { ok: false, reason: "OTP is invalid or expired" };
-    }
-
-    // invalidate all tokens after 5 failed attempts to prevent brute force attacks
-    if (record.retries >= 5) {
-      await invalidateAllTokensForUser(record.user_id, client);
-      await client.query("COMMIT");
-      return {
-        ok: false,
-        reason: "OTP is invalid or expired",
-      };
     }
 
     await markUserVerified(record.user_id, client);
-    await markTokenUsed(record.user_id, hashedOTP, client);
+    await markTokenUsed(record.id, hashedOTP, client);
 
     await client.query("COMMIT");
     return { ok: true, message: "Email verified successfully" };
@@ -87,30 +108,32 @@ export const verificationService = async ({
 export const resendVerificationService = async (
   email: string,
 ): Promise<Result> => {
-  const verification = await getVerificationStatus(email);
-
-  // if user not found, return generic message to prevent enumarationn attacks
-  if (!verification) {
-    return {
-      ok: true,
-      message: "If an account exists, a new code has been sent.",
-    };
-  }
-
-  // handles already verified users
-  if (verification.is_verified) {
-    await sendAlreadyRegisteredEmail(email);
-    return {
-      ok: true,
-      message: "If an account exists, a new code has been sent.",
-    };
-  }
-
   const { otp, hashedOTP, expiresAt } = generateOTP();
-  const client = await pool.connect();
 
+  const client = await pool.connect();
   try {
     await client.query("BEGIN");
+
+    const verification = await getVerificationStatus(email, client);
+
+    // if user not found, return generic message to prevent enumeration attacks
+    if (!verification) {
+      await client.query("ROLLBACK");
+      return {
+        ok: true,
+        message: "If an account exists, a new code has been sent.",
+      };
+    }
+
+    // handles already verified users
+    if (verification.is_verified) {
+      await client.query("ROLLBACK");
+      await sendAlreadyRegisteredEmail(email);
+      return {
+        ok: true,
+        message: "If an account exists, a new code has been sent.",
+      };
+    }
 
     // invalidate all previous tokens for the user before creating a new one
     await invalidateAllTokensForUser(verification.id, client);

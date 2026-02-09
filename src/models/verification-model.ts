@@ -33,7 +33,7 @@ export const findToken = async (
   const query = `SELECT ev.id, ev.user_id, ev.expires_at, ev.otp_hash, ev.used_at, ev.retries, u.is_verified
   FROM email_verification ev 
   JOIN users u ON ev.user_id = u.id 
-  WHERE u.email = $1 ORDER BY ev.created_at DESC LIMIT 1`;
+  WHERE u.email = $1 ORDER BY ev.created_at DESC LIMIT 1 FOR UPDATE OF ev`;
 
   const values = [email];
   const result = await client.query<UserVerificationStatus>(query, values);
@@ -41,13 +41,13 @@ export const findToken = async (
 };
 
 export const markTokenUsed = async (
-  userId: string,
+  id: string,
   hashedOTP: string,
   client: PoolClient,
 ): Promise<void> => {
   await client.query(
-    `UPDATE email_verification SET used_at = NOW() WHERE user_id = $1 AND otp_hash = $2`,
-    [userId, hashedOTP],
+    `UPDATE email_verification SET used_at = NOW() WHERE id = $1 AND otp_hash = $2`,
+    [id, hashedOTP],
   );
 };
 

@@ -35,11 +35,13 @@ export const getUserByEmail = async (
 
 export const getVerificationStatus = async (
   email: string,
+  client: PoolClient,
 ): Promise<Pick<User, "id" | "is_verified" | "email"> | undefined> => {
-  const query = "SELECT id, is_verified, email FROM users WHERE email = $1";
+  const query =
+    "SELECT id, is_verified, email FROM users WHERE email = $1 FOR UPDATE";
   const values = [email];
 
-  const result = await pool.query<Pick<User, "id" | "is_verified" | "email">>(
+  const result = await client.query<Pick<User, "id" | "is_verified" | "email">>(
     query,
     values,
   );

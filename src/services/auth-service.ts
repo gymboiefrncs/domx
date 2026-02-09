@@ -19,31 +19,34 @@ import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
 
 /**
- * Handles user registration logic.
+ * Handles user registration logic with locking.
+ *
  * Workflow:
- * 1. If verified: notify user they already have an account.
- * 2. If unverified: rotate OTP tokens and resend email.
- * 3. If new: hash password, create user, and send initial OTP.
+ * 1. Transaction Start: Locks user record (if exists) via FOR UPDATE.
+ * 2. If Verified: Rollback and notify user they already have an account.
+ * 3. If Unverified: Invalidate old tokens, rotate to a new OTP, and Commit.
+ * 4. If New User: Hash password, create record, and Commit.
  */
 export const signupService = async (data: SignupSchema): Promise<Result> => {
-  const verification = await getVerificationStatus(data.email);
+  const { password, ...rest } = data;
+  const { otp, hashedOTP, expiresAt } = generateOTP();
 
-  if (verification) {
-    if (verification.is_verified) {
-      await sendAlreadyRegisteredEmail(verification.email);
-      return {
-        ok: true,
-        message: "Verification email sent. Please check your email",
-      };
-    }
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const verification = await getVerificationStatus(data.email, client);
 
-    const { otp, hashedOTP, expiresAt } = generateOTP();
+    if (verification) {
+      if (verification.is_verified) {
+        await client.query("ROLLBACK");
+        await sendAlreadyRegisteredEmail(verification.email);
+        return {
+          ok: true,
+          message: "Verification email sent. Please check your email",
+        };
+      }
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      // invalidate all previous tokens for the user before creating a new one
+      // invalidate all tokens first before creating a new one
       await invalidateAllTokensForUser(verification.id, client);
       await createVerificationToken(
         verification.id,
@@ -55,40 +58,18 @@ export const signupService = async (data: SignupSchema): Promise<Result> => {
       await client.query("COMMIT");
 
       await sendVerificationEmail(verification.email, otp);
+
       return {
         ok: true,
         message: "Verification email sent. Please check your email",
       };
-    } catch (error) {
-      await client.query("ROLLBACK");
-
-      // unique constraint violation
-      if ((error as any).code === "23505") {
-        await sendAlreadyRegisteredEmail(data.email);
-        return {
-          ok: true,
-          message: "Verification email sent. Please check your email",
-        };
-      }
-      throw error;
-    } finally {
-      client.release();
     }
-  }
 
-  // new User Registration Path
-  const { password, ...rest } = data;
-  const { otp, hashedOTP, expiresAt } = generateOTP();
-
-  const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS);
-  const saltRounds =
-    saltRoundsEnv >= 10 && saltRoundsEnv <= 15 ? saltRoundsEnv : 10;
-
-  const hash = await bcrypt.hash(password, saltRounds);
-  const client = await pool.connect();
-
-  try {
-    await client.query("BEGIN");
+    // if new user, create account and send verification email
+    const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS);
+    const saltRounds =
+      saltRoundsEnv >= 10 && saltRoundsEnv <= 15 ? saltRoundsEnv : 10;
+    const hash = await bcrypt.hash(password, saltRounds);
 
     const result = await signupModel(hash, rest, client);
     await createVerificationToken(result.id, hashedOTP, expiresAt, client);
@@ -96,26 +77,27 @@ export const signupService = async (data: SignupSchema): Promise<Result> => {
     await client.query("COMMIT");
 
     await sendVerificationEmail(result.email, otp);
+    return {
+      ok: true,
+      message: "Verification email sent. Please check your email",
+    };
   } catch (error) {
     await client.query("ROLLBACK");
 
-    // unique constraint violation. prevents leaking user existence
+    /**
+     * Catch unique constraint violation
+     */
     if ((error as any).code === "23505") {
+      await sendAlreadyRegisteredEmail(data.email);
       return {
         ok: true,
         message: "Verification email sent. Please check your email",
       };
     }
-
     throw error;
   } finally {
     client.release();
   }
-
-  return {
-    ok: true,
-    message: "Verification email sent. Please check your email",
-  };
 };
 
 export const loginService = async (

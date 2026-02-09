@@ -13,7 +13,7 @@ export const authRouter: Router = express.Router();
 
 const authLimiter = rateLimit({
   windowMs: 2 * 60 * 1000,
-  max: 2,
+  max: 3,
   message: "Too many requests, please try again after 2 minutes",
   standardHeaders: true,
   legacyHeaders: false,

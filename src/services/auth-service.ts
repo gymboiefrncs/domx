@@ -104,14 +104,18 @@ export const signupService = async (
 
 export const loginService = async (
   data: Pick<User, "email" | "password">,
-): Promise<Pick<User, "username" | "email">> => {
+): Promise<Pick<User, "id" | "username" | "email">> => {
   const user = await getUserByEmail(data.email);
 
-  if (!user) throw new UnauthorizedError("Invalid credentials");
+  // to prevent timing attacks
+  const passwordMatch = await bcrypt.compare(
+    data.password,
+    user?.password ?? process.env.DUMMY_HASH!,
+  );
 
-  const passwordMatch = await bcrypt.compare(data.password, user.password);
+  if (!user || !passwordMatch || !user.is_verified) {
+    throw new UnauthorizedError("Invalid credentials or account not verified");
+  }
 
-  if (!passwordMatch) throw new UnauthorizedError("Invalid credentials");
-
-  return { username: user.username, email: user.email };
+  return { id: user.id, username: user.username, email: user.email };
 };

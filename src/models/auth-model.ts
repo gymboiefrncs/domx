@@ -23,12 +23,16 @@ export const signupModel = async (
 
 export const getUserByEmail = async (
   email: string,
-): Promise<Pick<User, "email" | "password" | "username"> | undefined> => {
-  const query = "SELECT email, password, username FROM users WHERE email = $1";
+): Promise<
+  | Pick<User, "id" | "email" | "password" | "username" | "is_verified">
+  | undefined
+> => {
+  const query =
+    "SELECT id, email, password, username, is_verified FROM users WHERE email = $1";
 
   const values = [email];
   const result = await pool.query<
-    Pick<User, "email" | "password" | "username">
+    Pick<User, "id" | "email" | "password" | "username" | "is_verified">
   >(query, values);
   return result.rows[0];
 };

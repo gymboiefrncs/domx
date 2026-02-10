@@ -116,6 +116,6 @@ export const loginService = async (
   if (!user || !passwordMatch || !user.is_verified) {
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
-
+  // TODO: add authorization using JWT and jose library
   return { id: user.id, username: user.username, email: user.email };
 };

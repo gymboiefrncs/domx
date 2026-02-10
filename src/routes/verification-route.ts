@@ -12,9 +12,9 @@ import {
 export const verificationRouter: Router = express.Router();
 
 const verificationLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: 1,
-  message: "Too many requests, please try again after 2 minutes",
+  windowMs: 3 * 60 * 1000,
+  max: 2,
+  message: "Too many requests, please try again after 3 minutes",
   standardHeaders: true,
   legacyHeaders: false,
 });

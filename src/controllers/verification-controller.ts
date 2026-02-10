@@ -11,7 +11,7 @@ export const verificationController = async (
 ): Promise<void> => {
   try {
     const result = await verificationService(req.body);
-    const statusCode = result.ok ? 200 : 401;
+    const statusCode = result.ok ? 200 : 400;
     res.status(statusCode).json({
       success: result.ok,
       message: result.ok ? result.message : result.reason,
@@ -29,7 +29,7 @@ export const resendVerificationController = async (
 ): Promise<void> => {
   try {
     const result = await resendVerificationService(req.body.email);
-    const statusCode = result.ok ? 200 : 401;
+    const statusCode = result.ok ? 200 : 400;
     res.status(statusCode).json({
       success: result.ok,
       message: result.ok ? result.message : result.reason,

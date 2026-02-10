@@ -1,7 +1,11 @@
 import * as z from "zod";
 
 export const otpSchema = z.object({
-  otp: z.string().trim().min(1, "OTP is required"),
+  otp: z
+    .string()
+    .trim()
+    .length(6, "Invalid OTP")
+    .regex(/^[a-f0-9]+$/, "Invalid OTP"),
   email: z
     .string()
     .trim()

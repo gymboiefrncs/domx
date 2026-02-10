@@ -10,7 +10,7 @@ import {
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
-import type { Result, User } from "../common/types.js";
+import type { User } from "../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
@@ -27,7 +27,9 @@ import { generateOTP } from "../utils/generateOTP.js";
  * 3. If Unverified: Invalidate old tokens, rotate to a new OTP, and Commit.
  * 4. If New User: Hash password, create record, and Commit.
  */
-export const signupService = async (data: SignupSchema): Promise<Result> => {
+export const signupService = async (
+  data: SignupSchema,
+): Promise<{ ok: true; message: string }> => {
   const { password, ...rest } = data;
   const { otp, hashedOTP, expiresAt } = generateOTP();
 

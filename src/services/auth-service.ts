@@ -21,6 +21,7 @@ import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import * as jose from "jose";
 import { insertToken } from "../models/auth-model.js";
+import { generateTokens } from "./generateToken.js";
 
 /**
  * Handles user registration logic with locking.
@@ -121,22 +122,13 @@ export const loginService = async (
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
 
-  const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
-  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
   const jti = crypto.randomUUID();
 
-  const accessToken = await new jose.SignJWT({
-    userId: user.id,
-    is_admin: user.is_admin,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("15m")
-    .sign(accessSecret);
-
-  const refreshToken = await new jose.SignJWT({ userId: user.id, jti })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
-    .sign(refreshSecret);
+  const { accessToken, refreshToken } = await generateTokens(
+    user.id,
+    user.is_admin,
+    jti,
+  );
 
   await insertToken(
     jti,
@@ -152,7 +144,6 @@ export const refreshService = async (
   oldRefreshToken: string,
 ): Promise<tokens> => {
   const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
-  const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
 
   const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
 
@@ -164,21 +155,11 @@ export const refreshService = async (
 
   const newJti = crypto.randomUUID();
 
-  const accessToken = await new jose.SignJWT({
-    userId: payload.userId,
-    is_admin: payload.is_admin,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("15m")
-    .sign(accessSecret);
-
-  const refreshToken = await new jose.SignJWT({
-    userId: payload.userId,
-    jti: newJti,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
-    .sign(refreshSecret);
+  const { accessToken, refreshToken } = await generateTokens(
+    payload.userId as string,
+    payload.is_admin as boolean,
+    newJti,
+  );
 
   await insertToken(
     newJti,

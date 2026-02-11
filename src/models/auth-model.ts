@@ -45,3 +45,24 @@ export const getVerificationStatus = async (
   );
   return result.rows[0];
 };
+
+export const insertToken = async (
+  jti: string,
+  userId: string,
+  refreshToken: string,
+  expiresAt: Date,
+): Promise<void> => {
+  const query = `INSERT INTO refresh_token (jti, user_id, token_hash, expires_at) VALUES ($1, $2, $3, $4)`;
+  await pool.query(query, [jti, userId, refreshToken, expiresAt]);
+};
+
+export const getTokenByJTI = async (jti: string) => {
+  const query = `SELECT * FROM refresh_token WHERE jti = $1`;
+  const result = await pool.query(query, [jti]);
+  return result.rows[0];
+};
+
+export const deleteOldRefreshToken = async (jti: string): Promise<void> => {
+  const query = `DELETE FROM refresh_token WHERE jti = $1`;
+  await pool.query(query, [jti]);
+};

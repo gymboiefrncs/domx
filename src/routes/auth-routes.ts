@@ -2,6 +2,7 @@ import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
   loginController,
+  refreshController,
   signupController,
 } from "../controllers/auth-controller.js";
 import {
@@ -19,5 +20,14 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: "Too many requests, please try again after 15 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 authRouter.post("/auth/signup", authLimiter, signupValidator, signupController);
 authRouter.post("/auth/login", authLimiter, loginValidator, loginController);
+authRouter.post("/auth/refresh", refreshLimiter, refreshController);

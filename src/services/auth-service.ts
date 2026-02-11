@@ -1,4 +1,6 @@
 import {
+  deleteOldRefreshToken,
+  getTokenByJTI,
   getUserByEmail,
   getVerificationStatus,
   signupModel,
@@ -10,13 +12,15 @@ import {
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
-import type { User } from "../common/types.js";
+import type { tokens, User } from "../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
 import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
+import * as jose from "jose";
+import { insertToken } from "../models/auth-model.js";
 
 /**
  * Handles user registration logic with locking.
@@ -104,7 +108,7 @@ export const signupService = async (
 
 export const loginService = async (
   data: Pick<User, "email" | "password">,
-): Promise<Pick<User, "id" | "username" | "email">> => {
+): Promise<tokens> => {
   const user = await getUserByEmail(data.email);
 
   // to prevent timing attacks
@@ -116,6 +120,72 @@ export const loginService = async (
   if (!user || !passwordMatch || !user.is_verified) {
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
-  // TODO: add authorization using JWT and jose library
-  return { id: user.id, username: user.username, email: user.email };
+
+  const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
+  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
+  const jti = crypto.randomUUID();
+
+  const accessToken = await new jose.SignJWT({
+    userId: user.id,
+    is_admin: user.is_admin,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("15m")
+    .sign(accessSecret);
+
+  const refreshToken = await new jose.SignJWT({ userId: user.id, jti })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(refreshSecret);
+
+  await insertToken(
+    jti,
+    user.id,
+    refreshToken,
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  );
+
+  return { accessToken, refreshToken };
+};
+
+export const refreshService = async (
+  oldRefreshToken: string,
+): Promise<tokens> => {
+  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
+  const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
+
+  const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
+
+  const storedToken = await getTokenByJTI(payload.jti as string);
+  if (!storedToken)
+    throw new UnauthorizedError("Session expired, please login again");
+
+  await deleteOldRefreshToken(payload.jti as string);
+
+  const newJti = crypto.randomUUID();
+
+  const accessToken = await new jose.SignJWT({
+    userId: payload.userId,
+    is_admin: payload.is_admin,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("15m")
+    .sign(accessSecret);
+
+  const refreshToken = await new jose.SignJWT({
+    userId: payload.userId,
+    jti: newJti,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(refreshSecret);
+
+  await insertToken(
+    newJti,
+    payload.userId as string,
+    refreshToken,
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  );
+
+  return { accessToken, refreshToken };
 };

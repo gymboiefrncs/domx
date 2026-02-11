@@ -21,3 +21,5 @@ export type UserVerificationStatus = {
 export type Result =
   | { ok: true; message: string }
   | { ok: false; reason: string };
+
+export type tokens = { accessToken: string; refreshToken: string };

@@ -3,7 +3,7 @@ export type User = {
   username: string;
   email: string;
   password: string;
-  is_admin: boolean;
+  role: Role;
   created_at: Date;
   is_verified: boolean;
 };
@@ -19,7 +19,9 @@ export type UserVerificationStatus = {
 };
 
 export type Result =
-  | { ok: true; message: string }
+  | { ok: true; message: string; data?: unknown }
   | { ok: false; reason: string };
 
 export type tokens = { accessToken: string; refreshToken: string };
+
+export type Role = "user" | "moderator" | "admin";

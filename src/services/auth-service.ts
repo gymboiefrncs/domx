@@ -12,7 +12,7 @@ import {
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import { UnauthorizedError } from "../utils/error.js";
-import type { tokens, User } from "../common/types.js";
+import type { Role, tokens, User } from "../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
@@ -126,7 +126,7 @@ export const loginService = async (
 
   const { accessToken, refreshToken } = await generateTokens(
     user.id,
-    user.is_admin,
+    user.role as Role,
     jti,
   );
 
@@ -157,7 +157,7 @@ export const refreshService = async (
 
   const { accessToken, refreshToken } = await generateTokens(
     payload.userId as string,
-    payload.is_admin as boolean,
+    payload.role as Role,
     newJti,
   );
 

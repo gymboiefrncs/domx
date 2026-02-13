@@ -1,8 +1,10 @@
-declare namespace Express {
+import "express";
+import type { Role } from "../common/types.ts";
+declare module "express" {
   interface Request {
     user?: {
       userId: string;
-      role: import("../common/types.js").Role;
+      role: Role;
     };
   }
 }

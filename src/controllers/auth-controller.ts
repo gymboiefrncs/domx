@@ -3,6 +3,7 @@ import {
   signupService,
   loginService,
   refreshService,
+  logoutService,
 } from "../services/auth-service.js";
 
 export const signupController = async (
@@ -72,6 +73,25 @@ export const refreshController = async (
       maxAge: 15 * 60 * 1000,
     });
     res.status(200).json({ success: true, message: "Token refreshed" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logoutController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    const result = await logoutService(refreshToken);
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+    res.status(200).json({
+      success: result.ok,
+      message: result.ok ? result.message : "Logout failed",
+    });
   } catch (error) {
     next(error);
   }

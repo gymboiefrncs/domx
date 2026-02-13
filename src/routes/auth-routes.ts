@@ -2,6 +2,7 @@ import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
   loginController,
+  logoutController,
   refreshController,
   signupController,
 } from "../controllers/auth-controller.js";
@@ -31,3 +32,4 @@ const refreshLimiter = rateLimit({
 authRouter.post("/auth/signup", authLimiter, signupValidator, signupController);
 authRouter.post("/auth/login", authLimiter, loginValidator, loginController);
 authRouter.post("/auth/refresh", refreshLimiter, refreshController);
+authRouter.post("/auth/logout", logoutController);

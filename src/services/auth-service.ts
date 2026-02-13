@@ -22,6 +22,7 @@ import { generateOTP } from "../utils/generateOTP.js";
 import * as jose from "jose";
 import { insertToken } from "../models/auth-model.js";
 import { generateTokens } from "./generateToken.js";
+import type { Result } from "../common/types.js";
 
 /**
  * Handles user registration logic with locking.
@@ -169,4 +170,13 @@ export const refreshService = async (
   );
 
   return { accessToken, refreshToken };
+};
+
+export const logoutService = async (refreshToken: string): Promise<Result> => {
+  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
+  const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);
+  const storedToken = await getTokenByJTI(payload.jti as string);
+  if (!storedToken) await deleteOldRefreshToken(payload.jti as string);
+  await deleteOldRefreshToken(payload.jti as string);
+  return { ok: true, message: "Logged out successfully" };
 };

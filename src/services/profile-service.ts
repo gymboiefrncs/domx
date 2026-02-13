@@ -8,5 +8,9 @@ export const profileService = async (
   if (!userId) throw new UnauthorizedError("User not authenticated");
   const profile = await profileModel(userId);
   if (!profile) throw new NotFoundError("Profile not found");
-  return { ok: true, message: "Profile retrieved successfully", data: profile };
+  return {
+    ok: true,
+    message: "Profile retrieved successfully",
+    data: !profile.posts ? profile : { ...profile, posts: "No post yet" },
+  };
 };

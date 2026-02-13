@@ -14,7 +14,7 @@ export const generateTokens = async (
     role,
   })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("15m")
+    .setExpirationTime("5m")
     .sign(accessSecret);
 
   const refreshToken = await new jose.SignJWT({

@@ -71,6 +71,7 @@ export const refreshController = async (
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
+    res.status(200).json({ success: true, message: "Token refreshed" });
   } catch (error) {
     next(error);
   }

@@ -1,3 +1,5 @@
+import type { PostSchema } from "../schemas/post-schema.js";
+
 export type User = {
   id: string;
   username: string;
@@ -7,6 +9,16 @@ export type User = {
   created_at: Date;
   is_verified: boolean;
 };
+``;
+
+export type Post = PostSchema & {
+  id: number;
+  author_id: string;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type Profile = Pick<User, "username"> & { posts: Post[] };
 
 export type UserVerificationStatus = {
   id: string;

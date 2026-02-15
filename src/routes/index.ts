@@ -1,6 +1,6 @@
 import { authRouter } from "./auth-routes.js";
 import { postRouter } from "./post-routes.js";
-import { verificationRouter } from "./verification-route.js";
+import { verificationRouter } from "./verification-routes.js";
 import express, { type Router } from "express";
 import { profileRouter } from "./profile-routes.js";
 

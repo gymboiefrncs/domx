@@ -9,7 +9,6 @@ export type User = {
   created_at: Date;
   is_verified: boolean;
 };
-``;
 
 export type Post = PostSchema & {
   id: number;
@@ -18,7 +17,7 @@ export type Post = PostSchema & {
   updated_at: Date;
 };
 
-export type Profile = Pick<User, "username"> & { posts: Post[] };
+export type Profile = Pick<User, "username"> & { posts: Post[] | string };
 
 export type UserVerificationStatus = {
   id: string;
@@ -34,6 +33,11 @@ export type Result =
   | { ok: true; message: string; data?: unknown }
   | { ok: false; reason: string };
 
-export type tokens = { accessToken: string; refreshToken: string };
+export type Tokens = { accessToken: string; refreshToken: string };
 
 export type Role = "user" | "moderator" | "admin";
+
+export type CustomErrorContent = {
+  message: string;
+  context?: Record<string, unknown>;
+};

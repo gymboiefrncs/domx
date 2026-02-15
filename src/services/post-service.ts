@@ -7,7 +7,7 @@ export const createPostService = async (
   userId: string | undefined,
   data: PostSchema,
 ): Promise<Result> => {
-  if (!userId) throw new UnauthorizedError("user not authenticated");
+  if (!userId) throw new UnauthorizedError("Access denied");
   const result = await createPostModel(userId, data);
   return { ok: true, message: "Post created successfully", data: result };
 };

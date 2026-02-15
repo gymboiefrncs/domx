@@ -11,7 +11,7 @@ export const postController = async (
     res.status(201).json({
       success: result.ok,
       message: result.ok ? result.message : result.reason,
-      data: result.ok ? result.data : "",
+      data: result.ok ? result.data : null,
     });
   } catch (error) {
     next(error);

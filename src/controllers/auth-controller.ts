@@ -41,7 +41,7 @@ export const loginController = async (
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
     });
 
     res.status(200).json({ success: true, message: "Login successful" });
@@ -70,7 +70,7 @@ export const refreshController = async (
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
     });
     res.status(200).json({ success: true, message: "Token refreshed" });
   } catch (error) {
@@ -82,7 +82,7 @@ export const logoutController = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const refreshToken = req.cookies.refreshToken;
     const result = await logoutService(refreshToken);

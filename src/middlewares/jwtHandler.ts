@@ -10,16 +10,16 @@ export const jwtHandler = async (
   _res: Response,
   next: NextFunction,
 ) => {
-  const token: string | undefined = req.cookies.accessToken;
-  if (!token) {
-    throw new UnauthorizedError("No token provided");
-  }
-
   try {
+    const token: string | undefined = req.cookies.accessToken;
+    if (!token) {
+      throw new UnauthorizedError("Invalid or expired token");
+    }
+
     const { payload } = await jose.jwtVerify(token, accessSecret);
     req.user = { userId: payload.userId as string, role: payload.role as Role };
     next();
   } catch (error) {
-    throw new UnauthorizedError("Invalid token");
+    next(error);
   }
 };

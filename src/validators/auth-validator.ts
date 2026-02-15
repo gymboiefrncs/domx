@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { type ZodObject } from "zod";
 import { loginSchema, signupSchema } from "../schemas/auth-schema.js";
+import { ValidationError } from "../utils/error.js";
 
 // Generic validation middleware factory
 const validate =
@@ -8,7 +9,13 @@ const validate =
     const validation = schema.safeParse(req.body);
 
     if (!validation.success) {
-      next(validation.error);
+      next(
+        new ValidationError(
+          "Invalid data",
+          true,
+          validation.error.flatten().fieldErrors,
+        ),
+      );
       return;
     }
 

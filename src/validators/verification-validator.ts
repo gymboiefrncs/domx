@@ -1,13 +1,20 @@
 import type { NextFunction, Request, Response } from "express";
 import { emailSchema, otpSchema } from "../schemas/verification-schema.js";
 import type { ZodObject } from "zod";
+import { ValidationError } from "../utils/error.js";
 
 export const validate =
   (schema: ZodObject) => (req: Request, _res: Response, next: NextFunction) => {
     const validation = schema.safeParse(req.body);
 
     if (!validation.success) {
-      next(validation.error);
+      next(
+        new ValidationError(
+          "Invalid data",
+          true,
+          validation.error.flatten().fieldErrors,
+        ),
+      );
       return;
     }
 

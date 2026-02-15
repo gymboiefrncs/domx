@@ -31,6 +31,14 @@ export const getUserByEmail = async (
   return result.rows[0];
 };
 
+export const getUserById = async (
+  id: string,
+): Promise<Pick<User, "id" | "role"> | undefined> => {
+  const query = "SELECT id, role FROM users WHERE id = $1";
+  const result = await pool.query<Pick<User, "id" | "role">>(query, [id]);
+  return result.rows[0];
+};
+
 export const getVerificationStatus = async (
   email: string,
   client: PoolClient,

@@ -1,6 +1,6 @@
 import express, { type Router } from "express";
 import { jwtHandler } from "../middlewares/jwtHandler.js";
-import { profileController } from "../controllers/profile-controllers.js";
+import { profileController } from "../controllers/profile-controller.js";
 
 export const profileRouter: Router = express.Router();
 

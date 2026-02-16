@@ -11,7 +11,6 @@
     "moduleResolution": "nodenext",
     "target": "es2022",
     "esModuleInterop": true,
-    // "types": [],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -42,5 +41,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  "include": ["src"]
 }

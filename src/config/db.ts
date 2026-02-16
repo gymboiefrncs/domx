@@ -9,3 +9,18 @@ export const pool = new Pool({
   max: 5,
   connectionTimeoutMillis: 2000,
 });
+
+export const connectDB = async () => {
+  await pool.connect();
+};
+
+export const disconnectDB = async () => {
+  await pool.end();
+};
+
+export const resetDB = async () => {
+  const query = `
+  TRUNCATE TABLE users cascade;
+  `;
+  await pool.query(query);
+};

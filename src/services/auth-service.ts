@@ -5,6 +5,8 @@ import {
   getUserById,
   getVerificationStatus,
   signupModel,
+  insertToken,
+  getLatestOTP,
 } from "../models/auth-model.js";
 import {
   createVerificationToken,
@@ -22,7 +24,6 @@ import {
 import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import * as jose from "jose";
-import { insertToken } from "../models/auth-model.js";
 import { generateTokens } from "./generateToken.js";
 import type { Result } from "../common/types.js";
 
@@ -56,23 +57,40 @@ export const signupService = async (
         };
       }
 
-      // invalidate all tokens first before creating a new one
-      await invalidateAllTokensForUser(verification.id, client);
-      await createVerificationToken(
-        verification.id,
-        hashedOTP,
-        expiresAt,
-        client,
-      );
+      /**
+       * if user exist but not yet verified
+       *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old tokens
+       *  - else, prevent OTP rotation and ask user to wait
+       */
+      const latestToken = await getLatestOTP(verification.id, client);
+      if (
+        !latestToken ||
+        Date.now() - latestToken.created_at.getTime() > 2 * 60 * 1000
+      ) {
+        await invalidateAllTokensForUser(verification.id, client);
+        await createVerificationToken(
+          verification.id,
+          hashedOTP,
+          expiresAt,
+          client,
+        );
 
-      await client.query("COMMIT");
+        await client.query("COMMIT");
 
-      await sendVerificationEmail(verification.email, otp);
+        await sendVerificationEmail(verification.email, otp);
 
-      return {
-        ok: true,
-        message: "Verification email sent. Please check your email",
-      };
+        return {
+          ok: true,
+          message: "Verification email sent. Please check your email",
+        };
+      } else {
+        await client.query("ROLLBACK");
+        return {
+          ok: true,
+          message:
+            "Verification email just sent. Please wait a moment before requesting again",
+        };
+      }
     }
 
     // if new user, create account and send verification email

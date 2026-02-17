@@ -41,3 +41,13 @@ export type CustomErrorContent = {
   message: string;
   context?: Record<string, unknown>;
 };
+
+export type EmailVerification = {
+  id: string;
+  user_id: string;
+  expires_at: Date;
+  otp_hash: string;
+  used_at: Date | null;
+  created_at: Date;
+  retries: number;
+};

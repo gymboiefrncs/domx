@@ -1,6 +1,6 @@
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import { pool } from "../config/db.js";
-import type { User } from "../common/types.js";
+import type { EmailVerification, User } from "../common/types.js";
 import type { PoolClient } from "pg";
 
 export const signupModel = async (
@@ -73,4 +73,13 @@ export const getTokenByJTI = async (jti: string) => {
 export const deleteOldRefreshToken = async (jti: string): Promise<void> => {
   const query = `DELETE FROM refresh_token WHERE jti = $1`;
   await pool.query(query, [jti]);
+};
+
+export const getLatestOTP = async (
+  userId: string,
+  client: PoolClient,
+): Promise<EmailVerification | undefined> => {
+  const query = `SELECT * FROM email_verification WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`;
+  const result = await client.query<EmailVerification>(query, [userId]);
+  return result.rows[0];
 };

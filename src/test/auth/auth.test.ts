@@ -2,6 +2,12 @@ import { describe, vi, beforeEach, it, expect } from "vitest";
 import { signupService } from "../../services/auth-service.js";
 import { pool, resetDB } from "../../config/db.js";
 import { getUserByEmail } from "../../models/auth-model.js";
+import {
+  sendAlreadyRegisteredEmail,
+  sendVerificationEmail,
+} from "../../utils/sendEmail.js";
+import * as authModel from "../../models/auth-model.js";
+import * as tokenModel from "../../models/verification-model.js";
 
 vi.mock("../../utils/sendEmail.js", () => ({
   sendVerificationEmail: vi.fn(),
@@ -29,11 +35,17 @@ describe("Auth integration - Signup", () => {
     );
 
     const user = await getUserByEmail(signupData.email);
-    expect(user).toBeDefined();
-    expect(user?.email).toBe(signupData.email);
-    expect(user?.is_verified).toBe(false);
-    expect(user?.username).toBe(signupData.username);
-    expect(user?.role).toBe("user");
+    expect(user).toMatchObject({
+      email: signupData.email,
+      username: signupData.username,
+      is_verified: false,
+      role: "user",
+    });
+    expect(user?.password).not.toBe(signupData.password);
+    expect(sendVerificationEmail).toHaveBeenCalledWith(
+      signupData.email,
+      expect.any(String),
+    );
   });
 
   it("should not create a new user if email is already verified", async () => {
@@ -43,11 +55,10 @@ describe("Auth integration - Signup", () => {
       username: "verifieduser",
     };
 
-    await signupService(signupData);
-
-    await pool.query("UPDATE users SET is_verified = true WHERE email = $1", [
-      signupData.email,
-    ]);
+    await pool.query(
+      "INSERT INTO users (email, password, username, is_verified) VALUES ($1, $2, $3, $4)",
+      [signupData.email, "hashed_pw", signupData.username, true],
+    );
 
     const result = await signupService(signupData);
     expect(result.ok).toBe(true);
@@ -69,19 +80,75 @@ describe("Auth integration - Signup", () => {
 
     const user = await getUserByEmail(signupData.email);
 
-    const oldToken = await pool.query(
-      "SELECT COUNT(*) FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
-      [user?.id],
-    );
-
-    expect(oldToken.rows[0].count).toBe("1");
-
     await signupService(signupData);
 
+    // should still be only one token after signing up again
     const newToken = await pool.query(
       "SELECT COUNT(*) FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
     );
     expect(newToken.rows[0].count).toBe("1");
+  });
+
+  it("should call sendAlreadyRegisteredEmail if email is already verified", async () => {
+    const signupData = {
+      email: "alreadyRegistered@example.com",
+      password: "password123",
+      username: "alreadyRegisteredUser",
+    };
+
+    await pool.query(
+      "INSERT INTO users (email, password, username, is_verified) VALUES ($1, $2, $3, $4)",
+      [signupData.email, "hashed_pw", signupData.username, true],
+    );
+
+    const result = await signupService(signupData);
+    expect(result.ok).toBe(true);
+
+    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledWith(signupData.email);
+    expect(sendVerificationEmail).not.toHaveBeenCalled();
+  });
+
+  it("should handle race conditions via the 23505 error catch", async () => {
+    const signupData = {
+      email: "race@condition.com",
+      password: "password123",
+      username: "racer",
+    };
+
+    const dbError = Object.assign(new Error("Unique violation"), {
+      code: "23505",
+    });
+
+    const signupSpy = vi
+      .spyOn(authModel, "signupModel")
+      .mockRejectedValueOnce(dbError);
+
+    const result = await signupService(signupData);
+
+    expect(result.ok).toBe(true);
+
+    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledWith(signupData.email);
+    expect(authModel.signupModel).toHaveBeenCalled();
+    signupSpy.mockRestore();
+  });
+
+  it("should rollback user creation if the verification token fails to generate", async () => {
+    const signupData = {
+      email: "ghost@gmail.com",
+      password: "password123",
+      username: "ghostuser",
+    };
+
+    vi.spyOn(tokenModel, "createVerificationToken").mockRejectedValueOnce(
+      new Error("Token generation failed"),
+    );
+
+    await expect(signupService(signupData)).rejects.toThrow(
+      "Token generation failed",
+    );
+
+    const user = await getUserByEmail(signupData.email);
+    expect(user).toBeUndefined();
   });
 });

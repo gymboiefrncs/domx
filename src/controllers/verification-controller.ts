@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import {
-  verificationService,
+  validateOtp,
   resendVerificationService,
 } from "../services/verification-service.js";
 
@@ -10,7 +10,7 @@ export const verificationController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const result = await verificationService(req.body);
+    const result = await validateOtp(req.body);
     const statusCode = result.ok ? 200 : 400;
     res.status(statusCode).json({
       success: result.ok,

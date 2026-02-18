@@ -1,18 +1,18 @@
 import { pool } from "../config/db.js";
 import {
-  createVerificationToken,
-  findToken,
-  incrementTokenRetries,
-  invalidateAllTokensForUser,
-  markTokenUsed,
-  markUserVerified,
+  createSignupOtp,
+  fetchOtp,
+  incrementRetries,
+  invalidateOldOtps,
+  markTokenAsUsed,
+  markUserAsVerified,
 } from "../models/verification-model.js";
 import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../utils/sendEmail.js";
-import { getVerificationStatus } from "../models/auth-model.js";
+import { fetchUserForSignup } from "../models/auth-model.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import type { Result } from "../common/types.js";
 
@@ -24,7 +24,7 @@ import type { Result } from "../common/types.js";
  * - implements retry limits to prevent brute-force attacks, invalidating tokens after 5 failed attempts
  * - ensures expired tokens cannot be used, providing clear error messages for different failure scenarios
  */
-export const verificationService = async ({
+export const validateOtp = async ({
   email,
   otp,
 }: {
@@ -38,11 +38,11 @@ export const verificationService = async ({
   try {
     await client.query("BEGIN");
 
-    // find the user associated with the OTP
-    const record = await findToken(email, client);
+    // get the user associated with the OTP
+    const otpRecord = await fetchOtp(email, client);
 
     // ensure a verification request actually exists
-    if (!record) {
+    if (!otpRecord) {
       await client.query("ROLLBACK");
       return {
         ok: false,
@@ -51,21 +51,21 @@ export const verificationService = async ({
     }
 
     // verify lifecycle status: used and expired tokens are invalid
-    if (record.used_at || record.expires_at < new Date()) {
+    if (otpRecord.used_at || otpRecord.expires_at < new Date()) {
       await client.query("ROLLBACK");
       return { ok: false, reason: "OTP is invalid or expired" };
     }
 
     // to prevent timing attacks
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(record.otp_hash, "hex"),
+    const isOtpValid = crypto.timingSafeEqual(
+      Buffer.from(otpRecord.otp_hash, "hex"),
       Buffer.from(hashedOTP, "hex"),
     );
 
-    if (!isMatch) {
-      const newRetryCount = await incrementTokenRetries(
-        record.user_id,
-        record.id,
+    if (!isOtpValid) {
+      const newRetryCount = await incrementRetries(
+        otpRecord.user_id,
+        otpRecord.id,
         client,
       );
 
@@ -77,9 +77,9 @@ export const verificationService = async ({
         };
       }
 
-      // invalidate all tokens after 5 failed attempts to prevent brute force attacks
+      // invalidate otps after 5 failed attempts to prevent brute force attacks
       if (newRetryCount >= 5) {
-        await invalidateAllTokensForUser(record.user_id, client);
+        await invalidateOldOtps(otpRecord.user_id, client);
         await client.query("COMMIT");
         return {
           ok: false,
@@ -91,8 +91,8 @@ export const verificationService = async ({
       return { ok: false, reason: "OTP is invalid or expired" };
     }
 
-    await markUserVerified(record.user_id, client);
-    await markTokenUsed(record.id, hashedOTP, client);
+    await markUserAsVerified(otpRecord.user_id, client);
+    await markTokenAsUsed(otpRecord.id, hashedOTP, client);
 
     await client.query("COMMIT");
     return { ok: true, message: "Email verified successfully" };
@@ -114,7 +114,7 @@ export const resendVerificationService = async (
   try {
     await client.query("BEGIN");
 
-    const verification = await getVerificationStatus(email, client);
+    const verification = await fetchUserForSignup(email, client);
 
     // if user not found, return generic message to prevent enumeration attacks
     if (!verification) {
@@ -136,13 +136,8 @@ export const resendVerificationService = async (
     }
 
     // invalidate all previous tokens for the user before creating a new one
-    await invalidateAllTokensForUser(verification.id, client);
-    await createVerificationToken(
-      verification.id,
-      hashedOTP,
-      expiresAt,
-      client,
-    );
+    await invalidateOldOtps(verification.id, client);
+    await createSignupOtp(verification.id, hashedOTP, expiresAt, client);
 
     await client.query("COMMIT");
 

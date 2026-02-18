@@ -15,7 +15,7 @@ export const createSignupOtp = async (
   await client.query(query, values);
 };
 
-export const incrementTokenRetries = async (
+export const incrementRetries = async (
   userId: string,
   id: string,
   client: PoolClient,
@@ -26,7 +26,7 @@ export const incrementTokenRetries = async (
   return result.rows[0]?.retries;
 };
 
-export const findToken = async (
+export const fetchOtp = async (
   email: string,
   client: PoolClient,
 ): Promise<UserVerificationStatus | undefined> => {
@@ -40,7 +40,7 @@ export const findToken = async (
   return result.rows[0];
 };
 
-export const markTokenUsed = async (
+export const markTokenAsUsed = async (
   id: string,
   hashedOTP: string,
   client: PoolClient,
@@ -51,7 +51,7 @@ export const markTokenUsed = async (
   );
 };
 
-export const markUserVerified = async (
+export const markUserAsVerified = async (
   userId: string,
   client: PoolClient,
 ): Promise<void> => {

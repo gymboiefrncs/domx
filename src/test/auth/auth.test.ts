@@ -1,7 +1,7 @@
 import { describe, vi, beforeEach, it, expect, afterEach } from "vitest";
-import { signupService } from "../../services/auth-service.js";
+import { registerUser } from "../../services/auth-service.js";
 import { pool, resetDB } from "../../config/db.js";
-import { getUserByEmail } from "../../models/auth-model.js";
+import { fetchUserByEmail } from "../../models/auth-model.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
@@ -31,8 +31,8 @@ describe("Auth integration - Signup", () => {
       username: "sampleuser",
     };
 
-    const result = await signupService(signupData);
-    const user = await getUserByEmail(signupData.email);
+    const result = await registerUser(signupData);
+    const user = await fetchUserByEmail(signupData.email);
 
     expect(result.ok).toBe(true);
     expect(result.message).toBe(
@@ -69,7 +69,7 @@ describe("Auth integration - Signup", () => {
     );
 
     // sign up again with the same email
-    const result = await signupService(signupData);
+    const result = await registerUser(signupData);
 
     // should still be only one user
     const rows = await pool.query(
@@ -96,12 +96,12 @@ describe("Auth integration - Signup", () => {
     };
 
     // pre-insert an unverified user
-    const result1 = await signupService(signupData);
+    const result1 = await registerUser(signupData);
 
-    const user = await getUserByEmail(signupData.email);
+    const user = await fetchUserByEmail(signupData.email);
 
     // sign up again with the same email to trigger OTP rotation
-    const result2 = await signupService(signupData);
+    const result2 = await registerUser(signupData);
 
     // should still be only one otp after signing up again
     const newToken = await pool.query(
@@ -136,12 +136,12 @@ describe("Auth integration - Signup", () => {
     };
 
     // first signup
-    const result1 = await signupService(signupData);
+    const result1 = await registerUser(signupData);
 
     vi.setSystemTime(new Date(Date.now() + 2 * 60 * 1000 + 5000)); // advance time by 2 minutes and 1 second
 
     // second signup with same email
-    const result2 = await signupService(signupData);
+    const result2 = await registerUser(signupData);
 
     expect(result1.ok).toBe(true);
     expect(result1.message).toBe(
@@ -160,9 +160,9 @@ describe("Auth integration - Signup", () => {
       username: "concurrentuser",
     };
 
-    await signupService(signupData); // create unverified user
+    await registerUser(signupData); // create unverified user
 
-    const user = await getUserByEmail(signupData.email);
+    const user = await fetchUserByEmail(signupData.email);
 
     await pool.query(
       `
@@ -174,8 +174,8 @@ describe("Auth integration - Signup", () => {
     );
 
     const [result1, result2] = await Promise.all([
-      signupService(signupData),
-      signupService(signupData),
+      registerUser(signupData),
+      registerUser(signupData),
     ]);
 
     // verify that only one verification token exists
@@ -210,8 +210,8 @@ describe("Auth integration - Signup", () => {
 
     // simulate two concurrent signups with the same email
     const [result1, result2] = await Promise.all([
-      signupService(signupData),
-      signupService(signupData),
+      registerUser(signupData),
+      registerUser(signupData),
     ]);
 
     expect(result1.ok).toBe(true);

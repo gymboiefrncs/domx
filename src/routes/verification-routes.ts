@@ -1,7 +1,7 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
-  resendVerificationController,
+  resendOtpHandler,
   verificationHandler,
 } from "../controllers/verification-controller.js";
 import {
@@ -25,5 +25,5 @@ verificationRouter.post(
   "/resend-otp",
   verificationLimiter,
   emailValidator,
-  resendVerificationController,
+  resendOtpHandler,
 );

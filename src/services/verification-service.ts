@@ -105,19 +105,17 @@ export const validateOtp = async ({
 };
 
 // re-issues a verification code for unverified users.
-export const resendVerificationService = async (
-  email: string,
-): Promise<Result> => {
+export const resendOtp = async (email: string): Promise<Result> => {
   const { otp, hashedOTP, expiresAt } = generateOTP();
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    const verification = await fetchUserForSignup(email, client);
+    const user = await fetchUserForSignup(email, client);
 
     // if user not found, return generic message to prevent enumeration attacks
-    if (!verification) {
+    if (!user) {
       await client.query("ROLLBACK");
       return {
         ok: true,
@@ -126,7 +124,7 @@ export const resendVerificationService = async (
     }
 
     // handles already verified users
-    if (verification.is_verified) {
+    if (user.is_verified) {
       await client.query("ROLLBACK");
       await sendAlreadyRegisteredEmail(email);
       return {
@@ -136,12 +134,12 @@ export const resendVerificationService = async (
     }
 
     // invalidate all previous tokens for the user before creating a new one
-    await invalidateOldOtps(verification.id, client);
-    await createSignupOtp(verification.id, hashedOTP, expiresAt, client);
+    await invalidateOldOtps(user.id, client);
+    await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
     await client.query("COMMIT");
 
-    await sendVerificationEmail(verification.email, otp);
+    await sendVerificationEmail(user.email, otp);
 
     return {
       ok: true,

@@ -1,8 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import {
-  validateOtp,
-  resendVerificationService,
-} from "../services/verification-service.js";
+import { validateOtp, resendOtp } from "../services/verification-service.js";
 
 export const verificationHandler = async (
   req: Request,
@@ -22,13 +19,13 @@ export const verificationHandler = async (
   }
 };
 
-export const resendVerificationController = async (
+export const resendOtpHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const result = await resendVerificationService(req.body.email);
+    const result = await resendOtp(req.body.email);
     const statusCode = result.ok ? 200 : 400;
     res.status(statusCode).json({
       success: result.ok,

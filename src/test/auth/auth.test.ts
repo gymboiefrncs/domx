@@ -128,7 +128,7 @@ describe("Auth integration - Signup", () => {
     );
   });
 
-  it("should allow OTP rotation if more then 2 minutes have passed since last OTP", async () => {
+  it("should allow OTP rotation if more than 2 minutes have passed since last OTP", async () => {
     const signupData = {
       email: "rotated@example.com",
       password: "password123",
@@ -164,6 +164,7 @@ describe("Auth integration - Signup", () => {
 
     const user = await fetchUserByEmail(signupData.email);
 
+    // manually set the created_at of the OTP to more than 2 minutes ago to allow OTP rotation
     await pool.query(
       `
       UPDATE email_verification
@@ -178,8 +179,8 @@ describe("Auth integration - Signup", () => {
       registerUser(signupData),
     ]);
 
-    // verify that only one verification token exists
-    const tokenCount = await pool.query(
+    // verify that only one verification otp exists
+    const otpCount = await pool.query(
       "SELECT COUNT(*) FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
     );
@@ -198,7 +199,7 @@ describe("Auth integration - Signup", () => {
       signupData.email,
       expect.any(String),
     );
-    expect(tokenCount.rows[0].count).toBe("1");
+    expect(otpCount.rows[0].count).toBe("1");
   });
 
   it("should handle real unique constraint (23505) during concurrent signup", async () => {
@@ -237,6 +238,6 @@ describe("Auth integration - Signup", () => {
       signupData.email,
       expect.any(String),
     );
-    expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
+    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledOnce();
   });
 });

@@ -185,7 +185,6 @@ describe("Auth integration - Signup", () => {
     );
 
     const messages = [result1.message, result2.message];
-    console.log(messages);
     // we cannot guarantee which request will get the  lock first, so we just check that both possible messages are returned and that only one verification email is sent
     expect(messages).toContain(
       "Verification email sent. Please check your email",
@@ -233,5 +232,11 @@ describe("Auth integration - Signup", () => {
 
     // catch block should have triggered for one of the requests due to unique constraint violation
     expect(sendAlreadyRegisteredEmail).toHaveBeenCalledWith(signupData.email);
+    expect(sendVerificationEmail).toHaveBeenCalledOnce();
+    expect(sendVerificationEmail).toHaveBeenCalledWith(
+      signupData.email,
+      expect.any(String),
+    );
+    expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
   });
 });

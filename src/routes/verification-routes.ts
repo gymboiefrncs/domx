@@ -2,7 +2,7 @@ import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
   resendVerificationController,
-  verificationController,
+  verificationHandler,
 } from "../controllers/verification-controller.js";
 import {
   emailValidator,
@@ -19,7 +19,7 @@ const verificationLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-verificationRouter.post("/verify-email", OTPValidator, verificationController);
+verificationRouter.post("/verify-email", OTPValidator, verificationHandler);
 
 verificationRouter.post(
   "/resend-otp",

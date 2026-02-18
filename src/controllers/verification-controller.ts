@@ -4,7 +4,7 @@ import {
   resendVerificationService,
 } from "../services/verification-service.js";
 
-export const verificationController = async (
+export const verificationHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,

@@ -1,11 +1,11 @@
 import {
   deleteOldRefreshToken,
-  getTokenByJTI,
-  getUserByEmail,
-  getUserById,
+  fetchTokenByJti,
+  fetchUserByEmail,
+  fetchUserById,
   fetchUserForSignup,
   createUser,
-  insertToken,
+  createToken,
   getLatestOTP,
 } from "../models/auth-model.js";
 import {
@@ -119,10 +119,10 @@ export const registerUser = async (
   }
 };
 
-export const loginService = async (
+export const loginUser = async (
   data: Pick<User, "email" | "password">,
 ): Promise<Tokens> => {
-  const user = await getUserByEmail(data.email);
+  const user = await fetchUserByEmail(data.email);
 
   // to prevent timing attacks
   const passwordMatch = await bcrypt.compare(
@@ -142,22 +142,22 @@ export const loginService = async (
     jti,
   );
 
-  const tokenHash = crypto
+  const hashedToken = crypto
     .createHash("sha256")
     .update(refreshToken)
     .digest("hex");
 
-  await insertToken(
+  await createToken(
     jti,
     user.id,
-    tokenHash,
+    hashedToken,
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   );
 
   return { accessToken, refreshToken };
 };
 
-export const refreshService = async (
+export const rotateTokens = async (
   oldRefreshToken: string,
 ): Promise<Tokens> => {
   const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
@@ -165,19 +165,19 @@ export const refreshService = async (
   const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
   const userId = payload.userId as string;
 
-  const storedToken = await getTokenByJTI(payload.jti as string);
-  if (!storedToken)
+  const storedRefreshToken = await fetchTokenByJti(payload.jti as string);
+  if (!storedRefreshToken)
     throw new UnauthorizedError("Session expired, please login again");
 
-  const incomingHash = crypto
+  const hashedOldRefreshToken = crypto
     .createHash("sha256")
     .update(oldRefreshToken)
     .digest("hex");
 
-  if (storedToken.token_hash !== incomingHash)
+  if (storedRefreshToken.token_hash !== hashedOldRefreshToken)
     throw new UnauthorizedError("Session expired, please login again");
 
-  const user = await getUserById(userId);
+  const user = await fetchUserById(userId);
   if (!user) throw new UnauthorizedError("Session expired, please login again");
 
   await deleteOldRefreshToken(payload.jti as string);
@@ -190,15 +190,15 @@ export const refreshService = async (
     newJti,
   );
 
-  const newTokenHash = crypto
+  const hashedNewRefreshToken = crypto
     .createHash("sha256")
     .update(refreshToken)
     .digest("hex");
 
-  await insertToken(
+  await createToken(
     newJti,
     userId,
-    newTokenHash,
+    hashedNewRefreshToken,
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   );
 

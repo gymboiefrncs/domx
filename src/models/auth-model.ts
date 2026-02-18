@@ -21,7 +21,7 @@ export const createUser = async (
   return result.rows[0]!;
 };
 
-export const getUserByEmail = async (
+export const fetchUserByEmail = async (
   email: string,
 ): Promise<User | undefined> => {
   const query = "SELECT * FROM users WHERE email = $1";
@@ -31,7 +31,7 @@ export const getUserByEmail = async (
   return result.rows[0];
 };
 
-export const getUserById = async (
+export const fetchUserById = async (
   id: string,
 ): Promise<Pick<User, "id" | "role"> | undefined> => {
   const query = "SELECT id, role FROM users WHERE id = $1";
@@ -54,7 +54,7 @@ export const fetchUserForSignup = async (
   return result.rows[0];
 };
 
-export const insertToken = async (
+export const createToken = async (
   jti: string,
   userId: string,
   refreshToken: string,
@@ -64,7 +64,7 @@ export const insertToken = async (
   await pool.query(query, [jti, userId, refreshToken, expiresAt]);
 };
 
-export const getTokenByJTI = async (jti: string) => {
+export const fetchTokenByJti = async (jti: string) => {
   const query = `SELECT * FROM refresh_token WHERE jti = $1`;
   const result = await pool.query(query, [jti]);
   return result.rows[0];

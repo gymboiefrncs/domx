@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import {
   registerUser,
-  loginService,
-  refreshService,
+  loginUser,
+  rotateTokens,
   logoutService,
 } from "../services/auth-service.js";
 
@@ -23,13 +23,13 @@ export const signupHandler = async (
   }
 };
 
-export const loginController = async (
+export const loginHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { refreshToken, accessToken } = await loginService(req.body);
+    const { refreshToken, accessToken } = await loginUser(req.body);
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -50,14 +50,14 @@ export const loginController = async (
   }
 };
 
-export const refreshController = async (
+export const rotateTokensHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
-    const { accessToken, refreshToken } = await refreshService(oldRefreshToken);
+    const { accessToken, refreshToken } = await rotateTokens(oldRefreshToken);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,

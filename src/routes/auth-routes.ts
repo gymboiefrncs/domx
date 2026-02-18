@@ -1,9 +1,9 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import {
-  loginController,
+  loginHandler,
   logoutController,
-  refreshController,
+  rotateTokensHandler,
   signupHandler,
 } from "../controllers/auth-controller.js";
 import {
@@ -30,6 +30,6 @@ const refreshLimiter = rateLimit({
 });
 
 authRouter.post("/auth/signup", authLimiter, signupValidator, signupHandler);
-authRouter.post("/auth/login", authLimiter, loginValidator, loginController);
-authRouter.post("/auth/refresh", refreshLimiter, refreshController);
+authRouter.post("/auth/login", authLimiter, loginValidator, loginHandler);
+authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post("/auth/logout", logoutController);

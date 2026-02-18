@@ -24,7 +24,7 @@ import {
 import { pool } from "../config/db.js";
 import { generateOTP } from "../utils/generateOTP.js";
 import * as jose from "jose";
-import { generateTokens } from "./generateToken.js";
+import { generateTokens } from "../utils/generateToken.js";
 import type { Result } from "../common/types.js";
 
 /**

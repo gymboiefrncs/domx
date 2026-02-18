@@ -106,6 +106,7 @@ export const registerUser = async (
     await client.query("ROLLBACK");
 
     // Catch unique constraint violation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any).code === "23505") {
       await sendAlreadyRegisteredEmail(data.email);
       return {

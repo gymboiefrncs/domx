@@ -3,7 +3,7 @@ import {
   registerUser,
   loginUser,
   rotateTokens,
-  logoutService,
+  logoutUser,
 } from "../services/auth-service.js";
 
 export const signupHandler = async (
@@ -78,14 +78,14 @@ export const rotateTokensHandler = async (
   }
 };
 
-export const logoutController = async (
+export const logoutHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    const result = await logoutService(refreshToken);
+    const result = await logoutUser(refreshToken);
     res.clearCookie("refreshToken");
     res.clearCookie("accessToken");
     res.status(200).json({

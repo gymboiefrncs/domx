@@ -205,7 +205,7 @@ export const rotateTokens = async (
   return { accessToken, refreshToken };
 };
 
-export const logoutService = async (refreshToken: string): Promise<Result> => {
+export const logoutUser = async (refreshToken: string): Promise<Result> => {
   const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 
   const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);

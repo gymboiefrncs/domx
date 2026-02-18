@@ -4,7 +4,7 @@ import {
   loginController,
   logoutController,
   refreshController,
-  signupController,
+  signupHandler,
 } from "../controllers/auth-controller.js";
 import {
   loginValidator,
@@ -29,7 +29,7 @@ const refreshLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-authRouter.post("/auth/signup", authLimiter, signupValidator, signupController);
+authRouter.post("/auth/signup", authLimiter, signupValidator, signupHandler);
 authRouter.post("/auth/login", authLimiter, loginValidator, loginController);
 authRouter.post("/auth/refresh", refreshLimiter, refreshController);
 authRouter.post("/auth/logout", logoutController);

@@ -1,7 +1,7 @@
 import type { PoolClient } from "pg";
 import type { UserVerificationStatus } from "../common/types.js";
 
-export const createVerificationToken = async (
+export const createSignupOtp = async (
   userId: string,
   hashedOTP: string,
   expiresAt: Date,
@@ -60,7 +60,7 @@ export const markUserVerified = async (
   ]);
 };
 
-export const invalidateAllTokensForUser = async (
+export const invalidateOldOtps = async (
   userId: string,
   client: PoolClient,
 ): Promise<void> => {

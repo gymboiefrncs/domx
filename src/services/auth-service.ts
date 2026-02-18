@@ -3,14 +3,14 @@ import {
   getTokenByJTI,
   getUserByEmail,
   getUserById,
-  getVerificationStatus,
-  signupModel,
+  fetchUserForSignup,
+  createUser,
   insertToken,
   getLatestOTP,
 } from "../models/auth-model.js";
 import {
-  createVerificationToken,
-  invalidateAllTokensForUser,
+  createSignupOtp,
+  invalidateOldOtps,
 } from "../models/verification-model.js";
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
@@ -33,10 +33,10 @@ import type { Result } from "../common/types.js";
  * Workflow:
  * 1. Transaction Start: Locks user record (if exists) via FOR UPDATE.
  * 2. If Verified: Rollback and notify user they already have an account.
- * 3. If Unverified: Invalidate old tokens, rotate to a new OTP, and Commit.
+ * 3. If Unverified: Invalidate old otps, rotate to a new OTP, and Commit.
  * 4. If New User: Hash password, create record, and Commit.
  */
-export const signupService = async (
+export const registerUser = async (
   data: SignupSchema,
 ): Promise<{ ok: true; message: string }> => {
   const { password, ...rest } = data;
@@ -45,12 +45,12 @@ export const signupService = async (
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const verification = await getVerificationStatus(data.email, client);
+    const user = await fetchUserForSignup(data.email, client);
 
-    if (verification) {
-      if (verification.is_verified) {
+    if (user) {
+      if (user.is_verified) {
         await client.query("ROLLBACK");
-        await sendAlreadyRegisteredEmail(verification.email);
+        await sendAlreadyRegisteredEmail(user.email);
         return {
           ok: true,
           message: "Verification email sent. Please check your email",
@@ -59,25 +59,20 @@ export const signupService = async (
 
       /**
        * if user exist but not yet verified
-       *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old tokens
+       *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old otps
        *  - else, prevent OTP rotation and ask user to wait
        */
-      const latestToken = await getLatestOTP(verification.id, client);
+      const latestOTP = await getLatestOTP(user.id, client);
       if (
-        !latestToken ||
-        Date.now() - latestToken.created_at.getTime() > 2 * 60 * 1000
+        !latestOTP ||
+        Date.now() - latestOTP.created_at.getTime() > 2 * 60 * 1000
       ) {
-        await invalidateAllTokensForUser(verification.id, client);
-        await createVerificationToken(
-          verification.id,
-          hashedOTP,
-          expiresAt,
-          client,
-        );
+        await invalidateOldOtps(user.id, client);
+        await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
         await client.query("COMMIT");
 
-        await sendVerificationEmail(verification.email, otp);
+        await sendVerificationEmail(user.email, otp);
 
         return {
           ok: true,
@@ -94,17 +89,15 @@ export const signupService = async (
     }
 
     // if new user, create account and send verification email
-    const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS);
-    const saltRounds =
-      saltRoundsEnv >= 10 && saltRoundsEnv <= 15 ? saltRoundsEnv : 10;
-    const hash = await bcrypt.hash(password, saltRounds);
+    const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRoundsEnv);
 
-    const result = await signupModel(hash, rest, client);
-    await createVerificationToken(result.id, hashedOTP, expiresAt, client);
+    const newUser = await createUser(hashedPassword, rest, client);
+    await createSignupOtp(newUser.id, hashedOTP, expiresAt, client);
 
     await client.query("COMMIT");
 
-    await sendVerificationEmail(result.email, otp);
+    await sendVerificationEmail(newUser.email, otp);
     return {
       ok: true,
       message: "Verification email sent. Please check your email",
@@ -112,9 +105,7 @@ export const signupService = async (
   } catch (error) {
     await client.query("ROLLBACK");
 
-    /**
-     * Catch unique constraint violation
-     */
+    // Catch unique constraint violation
     if ((error as any).code === "23505") {
       await sendAlreadyRegisteredEmail(data.email);
       return {

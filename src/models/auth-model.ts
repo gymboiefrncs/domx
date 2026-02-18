@@ -3,7 +3,7 @@ import { pool } from "../config/db.js";
 import type { EmailVerification, User } from "../common/types.js";
 import type { PoolClient } from "pg";
 
-export const signupModel = async (
+export const createUser = async (
   hashedPassword: string,
   data: Omit<SignupSchema, "password">,
   client: PoolClient,
@@ -39,7 +39,7 @@ export const getUserById = async (
   return result.rows[0];
 };
 
-export const getVerificationStatus = async (
+export const fetchUserForSignup = async (
   email: string,
   client: PoolClient,
 ): Promise<Pick<User, "id" | "is_verified" | "email"> | undefined> => {

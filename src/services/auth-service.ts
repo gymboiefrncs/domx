@@ -4,14 +4,8 @@ import {
   fetchUserByEmail,
   fetchUserById,
   fetchUserForSignup,
-  createUser,
   createToken,
-  getLatestOTP,
 } from "../models/auth-model.js";
-import {
-  createSignupOtp,
-  invalidateOldOtps,
-} from "../models/verification-model.js";
 import type { SignupSchema } from "../schemas/auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -26,93 +20,69 @@ import { generateOTP } from "../utils/generateOTP.js";
 import * as jose from "jose";
 import { generateTokens } from "../utils/generateToken.js";
 import type { Result } from "../common/types.js";
+import { handleVerifiedUser } from "../utils/auth-helpers/handleVerifiedUser.js";
+import { handleUnverifiedUser } from "../utils/auth-helpers/handleUnverifiedUser.js";
+import { handleNewUser } from "../utils/auth-helpers/handleNewUser.js";
 
-/**
- * Handles user registration logic with locking.
- *
- * Workflow:
- * 1. Transaction Start: Locks user record (if exists) via FOR UPDATE.
- * 2. If Verified: Rollback and notify user they already have an account.
- * 3. If Unverified: Invalidate old otps, rotate to a new OTP, and Commit.
- * 4. If New User: Hash password, create record, and Commit.
- */
+export const EMAIL_MESSAGE = "Verification email sent. Please check your email";
+export const COOLDOWN_MESSAGE =
+  "Verification email just sent. Please wait a moment before requesting again";
+
 export const registerUser = async (
   data: SignupSchema,
 ): Promise<{ ok: true; message: string }> => {
   const { password, ...rest } = data;
-  const { otp, hashedOTP, expiresAt } = generateOTP();
+  const otpData = generateOTP();
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const user = await fetchUserForSignup(data.email, client);
 
+    // user exist but verified, prevent registration and send email about existing account
+    if (user?.is_verified) {
+      await client.query("ROLLBACK");
+      return handleVerifiedUser(user.email);
+    }
+
+    /**
+     * if user exist but not yet verified
+     *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old otps
+     *  - else, prevent OTP rotation and ask user to wait
+     */
     if (user) {
-      if (user.is_verified) {
+      const result = await handleUnverifiedUser(user, otpData, client);
+      if (result.message === COOLDOWN_MESSAGE) {
         await client.query("ROLLBACK");
-        await sendAlreadyRegisteredEmail(user.email);
-        return {
-          ok: true,
-          message: "Verification email sent. Please check your email",
-        };
-      }
-
-      /**
-       * if user exist but not yet verified
-       *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old otps
-       *  - else, prevent OTP rotation and ask user to wait
-       */
-      const latestOTP = await getLatestOTP(user.id, client);
-      if (
-        !latestOTP ||
-        Date.now() - latestOTP.created_at.getTime() > 2 * 60 * 1000
-      ) {
-        await invalidateOldOtps(user.id, client);
-        await createSignupOtp(user.id, hashedOTP, expiresAt, client);
-
-        await client.query("COMMIT");
-
-        await sendVerificationEmail(user.email, otp);
-
-        return {
-          ok: true,
-          message: "Verification email sent. Please check your email",
-        };
       } else {
-        await client.query("ROLLBACK");
-        return {
-          ok: true,
-          message:
-            "Verification email just sent. Please wait a moment before requesting again",
-        };
+        await client.query("COMMIT");
+        sendVerificationEmail(user.email, otpData.otp).catch((error) => {
+          console.error("Failed to send verification email:", error);
+        });
+        return { ok: true, message: EMAIL_MESSAGE };
       }
+
+      return result;
     }
 
     // if new user, create account and send verification email
-    const saltRoundsEnv = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
-    const hashedPassword = await bcrypt.hash(password, saltRoundsEnv);
-
-    const newUser = await createUser(hashedPassword, rest, client);
-    await createSignupOtp(newUser.id, hashedOTP, expiresAt, client);
-
+    await handleNewUser(rest, password, otpData, client);
     await client.query("COMMIT");
+    sendVerificationEmail(data.email, otpData.otp).catch((error) => {
+      console.error("Failed to send verification email:", error);
+    });
 
-    await sendVerificationEmail(newUser.email, otp);
-    return {
-      ok: true,
-      message: "Verification email sent. Please check your email",
-    };
+    return { ok: true, message: EMAIL_MESSAGE };
   } catch (error) {
     await client.query("ROLLBACK");
 
     // Catch unique constraint violation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any).code === "23505") {
-      await sendAlreadyRegisteredEmail(data.email);
-      return {
-        ok: true,
-        message: "Verification email sent. Please check your email",
-      };
+      sendAlreadyRegisteredEmail(data.email).catch((error) => {
+        console.error("Failed to send already registered email:", error);
+      });
+      return { ok: true, message: EMAIL_MESSAGE };
     }
     throw error;
   } finally {

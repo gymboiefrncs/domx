@@ -8,8 +8,8 @@ import {
 } from "../../utils/sendEmail.js";
 
 vi.mock("../../utils/sendEmail", () => ({
-  sendVerificationEmail: vi.fn(),
-  sendAlreadyRegisteredEmail: vi.fn(),
+  sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
+  sendAlreadyRegisteredEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe("Auth integration - Signup", () => {

@@ -27,7 +27,6 @@ describe("Auth integration - Signup", () => {
   it("should create a new user with correct data", async () => {
     const signupData = {
       email: "sample@gmail.com",
-      password: "password123",
       username: "sampleuser",
     };
 
@@ -41,7 +40,6 @@ describe("Auth integration - Signup", () => {
     expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
 
     expect(otp).toBeDefined();
-    expect(user?.password).not.toBe(signupData.password);
 
     expect(user).toMatchObject({
       email: signupData.email,
@@ -54,7 +52,6 @@ describe("Auth integration - Signup", () => {
   it("should not create a new user if email is already verified", async () => {
     const signupData = {
       email: "verified@example.com",
-      password: "password123",
       username: "verifieduser",
     };
 
@@ -67,16 +64,14 @@ describe("Auth integration - Signup", () => {
     // sign up again with the same email
     const result = await registerUser({
       ...signupData,
-      password: "newpassword123",
       username: "newusername",
     });
 
     const user = await fetchUserByEmail(signupData.email);
     expect(user).toBeDefined();
 
-    // should not update username and password
+    // should not update username
     expect(user?.username).toBe(signupData.username);
-    expect(user?.password).toBe("hashed_pw");
 
     expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
   });
@@ -84,7 +79,6 @@ describe("Auth integration - Signup", () => {
   it("should not rotate OTP if cooldown is active", async () => {
     const signupData = {
       email: "unverified@example.com",
-      password: "password123",
       username: "unverifieduser",
     };
 
@@ -113,7 +107,6 @@ describe("Auth integration - Signup", () => {
   it("should rotate OTP after the 2 minute cooldown expires", async () => {
     const signupData = {
       email: "rotated@example.com",
-      password: "password123",
       username: "rotateduser",
     };
 
@@ -144,7 +137,6 @@ describe("Auth integration - Signup", () => {
   it("should only create one verifitcation token if multiple concurrent signups with the same unverified email", async () => {
     const signupData = {
       email: "concurrent@example.com",
-      password: "password123",
       username: "concurrentuser",
     };
 
@@ -183,7 +175,6 @@ describe("Auth integration - Signup", () => {
   it("should handle real unique constraint (23505) during concurrent signup", async () => {
     const signupData = {
       email: "realrace@example.com",
-      password: "password123",
       username: "realracer",
     };
 

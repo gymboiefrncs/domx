@@ -31,7 +31,7 @@ export const COOLDOWN_MESSAGE =
 export const registerUser = async (
   data: SignupSchema,
 ): Promise<{ ok: true; message: string }> => {
-  const { password, ...rest } = data;
+  const { ...rest } = data;
   const otpData = generateOTP();
 
   const client = await pool.connect();
@@ -61,7 +61,7 @@ export const registerUser = async (
     }
 
     // New user
-    await handleNewUser(rest, password, otpData, client);
+    await handleNewUser(rest, otpData, client);
     await client.query("COMMIT");
     sendVerificationEmail(data.email, otpData.otp).catch((error) => {
       console.error("Failed to email:", error);

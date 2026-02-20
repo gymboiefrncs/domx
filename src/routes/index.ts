@@ -1,8 +1,8 @@
-import { authRouter } from "./auth-routes.js";
-import { postRouter } from "./post-routes.js";
-import { verificationRouter } from "./verification-routes.js";
+import { authRouter } from "../features/auth/auth-routes.js";
+import { postRouter } from "../features/post/post-routes.js";
+import { verificationRouter } from "../features/verification/verification-routes.js";
 import express, { type Router } from "express";
-import { profileRouter } from "./profile-routes.js";
+import { profileRouter } from "../features/profile/profile-routes.js";
 
 export const routes: Router = express.Router();
 

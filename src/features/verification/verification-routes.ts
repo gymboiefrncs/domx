@@ -3,11 +3,8 @@ import rateLimit from "express-rate-limit";
 import {
   resendOtpHandler,
   verificationHandler,
-} from "../controllers/verification-controller.js";
-import {
-  emailValidator,
-  OTPValidator,
-} from "../validators/verification-validator.js";
+} from "./verification-controller.js";
+import { emailValidator, OTPValidator } from "./verification-validator.js";
 
 export const verificationRouter: Router = express.Router();
 

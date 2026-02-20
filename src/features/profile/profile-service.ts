@@ -1,6 +1,6 @@
-import type { Result } from "../common/types.js";
-import { profileModel } from "../models/profile-model.js";
-import { NotFoundError, UnauthorizedError } from "../utils/error.js";
+import type { Result } from "../../common/types.js";
+import { profileModel } from "./profile-model.js";
+import { NotFoundError, UnauthorizedError } from "../../utils/error.js";
 
 export const profileService = async (
   userId: string | undefined,

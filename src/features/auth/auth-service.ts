@@ -5,24 +5,24 @@ import {
   fetchUserById,
   fetchUserForSignup,
   createToken,
-} from "../models/auth-model.js";
-import type { SignupSchema } from "../schemas/auth-schema.js";
+} from "./auth-model.js";
+import type { SignupSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { UnauthorizedError } from "../utils/error.js";
-import type { Role, Tokens, User } from "../common/types.js";
+import { UnauthorizedError } from "../../utils/error.js";
+import type { Role, Tokens, User } from "../../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "../utils/sendEmail.js";
-import { pool } from "../config/db.js";
-import { generateOTP } from "../utils/generateOTP.js";
+} from "../../utils/sendEmail.js";
+import { pool } from "../../config/db.js";
+import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
-import { generateTokens } from "../utils/generateToken.js";
-import type { Result } from "../common/types.js";
-import { handleVerifiedUser } from "../utils/auth-helpers/handleVerifiedUser.js";
-import { handleUnverifiedUser } from "../utils/auth-helpers/handleUnverifiedUser.js";
-import { handleNewUser } from "../utils/auth-helpers/handleNewUser.js";
+import { generateTokens } from "../../utils/generateToken.js";
+import type { Result } from "../../common/types.js";
+import { handleVerifiedUser } from "../../utils/auth-helpers/handleVerifiedUser.js";
+import { handleUnverifiedUser } from "../../utils/auth-helpers/handleUnverifiedUser.js";
+import { handleNewUser } from "../../utils/auth-helpers/handleNewUser.js";
 
 export const EMAIL_MESSAGE = "Verification email sent. Please check your email";
 export const COOLDOWN_MESSAGE =

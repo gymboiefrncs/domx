@@ -1,4 +1,4 @@
-import type { PostSchema } from "../schemas/post-schema.js";
+import type { PostSchema } from "../features/post/post-schema.js";
 
 export type User = {
   id: string;

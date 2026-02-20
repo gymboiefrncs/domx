@@ -1,11 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
-import type { ZodObject } from "zod";
-import { postSchema } from "../schemas/post-schema.js";
-import { ValidationError } from "../utils/error.js";
+import { type ZodObject } from "zod";
+import { loginSchema, signupSchema } from "./auth-schema.js";
+import { ValidationError } from "../../utils/error.js";
 
+// Generic validation middleware factory
 const validate =
   (schema: ZodObject) => (req: Request, _res: Response, next: NextFunction) => {
     const validation = schema.safeParse(req.body);
+
     if (!validation.success) {
       next(
         new ValidationError(
@@ -16,8 +18,10 @@ const validate =
       );
       return;
     }
+
     req.body = validation.data;
     next();
   };
 
-export const postValidator = validate(postSchema);
+export const loginValidator = validate(loginSchema);
+export const signupValidator = validate(signupSchema);

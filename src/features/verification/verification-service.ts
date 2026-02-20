@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from "../../config/db.js";
 import {
   createSignupOtp,
   fetchOtp,
@@ -6,15 +6,15 @@ import {
   invalidateOldOtps,
   markTokenAsUsed,
   markUserAsVerified,
-} from "../models/verification-model.js";
+} from "./verification-model.js";
 import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "../utils/sendEmail.js";
-import { fetchUserForSignup } from "../models/auth-model.js";
-import { generateOTP } from "../utils/generateOTP.js";
-import type { Result } from "../common/types.js";
+} from "../../utils/sendEmail.js";
+import { fetchUserForSignup } from "../auth/auth-model.js";
+import { generateOTP } from "../../utils/generateOTP.js";
+import type { Result } from "../../common/types.js";
 
 /**
  * validates a user-provided OTP against the stored hash

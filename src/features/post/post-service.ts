@@ -1,7 +1,7 @@
-import type { Result } from "../common/types.js";
-import { createPost } from "../models/post-model.js";
-import type { PostSchema } from "../schemas/post-schema.js";
-import { UnauthorizedError } from "../utils/error.js";
+import type { Result } from "../../common/types.js";
+import { createPost } from "./post-model.js";
+import type { PostSchema } from "./post-schema.js";
+import { UnauthorizedError } from "../../utils/error.js";
 
 export const createPostForUser = async (
   userId: string | undefined,

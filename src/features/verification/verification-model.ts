@@ -1,5 +1,5 @@
 import type { PoolClient } from "pg";
-import type { UserVerificationStatus } from "../common/types.js";
+import type { UserVerificationStatus } from "../../common/types.js";
 
 export const createSignupOtp = async (
   userId: string,

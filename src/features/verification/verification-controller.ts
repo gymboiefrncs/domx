@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { validateOtp, resendOtp } from "../services/verification-service.js";
+import { validateOtp, resendOtp } from "./verification-service.js";
 
 export const verificationHandler = async (
   req: Request,

@@ -1,6 +1,6 @@
-import type { SignupSchema } from "../schemas/auth-schema.js";
-import { pool } from "../config/db.js";
-import type { EmailVerification, User } from "../common/types.js";
+import type { SignupSchema } from "./auth-schema.js";
+import { pool } from "../../config/db.js";
+import type { EmailVerification, User } from "../../common/types.js";
 import type { PoolClient } from "pg";
 
 export const createUser = async (

@@ -1,5 +1,5 @@
-import type { Profile } from "../common/types.js";
-import { pool } from "../config/db.js";
+import type { Profile } from "../../common/types.js";
+import { pool } from "../../config/db.js";
 
 export const profileModel = async (
   userid: string,

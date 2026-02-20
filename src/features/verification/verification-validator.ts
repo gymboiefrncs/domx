@@ -1,10 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import { type ZodObject } from "zod";
-import { loginSchema, signupSchema } from "../schemas/auth-schema.js";
-import { ValidationError } from "../utils/error.js";
+import { emailSchema, otpSchema } from "./verification-schema.js";
+import type { ZodObject } from "zod";
+import { ValidationError } from "../../utils/error.js";
 
-// Generic validation middleware factory
-const validate =
+export const validate =
   (schema: ZodObject) => (req: Request, _res: Response, next: NextFunction) => {
     const validation = schema.safeParse(req.body);
 
@@ -23,5 +22,5 @@ const validate =
     next();
   };
 
-export const loginValidator = validate(loginSchema);
-export const signupValidator = validate(signupSchema);
+export const OTPValidator = validate(otpSchema);
+export const emailValidator = validate(emailSchema);

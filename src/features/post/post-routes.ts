@@ -1,8 +1,8 @@
 import express from "express";
 import type { Router } from "express";
-import { jwtHandler } from "../middlewares/jwtHandler.js";
-import { postHandler } from "../controllers/post-controller.js";
-import { postValidator } from "../validators/post-validator.js";
+import { jwtHandler } from "../../middlewares/jwtHandler.js";
+import { postHandler } from "./post-controller.js";
+import { postValidator } from "./post-validator.js";
 
 export const postRouter: Router = express.Router();
 

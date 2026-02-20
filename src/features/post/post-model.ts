@@ -1,5 +1,5 @@
-import { pool } from "../config/db.js";
-import type { PostSchema } from "../schemas/post-schema.js";
+import { pool } from "../../config/db.js";
+import type { PostSchema } from "./post-schema.js";
 
 export const createPost = async (userId: string, data: PostSchema) => {
   const query = `INSERT INTO posts(author_id, title, content) VALUES($1, $2, $3) RETURNING *`;

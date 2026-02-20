@@ -1,11 +1,11 @@
 import { describe, vi, beforeEach, it, expect, afterEach } from "vitest";
-import { registerUser } from "../../services/auth-service.js";
+import { registerUser } from "../../features/auth/auth-service.js";
 import { pool, resetDB } from "../../config/db.js";
-import { fetchUserByEmail } from "../../models/auth-model.js";
+import { fetchUserByEmail } from "../../features/auth/auth-model.js";
 import {
   EMAIL_MESSAGE,
   COOLDOWN_MESSAGE,
-} from "../../services/auth-service.js";
+} from "../../features/auth/auth-service.js";
 
 vi.mock("../../utils/sendEmail", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),

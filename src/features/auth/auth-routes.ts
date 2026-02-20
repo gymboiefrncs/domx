@@ -5,11 +5,8 @@ import {
   logoutHandler,
   rotateTokensHandler,
   signupHandler,
-} from "../controllers/auth-controller.js";
-import {
-  loginValidator,
-  signupValidator,
-} from "../validators/auth-validator.js";
+} from "./auth-controller.js";
+import { loginValidator, signupValidator } from "./auth-validator.js";
 
 export const authRouter: Router = express.Router();
 

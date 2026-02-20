@@ -1,14 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
-import { profileService } from "../services/profile-service.js";
+import { createPostForUser } from "./post-service.js";
 
-export const profileController = async (
+export const postHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const result = await profileService(req.user?.userId);
-    res.status(200).json({
+    const result = await createPostForUser(req.user?.userId, req.body);
+    res.status(201).json({
       success: result.ok,
       message: result.ok ? result.message : result.reason,
       data: result.ok ? result.data : null,

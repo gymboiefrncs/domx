@@ -4,7 +4,7 @@ import {
   loginUser,
   rotateTokens,
   logoutUser,
-} from "../services/auth-service.js";
+} from "./auth-service.js";
 
 export const signupHandler = async (
   req: Request,

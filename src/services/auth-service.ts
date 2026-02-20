@@ -39,25 +39,20 @@ export const registerUser = async (
     await client.query("BEGIN");
     const user = await fetchUserForSignup(data.email, client);
 
-    // user exist but verified, prevent registration and send email about existing account
     if (user?.is_verified) {
       await client.query("ROLLBACK");
       return handleVerifiedUser(user.email);
     }
 
-    /**
-     * if user exist but not yet verified
-     *  - if last OTP sent more than 2 minutes ago, rotate OTP and invalidate old otps
-     *  - else, prevent OTP rotation and ask user to wait
-     */
     if (user) {
       const result = await handleUnverifiedUser(user, otpData, client);
       if (result.message === COOLDOWN_MESSAGE) {
         await client.query("ROLLBACK");
       } else {
         await client.query("COMMIT");
+
         sendVerificationEmail(user.email, otpData.otp).catch((error) => {
-          console.error("Failed to send verification email:", error);
+          console.error("Failed to email:", error);
         });
         return { ok: true, message: EMAIL_MESSAGE };
       }
@@ -65,22 +60,21 @@ export const registerUser = async (
       return result;
     }
 
-    // if new user, create account and send verification email
+    // New user
     await handleNewUser(rest, password, otpData, client);
     await client.query("COMMIT");
     sendVerificationEmail(data.email, otpData.otp).catch((error) => {
-      console.error("Failed to send verification email:", error);
+      console.error("Failed to email:", error);
     });
 
     return { ok: true, message: EMAIL_MESSAGE };
   } catch (error) {
     await client.query("ROLLBACK");
 
-    // Catch unique constraint violation
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any).code === "23505") {
       sendAlreadyRegisteredEmail(data.email).catch((error) => {
-        console.error("Failed to send already registered email:", error);
+        console.error("failed to send email:", error);
       });
       return { ok: true, message: EMAIL_MESSAGE };
     }

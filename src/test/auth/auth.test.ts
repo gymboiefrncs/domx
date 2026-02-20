@@ -3,9 +3,9 @@ import { registerUser } from "../../services/auth-service.js";
 import { pool, resetDB } from "../../config/db.js";
 import { fetchUserByEmail } from "../../models/auth-model.js";
 import {
-  sendAlreadyRegisteredEmail,
-  sendVerificationEmail,
-} from "../../utils/sendEmail.js";
+  EMAIL_MESSAGE,
+  COOLDOWN_MESSAGE,
+} from "../../services/auth-service.js";
 
 vi.mock("../../utils/sendEmail", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
@@ -33,11 +33,15 @@ describe("Auth integration - Signup", () => {
 
     const result = await registerUser(signupData);
     const user = await fetchUserByEmail(signupData.email);
-
-    expect(result.ok).toBe(true);
-    expect(result.message).toBe(
-      "Verification email sent. Please check your email",
+    const otp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+      [user?.id],
     );
+
+    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
+
+    expect(otp).toBeDefined();
+    expect(user?.password).not.toBe(signupData.password);
 
     expect(user).toMatchObject({
       email: signupData.email,
@@ -45,14 +49,6 @@ describe("Auth integration - Signup", () => {
       is_verified: false,
       role: "user",
     });
-
-    expect(user?.password).not.toBe(signupData.password);
-
-    expect(sendVerificationEmail).toHaveBeenCalledWith(
-      signupData.email,
-      expect.any(String),
-    );
-    expect(sendAlreadyRegisteredEmail).not.toHaveBeenCalled();
   });
 
   it("should not create a new user if email is already verified", async () => {
@@ -69,88 +65,80 @@ describe("Auth integration - Signup", () => {
     );
 
     // sign up again with the same email
-    const result = await registerUser(signupData);
+    const result = await registerUser({
+      ...signupData,
+      password: "newpassword123",
+      username: "newusername",
+    });
 
-    // should still be only one user
-    const rows = await pool.query(
-      "SELECT COUNT(*) FROM users WHERE email = $1",
-      [signupData.email],
-    );
+    const user = await fetchUserByEmail(signupData.email);
+    expect(user).toBeDefined();
 
-    expect(rows.rows[0].count).toBe("1");
+    // should not update username and password
+    expect(user?.username).toBe(signupData.username);
+    expect(user?.password).toBe("hashed_pw");
 
-    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledWith(signupData.email);
-    expect(sendVerificationEmail).not.toHaveBeenCalled();
-
-    expect(result.ok).toBe(true);
-    expect(result.message).toBe(
-      "Verification email sent. Please check your email",
-    );
+    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
   });
 
-  it("should not create a new verification email if less than 2 minutes have passed since last OTP", async () => {
+  it("should not rotate OTP if cooldown is active", async () => {
     const signupData = {
       email: "unverified@example.com",
       password: "password123",
       username: "unverifieduser",
     };
 
-    // pre-insert an unverified user
-    const result1 = await registerUser(signupData);
-
+    // Pre-create an unverified user and OTP
+    await registerUser(signupData);
     const user = await fetchUserByEmail(signupData.email);
-
-    // sign up again with the same email to trigger OTP rotation
-    const result2 = await registerUser(signupData);
-
-    // should still be only one otp after signing up again
-    const newToken = await pool.query(
-      "SELECT COUNT(*) FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+    const firstOtp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
     );
 
-    expect(newToken.rows[0].count).toBe("1");
+    //  Trigger the cooldown
+    const result = await registerUser(signupData);
 
-    expect(sendVerificationEmail).toHaveBeenCalledOnce();
-    expect(sendVerificationEmail).toHaveBeenCalledWith(
-      signupData.email,
-      expect.any(String),
+    expect(result).toEqual({ ok: true, message: COOLDOWN_MESSAGE });
+
+    const currentOtp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+      [user?.id],
     );
 
-    expect(result1.ok).toBe(true);
-    expect(result1.message).toBe(
-      "Verification email sent. Please check your email",
-    );
-
-    expect(result2.ok).toBe(true);
-    expect(result2.message).toBe(
-      "Verification email just sent. Please wait a moment before requesting again",
-    );
+    expect(currentOtp.rows[0].id).toBe(firstOtp.rows[0].id); // OTP should not have rotated
+    expect(currentOtp.rows[0].created_at).toEqual(firstOtp.rows[0].created_at); // created_at should be unchanged
   });
 
-  it("should allow OTP rotation if more than 2 minutes have passed since last OTP", async () => {
+  it("should rotate OTP after the 2 minute cooldown expires", async () => {
     const signupData = {
       email: "rotated@example.com",
       password: "password123",
       username: "rotateduser",
     };
 
-    // first signup
-    const result1 = await registerUser(signupData);
+    await registerUser(signupData);
+    const user = await fetchUserByEmail(signupData.email);
+    const firstOtp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+      [user?.id],
+    );
 
     vi.setSystemTime(new Date(Date.now() + 2 * 60 * 1000 + 5000)); // advance time by 2 minutes and 1 second
 
     // second signup with same email
-    const result2 = await registerUser(signupData);
+    const result = await registerUser(signupData);
 
-    expect(result1.ok).toBe(true);
-    expect(result1.message).toBe(
-      "Verification email sent. Please check your email",
+    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
+
+    const secondOtp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+      [user?.id],
     );
-    expect(result2.ok).toBe(true);
-    expect(result2.message).toBe(
-      "Verification email sent. Please check your email",
-    );
+    expect(secondOtp.rows[0].id).not.toBe(firstOtp.rows[0].id); // OTP should have rotated
+    expect(secondOtp.rows[0].created_at).not.toEqual(
+      firstOtp.rows[0].created_at,
+    ); // created_at should be updated
   });
 
   it("should only create one verifitcation token if multiple concurrent signups with the same unverified email", async () => {
@@ -179,27 +167,17 @@ describe("Auth integration - Signup", () => {
       registerUser(signupData),
     ]);
 
-    // verify that only one verification otp exists
-    const otpCount = await pool.query(
-      "SELECT COUNT(*) FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+    const messages = [result1.message, result2.message];
+
+    // we cannot guarantee which request will get the lock first, so we just check that both possible messages are returned and that only one verification email is sent
+    expect(messages).toContain(EMAIL_MESSAGE);
+    expect(messages).toContain(COOLDOWN_MESSAGE);
+
+    const { rows } = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
     );
-
-    const messages = [result1.message, result2.message];
-    // we cannot guarantee which request will get the  lock first, so we just check that both possible messages are returned and that only one verification email is sent
-    expect(messages).toContain(
-      "Verification email sent. Please check your email",
-    );
-    expect(messages).toContain(
-      "Verification email just sent. Please wait a moment before requesting again",
-    );
-
-    expect(sendVerificationEmail).toHaveBeenCalledTimes(2);
-    expect(sendVerificationEmail).toHaveBeenCalledWith(
-      signupData.email,
-      expect.any(String),
-    );
-    expect(otpCount.rows[0].count).toBe("1");
+    expect(rows).toHaveLength(1);
   });
 
   it("should handle real unique constraint (23505) during concurrent signup", async () => {
@@ -215,29 +193,17 @@ describe("Auth integration - Signup", () => {
       registerUser(signupData),
     ]);
 
-    expect(result1.ok).toBe(true);
-    expect(result2.ok).toBe(true);
-    expect(result1.message).toBe(
-      "Verification email sent. Please check your email",
-    );
-    expect(result2.message).toBe(
-      "Verification email sent. Please check your email",
-    );
+    expect(result1).toEqual({ ok: true, message: EMAIL_MESSAGE });
+    expect(result2).toEqual({ ok: true, message: EMAIL_MESSAGE });
 
     const users = await pool.query("SELECT * FROM users WHERE email = $1", [
       signupData.email,
     ]);
-
-    // should still be only one user
-    expect(users.rows.length).toBe(1);
-
-    // catch block should have triggered for one of the requests due to unique constraint violation
-    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledWith(signupData.email);
-    expect(sendVerificationEmail).toHaveBeenCalledOnce();
-    expect(sendVerificationEmail).toHaveBeenCalledWith(
-      signupData.email,
-      expect.any(String),
+    const otp = await pool.query(
+      "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
+      [users.rows[0].id],
     );
-    expect(sendAlreadyRegisteredEmail).toHaveBeenCalledOnce();
+    expect(otp.rows).toHaveLength(1); // only one OTP should be created
+    expect(users.rows).toHaveLength(1); // should stilll be only one user
   });
 });

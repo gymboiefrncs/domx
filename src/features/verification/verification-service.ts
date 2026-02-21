@@ -15,15 +15,12 @@ import {
 import { fetchUserForSignup } from "../auth/auth-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import type { Result } from "../../common/types.js";
+import * as jose from "jose";
 
-/**
- * validates a user-provided OTP against the stored hash
- *
- * LOGIC:
- * - enforces single-use policy by marking tokens as used upon successful verification
- * - implements retry limits to prevent brute-force attacks, invalidating tokens after 5 failed attempts
- * - ensures expired tokens cannot be used, providing clear error messages for different failure scenarios
- */
+const SET_PASSWORD_SECRET = new TextEncoder().encode(
+  process.env.SET_PASSWORD_TOKEN!,
+);
+
 export const validateOtp = async ({
   email,
   otp,
@@ -95,7 +92,18 @@ export const validateOtp = async ({
     await markTokenAsUsed(otpRecord.id, hashedOTP, client);
 
     await client.query("COMMIT");
-    return { ok: true, message: "Email verified successfully" };
+
+    // Short-lived token for setting password
+    const token = await new jose.SignJWT({
+      sub: otpRecord.user_id,
+      purpose: "set-password",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("10m")
+      .sign(SET_PASSWORD_SECRET);
+
+    return { ok: true, message: "Email verified successfully", data: token };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

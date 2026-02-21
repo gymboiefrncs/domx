@@ -6,5 +6,9 @@ declare module "express" {
       userId: string;
       role: Role;
     };
+    setPwd?: {
+      sub: string;
+      purpose: "set-password";
+    };
   }
 }

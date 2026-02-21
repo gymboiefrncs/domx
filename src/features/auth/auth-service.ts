@@ -84,8 +84,6 @@ export const registerUser = async (
   }
 };
 
-// TODO: implement set password after verifying email
-
 export const loginUser = async (
   data: Pick<User, "email" | "password">,
 ): Promise<Tokens> => {

@@ -5,6 +5,7 @@ import {
   rotateTokens,
   logoutUser,
 } from "./auth-service.js";
+import { setPassword } from "./set-password.js";
 
 export const signupHandler = async (
   req: Request,
@@ -95,4 +96,11 @@ export const logoutHandler = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const setPasswordHandler = async (req: Request, res: Response) => {
+  const { password } = req.body;
+  const userId = req.setPwd!.sub;
+  const result = await setPassword({ userId, password });
+  res.json(result);
 };

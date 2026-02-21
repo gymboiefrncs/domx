@@ -11,7 +11,7 @@ export const verificationHandler = async (
     const statusCode = result.ok ? 200 : 400;
     res.status(statusCode).json({
       success: result.ok,
-      message: result.ok ? result.message : result.reason,
+      message: result.ok ? result : result.reason,
     });
     return;
   } catch (error) {

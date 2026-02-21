@@ -1,8 +1,8 @@
 import type { PoolClient } from "pg";
-import type { SignupSchema } from "../../features/auth/auth-schema.js";
-import { createUser } from "../../features/auth/auth-model.js";
-import { createSignupOtp } from "../../features/verification/verification-model.js";
-import { EMAIL_MESSAGE } from "../../features/auth/auth-service.js";
+import type { SignupSchema } from "../auth-schema.js";
+import { createUser } from "../auth-model.js";
+import { createSignupOtp } from "../../verification/verification-model.js";
+import { EMAIL_MESSAGE } from "../auth-service.js";
 
 export const handleNewUser = async (
   data: Omit<SignupSchema, "password">,

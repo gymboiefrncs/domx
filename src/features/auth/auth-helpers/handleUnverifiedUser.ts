@@ -1,14 +1,11 @@
 import {
   invalidateOldOtps,
   createSignupOtp,
-} from "../../features/verification/verification-model.js";
-import { getLatestOTP } from "../../features/auth/auth-model.js";
-import type { User } from "../../common/types.js";
+} from "../../verification/verification-model.js";
+import { getLatestOTP } from "../auth-model.js";
+import type { User } from "../../../common/types.js";
 import type { PoolClient } from "pg";
-import {
-  COOLDOWN_MESSAGE,
-  EMAIL_MESSAGE,
-} from "../../features/auth/auth-service.js";
+import { COOLDOWN_MESSAGE, EMAIL_MESSAGE } from "../auth-service.js";
 
 const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
 

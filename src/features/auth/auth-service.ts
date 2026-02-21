@@ -20,9 +20,9 @@ import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
 import { generateTokens } from "../../utils/generateToken.js";
 import type { Result } from "../../common/types.js";
-import { handleVerifiedUser } from "../../utils/auth-helpers/handleVerifiedUser.js";
-import { handleUnverifiedUser } from "../../utils/auth-helpers/handleUnverifiedUser.js";
-import { handleNewUser } from "../../utils/auth-helpers/handleNewUser.js";
+import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
+import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
+import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 
 export const EMAIL_MESSAGE = "Verification email sent. Please check your email";
 export const COOLDOWN_MESSAGE =
@@ -83,6 +83,8 @@ export const registerUser = async (
     client.release();
   }
 };
+
+// TODO: implement set password after verifying email
 
 export const loginUser = async (
   data: Pick<User, "email" | "password">,

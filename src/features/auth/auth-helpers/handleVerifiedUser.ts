@@ -1,5 +1,5 @@
-import { sendAlreadyRegisteredEmail } from "../sendEmail.js";
-import { EMAIL_MESSAGE } from "../../features/auth/auth-service.js";
+import { sendAlreadyRegisteredEmail } from "../../../utils/sendEmail.js";
+import { EMAIL_MESSAGE } from "../auth-service.js";
 
 export const handleVerifiedUser = (
   email: string,

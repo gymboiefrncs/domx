@@ -128,22 +128,16 @@ export const rotateTokens = async (
   const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
   const userId = payload.userId as string;
 
+  // check if token exists in DB
   const storedRefreshToken = await fetchTokenByJti(payload.jti as string);
   if (!storedRefreshToken)
     throw new UnauthorizedError("Session expired, please login again");
 
-  const hashedOldRefreshToken = crypto
-    .createHash("sha256")
-    .update(oldRefreshToken)
-    .digest("hex");
-
-  if (storedRefreshToken.token_hash !== hashedOldRefreshToken)
-    throw new UnauthorizedError("Session expired, please login again");
+  // prevent reuse of refresh token
+  await deleteOldRefreshToken(payload.jti as string);
 
   const user = await fetchUserById(userId);
   if (!user) throw new UnauthorizedError("Session expired, please login again");
-
-  await deleteOldRefreshToken(payload.jti as string);
 
   const newJti = crypto.randomUUID();
 

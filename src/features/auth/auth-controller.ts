@@ -98,9 +98,20 @@ export const logoutHandler = async (
   }
 };
 
-export const setPasswordHandler = async (req: Request, res: Response) => {
-  const { password } = req.body;
-  const userId = req.setPwd!.sub;
-  const result = await setPassword({ userId, password });
-  res.json(result);
+export const setPasswordHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { password } = req.body;
+    const userId = req.setPwd!.sub;
+    const result = await setPassword({ userId, password });
+    res.status(result.ok ? 200 : 400).json({
+      success: result.ok,
+      message: result.ok ? result.message : result.reason,
+    });
+  } catch (error) {
+    next(error);
+  }
 };

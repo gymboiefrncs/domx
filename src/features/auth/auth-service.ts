@@ -95,7 +95,7 @@ export const loginUser = async (
     user?.password ?? process.env.DUMMY_HASH!,
   );
 
-  if (!user || !passwordMatch || !user.is_verified) {
+  if (!user || !passwordMatch || !user.is_verified || !user.password) {
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
 

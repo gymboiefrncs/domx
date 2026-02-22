@@ -57,7 +57,7 @@ export const registerUser = async (
         sendVerificationEmail(user.email, otpData.otp).catch((error) => {
           console.error("Failed to email:", error);
         });
-        return { ok: true, message: EMAIL_MESSAGE };
+        return { ok: true as const, message: EMAIL_MESSAGE };
       }
 
       return result;
@@ -70,7 +70,7 @@ export const registerUser = async (
       console.error("Failed to email:", error);
     });
 
-    return { ok: true, message: EMAIL_MESSAGE };
+    return { ok: true as const, message: EMAIL_MESSAGE };
   } catch (error) {
     await client.query("ROLLBACK");
 
@@ -79,7 +79,7 @@ export const registerUser = async (
       sendAlreadyRegisteredEmail(data.email).catch((error) => {
         console.error("failed to send email:", error);
       });
-      return { ok: true, message: EMAIL_MESSAGE };
+      return { ok: true as const, message: EMAIL_MESSAGE };
     }
     throw error;
   } finally {

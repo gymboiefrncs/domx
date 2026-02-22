@@ -25,7 +25,7 @@ export const handleUnverifiedUser = async (
     latestOTP && Date.now() - latestOTP.created_at.getTime() <= OTP_COOLDOWN_MS;
 
   if (isTooSoon) {
-    return { ok: true, message: COOLDOWN_MESSAGE };
+    return { ok: true as const, message: COOLDOWN_MESSAGE };
   }
 
   await invalidateOldOtps(user.id, client);

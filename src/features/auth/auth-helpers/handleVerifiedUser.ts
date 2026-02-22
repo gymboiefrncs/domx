@@ -8,7 +8,7 @@ export const handleVerifiedUser = (
     console.error("Failed to send already registered email:", error);
   });
   return {
-    ok: true,
+    ok: true as const,
     message: EMAIL_MESSAGE,
   };
 };

@@ -6,6 +6,7 @@ import {
   logoutUser,
 } from "./auth-service.js";
 import { setPassword } from "./set-password.js";
+import { setCookies } from "./auth-helpers/setCookies.js";
 
 export const signupHandler = async (
   req: Request,
@@ -31,19 +32,7 @@ export const loginHandler = async (
 ): Promise<void> => {
   try {
     const { refreshToken, accessToken } = await loginUser(req.body);
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 5 * 60 * 1000,
-    });
+    setCookies(refreshToken, accessToken, res);
 
     res.status(200).json({ success: true, message: "Login successful" });
   } catch (error) {
@@ -59,20 +48,8 @@ export const rotateTokensHandler = async (
   try {
     const oldRefreshToken = req.cookies.refreshToken;
     const { accessToken, refreshToken } = await rotateTokens(oldRefreshToken);
+    setCookies(refreshToken, accessToken, res);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 5 * 60 * 1000,
-    });
     res.status(200).json({ success: true, message: "Token refreshed" });
   } catch (error) {
     next(error);

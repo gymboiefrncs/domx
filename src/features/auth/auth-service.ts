@@ -158,12 +158,7 @@ export const rotateTokens = async (
     .update(refreshToken)
     .digest("hex");
 
-  await createToken(
-    newJti,
-    userId,
-    hashedNewRefreshToken,
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  );
+  await createToken(newJti, userId, hashedNewRefreshToken, refreshTokenExpiry);
 
   return { accessToken, refreshToken };
 };

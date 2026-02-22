@@ -76,10 +76,17 @@ export const registerUser = async (
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((error as any).code === "23505") {
-      sendAlreadyRegisteredEmail(data.email).catch((error) => {
-        console.error("failed to send email:", error);
-      });
-      return { ok: true as const, message: EMAIL_MESSAGE };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).constraint === "users_email_key") {
+        sendAlreadyRegisteredEmail(data.email).catch((error) => {
+          console.error("failed to send email:", error);
+        });
+        return { ok: true as const, message: EMAIL_MESSAGE };
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).constraint === "email_verification_token_key") {
+        return { ok: true as const, message: COOLDOWN_MESSAGE };
+      }
     }
     throw error;
   } finally {

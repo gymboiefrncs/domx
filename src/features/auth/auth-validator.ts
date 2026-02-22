@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { type ZodObject } from "zod";
-import { loginSchema, signupSchema } from "./auth-schema.js";
+import { loginSchema, passwordSchema, signupSchema } from "./auth-schema.js";
 import { ValidationError } from "../../utils/error.js";
 
 // Generic validation middleware factory
@@ -25,3 +25,4 @@ const validate =
 
 export const loginValidator = validate(loginSchema);
 export const signupValidator = validate(signupSchema);
+export const passwordValidator = validate(passwordSchema);

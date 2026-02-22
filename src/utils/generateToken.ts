@@ -3,6 +3,9 @@ import type { Role, Tokens } from "../common/types.js";
 
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
+export const refreshTokenExpiry = new Date(
+  Date.now() + 7 * 24 * 60 * 60 * 1000,
+);
 
 export const generateTokens = async (
   userId: string,
@@ -24,7 +27,7 @@ export const generateTokens = async (
     .setProtectedHeader({ alg: "HS256" })
     .setJti(jti)
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime(refreshTokenExpiry)
     .sign(refreshSecret);
 
   return { accessToken, refreshToken };

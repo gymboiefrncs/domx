@@ -7,7 +7,11 @@ import {
   setPasswordHandler,
   signupHandler,
 } from "./auth-controller.js";
-import { loginValidator, signupValidator } from "./auth-validator.js";
+import {
+  loginValidator,
+  passwordValidator,
+  signupValidator,
+} from "./auth-validator.js";
 import { verifySetPasswordToken } from "../../middlewares/jwtHandler.js";
 
 export const authRouter: Router = express.Router();
@@ -35,6 +39,7 @@ authRouter.post("/auth/logout", logoutHandler);
 
 authRouter.post(
   "/auth/set-password",
+  passwordValidator,
   verifySetPasswordToken,
   setPasswordHandler,
 );

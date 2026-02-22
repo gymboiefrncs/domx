@@ -6,6 +6,8 @@ import { EMAIL_MESSAGE } from "../../features/auth/auth-service.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
+const TEST_PASSWORD = "Newpassword123_";
+const signupData = { email: "test@example.com", username: "testuser" };
 
 vi.mock("../../utils/generateOTP", () => ({
   generateOTP: vi.fn(() => ({
@@ -15,93 +17,282 @@ vi.mock("../../utils/generateOTP", () => ({
   })),
 }));
 
-describe("Auth integration", () => {
-  const signupData = { email: "test@example.com", username: "testuser" };
+// helpers
+const setupVerifiedUser = async () => {
+  await request(app).post("/api/v1/auth/signup").send(signupData);
+  const verifyRes = await request(app)
+    .post("/api/v1/verify-email")
+    .send({ email: signupData.email, otp: TEST_OTP });
+  const token = verifyRes.body?.message?.data;
+  await request(app)
+    .post("/api/v1/auth/set-password")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ password: TEST_PASSWORD });
+};
+
+const setupAndLogin = async () => {
+  await request(app).post("/api/v1/auth/signup").send(signupData);
+  const verifyRes = await request(app)
+    .post("/api/v1/verify-email")
+    .send({ email: signupData.email, otp: TEST_OTP });
+
+  const token = verifyRes.body?.message?.data;
+  await request(app)
+    .post("/api/v1/auth/set-password")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ password: TEST_PASSWORD });
+
+  const loginRes = await request(app)
+    .post("/api/v1/auth/login")
+    .send({ email: signupData.email, password: TEST_PASSWORD });
+
+  const cookies = loginRes.headers["set-cookie"];
+  if (!Array.isArray(cookies)) return cookies;
+
+  return cookies as string[];
+};
+
+describe("Auth API", () => {
   beforeEach(async () => {
     await resetDB();
     vi.clearAllMocks();
   });
 
-  it("signup creates a new user", async () => {
-    const res = await request(app).post("/api/v1/auth/signup").send(signupData);
-    expect(res.status).toBe(201);
-    expect(res.body).toEqual({ success: true, message: EMAIL_MESSAGE });
-  });
+  describe("Auth flow", () => {
+    it("signup creates a new user", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/signup")
+        .send(signupData);
 
-  it("verifies email with correct OTP", async () => {
-    await request(app).post("/api/v1/auth/signup").send(signupData);
+      expect(res.status).toBe(201);
+      expect(res.body).toEqual({ success: true, message: EMAIL_MESSAGE });
+    });
 
-    const res = await request(app)
-      .post("/api/v1/verify-email")
-      .send({ email: signupData.email, otp: TEST_OTP });
+    it("verifies email with correct OTP", async () => {
+      await request(app).post("/api/v1/auth/signup").send(signupData);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    const token = res.body?.message?.data;
-    expect(typeof token).toBe("string");
-  });
+      const res = await request(app)
+        .post("/api/v1/verify-email")
+        .send({ email: signupData.email, otp: TEST_OTP });
 
-  it("sets password after verification", async () => {
-    await request(app).post("/api/v1/auth/signup").send(signupData);
-    const verifyRes = await request(app)
-      .post("/api/v1/verify-email")
-      .send({ email: signupData.email, otp: TEST_OTP });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(typeof res.body?.message?.data).toBe("string");
+    });
 
-    const token = verifyRes.body?.message?.data;
-    expect(typeof token).toBe("string");
+    it("sets password after verification", async () => {
+      await request(app).post("/api/v1/auth/signup").send(signupData);
 
-    const setPwdRes = await request(app)
-      .post("/api/v1/auth/set-password")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ password: "newpassword" });
+      const verifyRes = await request(app)
+        .post("/api/v1/verify-email")
+        .send({ email: signupData.email, otp: TEST_OTP });
 
-    expect(setPwdRes.status).toBe(200);
-    expect(setPwdRes.body).toEqual({
-      success: true,
-      message: "Password set successfully",
+      const token = verifyRes.body?.message?.data;
+
+      const res = await request(app)
+        .post("/api/v1/auth/set-password")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ password: TEST_PASSWORD });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        success: true,
+        message: "Password set successfully",
+      });
+    });
+
+    it("logs in and sets HttpOnly cookies", async () => {
+      await setupVerifiedUser();
+
+      const loginRes = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: signupData.email, password: TEST_PASSWORD });
+
+      expect(loginRes.status).toBe(200);
+      expect(loginRes.body).toEqual({
+        success: true,
+        message: "Login successful",
+      });
+
+      const cookies = loginRes.headers["set-cookie"];
+      if (Array.isArray(cookies)) {
+        expect(
+          cookies.some(
+            (c) =>
+              c.includes("refreshToken=") &&
+              c.includes("HttpOnly") &&
+              c.includes("SameSite=Strict"),
+          ),
+        ).toBe(true);
+        expect(
+          cookies.some(
+            (c) =>
+              c.includes("refreshToken=") &&
+              c.includes("HttpOnly") &&
+              c.includes("SameSite=Strict"),
+          ),
+        ).toBe(true);
+      }
     });
   });
 
-  it("logs in with newly set password and sets cookies", async () => {
-    await request(app).post("/api/v1/auth/signup").send(signupData);
-    const verifyRes = await request(app)
-      .post("/api/v1/verify-email")
-      .send({ email: signupData.email, otp: TEST_OTP });
-    const token = verifyRes.body?.message?.data;
-
-    await request(app)
-      .post("/api/v1/auth/set-password")
-      .set("Authorization", `Bearer ${token}`)
-      .send({ password: "newpassword" });
-
-    const loginRes = await request(app)
-      .post("/api/v1/auth/login")
-      .send({ email: signupData.email, password: "newpassword" });
-
-    expect(loginRes.status).toBe(200);
-    expect(loginRes.body).toEqual({
-      success: true,
-      message: "Login successful",
+  describe("Signup validation", () => {
+    it("rejects invalid email", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/signup")
+        .send({ email: "invalidemail", username: "user" });
+      expect(res.status).toBe(422);
+      expect(res.body.errors.message).toBe("Invalid data");
     });
 
-    const cookies = loginRes.headers["set-cookie"];
-    expect(cookies).toBeDefined();
-    expect(Array.isArray(cookies)).toBe(true);
+    it("rejects invalid username", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/signup")
+        .send({ email: "test@example.com", username: "user*name" });
+      expect(res.status).toBe(422);
+      expect(res.body.errors.message).toBe("Invalid data");
+    });
+  });
 
-    if (Array.isArray(cookies)) {
-      const hasRefreshToken = cookies.some(
-        (cookie) =>
-          cookie.includes("refreshToken=") &&
-          cookie.includes("HttpOnly") &&
-          cookie.includes("SameSite=Strict"),
-      );
-      expect(hasRefreshToken).toBe(true);
+  describe("Set password validation", () => {
+    it("rejects password that is too short", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/set-password")
+        .set("Authorization", "Bearer token")
+        .send({ password: "short" });
+      expect(res.status).toBe(422);
+      expect(res.body.errors.message).toBe("Invalid data");
+    });
+  });
 
-      const hasAccessToken = cookies.some(
-        (cookie) =>
-          cookie.includes("accessToken=") && cookie.includes("HttpOnly"),
+  describe("Login validation", () => {
+    it("rejects invalid email format", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: "notanemail", password: TEST_PASSWORD });
+      expect(res.status).toBe(422);
+      expect(res.body.errors.message).toBe("Invalid data");
+    });
+  });
+
+  describe("Login edge cases", () => {
+    const EXPECTED_ERROR = "Invalid credentials or account not verified";
+
+    it("rejects wrong password", async () => {
+      await setupVerifiedUser();
+
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: signupData.email, password: "wrongpassword" });
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+    });
+
+    it("rejects unverified account", async () => {
+      await request(app).post("/api/v1/auth/signup").send(signupData);
+
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: signupData.email, password: TEST_PASSWORD });
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+    });
+
+    it("rejects account with no password set", async () => {
+      await request(app).post("/api/v1/auth/signup").send(signupData);
+
+      await request(app)
+        .post("/api/v1/verify-email")
+        .send({ email: signupData.email, otp: TEST_OTP });
+
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: signupData.email, password: TEST_PASSWORD });
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+    });
+
+    it("rejects non-existent email", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: signupData.email, password: TEST_PASSWORD });
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+    });
+  });
+
+  describe("Refresh tokens", async () => {
+    it("returns new cookies with valid refresh token", async () => {
+      const cookies = await setupAndLogin();
+      const res = await request(app)
+        .post("/api/v1/auth/refresh")
+        .set("Cookie", cookies as string[]);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ success: true, message: "Token refreshed" });
+
+      const newCookies = res.headers["set-cookie"];
+      if (Array.isArray(newCookies)) {
+        expect(
+          newCookies.some(
+            (c) =>
+              c.includes("refreshToken=") &&
+              c.includes("HttpOnly") &&
+              c.includes("SameSite=Strict"),
+          ),
+        ).toBe(true);
+        expect(
+          newCookies.some(
+            (c) =>
+              c.includes("refreshToken=") &&
+              c.includes("HttpOnly") &&
+              c.includes("SameSite=Strict"),
+          ),
+        ).toBe(true);
+      }
+    });
+
+    it("rejects request with no refresh token", async () => {
+      const res = await request(app).post("/api/v1/auth/refresh");
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors[0].message).toBe("Invalid or expired token");
+    });
+
+    it("rejects a tampered refresh token", async () => {
+      const cookies = await setupAndLogin();
+      const res = await request(app)
+        .post("/api/v1/auth/refresh")
+        .set(
+          "Cookie",
+          (cookies as string[])?.map((c) =>
+            c.replace(/refreshToken=([^;]+)/, "refreshToken=invalidtoken"),
+          ),
+        );
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors[0].message).toBe("Invalid or expired token");
+    });
+
+    it("rejects a replayed refresh token", async () => {
+      const cookies = await setupAndLogin();
+
+      await request(app)
+        .post("/api/v1/auth/refresh")
+        .set("Cookie", cookies as string[]);
+
+      const res = await request(app)
+        .post("/api/v1/auth/refresh")
+        .set("Cookie", cookies as string[]);
+
+      expect(res.status).toBe(401);
+      expect(res.body.errors.message).toBe(
+        "Session expired, please login again",
       );
-      expect(hasAccessToken).toBe(true);
-    }
+    });
   });
 });

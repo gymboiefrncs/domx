@@ -17,23 +17,7 @@ export const setPassword = async ({
 
     const user = await fetchUserForPasswordSet(userId, client);
 
-    if (!user) {
-      await client.query("ROLLBACK");
-      return {
-        ok: false,
-        reason: "Something went wrong. Please try again later.",
-      };
-    }
-
-    if (!user.is_verified) {
-      await client.query("ROLLBACK");
-      return {
-        ok: false,
-        reason: "Something went wrong. Please try again later.",
-      };
-    }
-
-    if (user.password) {
+    if (!user || !user.is_verified || user.password) {
       await client.query("ROLLBACK");
       return {
         ok: false,

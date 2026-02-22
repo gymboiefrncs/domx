@@ -294,5 +294,19 @@ describe("Auth API", () => {
         "Session expired, please login again",
       );
     });
+
+    it("rejects refresh after logout", async () => {
+      const cookies = await setupAndLogin();
+
+      await request(app)
+        .post("/api/v1/auth/logout")
+        .set("Cookie", cookies as string[]);
+
+      const res = await request(app)
+        .post("/api/v1/auth/refresh")
+        .set("Cookie", cookies as string[]);
+
+      expect(res.status).toBe(401);
+    });
   });
 });

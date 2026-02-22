@@ -18,7 +18,10 @@ import {
 import { pool } from "../../config/db.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
-import { generateTokens } from "../../utils/generateToken.js";
+import {
+  generateTokens,
+  refreshTokenExpiry,
+} from "../../utils/generateToken.js";
 import type { Result } from "../../common/types.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
@@ -112,12 +115,7 @@ export const loginUser = async (
     .update(refreshToken)
     .digest("hex");
 
-  await createToken(
-    jti,
-    user.id,
-    hashedToken,
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  );
+  await createToken(jti, user.id, hashedToken, refreshTokenExpiry);
 
   return { accessToken, refreshToken };
 };

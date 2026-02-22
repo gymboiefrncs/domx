@@ -15,11 +15,10 @@ import {
 import { fetchUserForSignup } from "../auth/auth-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import type { Result } from "../../common/types.js";
-import * as jose from "jose";
+import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";
 
-const SET_PASSWORD_SECRET = new TextEncoder().encode(
-  process.env.SET_PASSWORD_TOKEN!,
-);
+const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
+const OTP_MESSAGE_SUCCESS = "Email verified successfully";
 
 export const validateOtp = async ({
   email,
@@ -43,14 +42,14 @@ export const validateOtp = async ({
       await client.query("ROLLBACK");
       return {
         ok: false,
-        reason: "OTP is invalid or expired",
+        reason: OTP_MESSAGE_FAIL,
       };
     }
 
     // verify lifecycle status: used and expired tokens are invalid
     if (otpRecord.used_at || otpRecord.expires_at < new Date()) {
       await client.query("ROLLBACK");
-      return { ok: false, reason: "OTP is invalid or expired" };
+      return { ok: false, reason: OTP_MESSAGE_FAIL };
     }
 
     // to prevent timing attacks
@@ -70,7 +69,7 @@ export const validateOtp = async ({
         await client.query("ROLLBACK");
         return {
           ok: false,
-          reason: "OTP is invalid or expired",
+          reason: OTP_MESSAGE_FAIL,
         };
       }
 
@@ -80,12 +79,12 @@ export const validateOtp = async ({
         await client.query("COMMIT");
         return {
           ok: false,
-          reason: "OTP is invalid or expired",
+          reason: OTP_MESSAGE_FAIL,
         };
       }
 
       await client.query("COMMIT");
-      return { ok: false, reason: "OTP is invalid or expired" };
+      return { ok: false, reason: OTP_MESSAGE_FAIL };
     }
 
     await markUserAsVerified(otpRecord.user_id, client);
@@ -94,16 +93,9 @@ export const validateOtp = async ({
     await client.query("COMMIT");
 
     // Short-lived token for setting password
-    const token = await new jose.SignJWT({
-      sub: otpRecord.user_id,
-      purpose: "set-password",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("10m")
-      .sign(SET_PASSWORD_SECRET);
+    const token = await generateSetPasswordToken(otpRecord.user_id);
 
-    return { ok: true, message: "Email verified successfully", data: token };
+    return { ok: true, message: OTP_MESSAGE_SUCCESS, data: token };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

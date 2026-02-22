@@ -18,6 +18,17 @@ export const signupSchema = z.object({
     .toLowerCase(),
 });
 
+export const passwordSchema = z.object({
+  password: z
+    .string()
+    .trim()
+    .min(12, "Too short")
+    .regex(/[A-Z]/, "Must contain an uppercase letter")
+    .regex(/[a-z]/, "Must contain a lowercase letter")
+    .regex(/[0-9]/, "Must contain a number")
+    .regex(/[^A-Za-z0-9]/, "Must contain a special character"),
+});
+
 export const loginSchema = z.object({
   email: z
     .string()

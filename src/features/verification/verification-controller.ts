@@ -13,7 +13,6 @@ export const verificationHandler = async (
       success: result.ok,
       message: result.ok ? result : result.reason,
     });
-    return;
   } catch (error) {
     next(error);
   }
@@ -26,12 +25,10 @@ export const resendOtpHandler = async (
 ): Promise<void> => {
   try {
     const result = await resendOtp(req.body.email);
-    const statusCode = result.ok ? 200 : 400;
-    res.status(statusCode).json({
+    res.status(200).json({
       success: result.ok,
-      message: result.ok ? result.message : result.reason,
+      message: result.message,
     });
-    return;
   } catch (error) {
     next(error);
   }

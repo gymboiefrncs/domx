@@ -19,6 +19,7 @@ import { generateSetPasswordToken } from "./verification-helpers/generateSetPass
 
 const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
 const OTP_MESSAGE_SUCCESS = "Email verified successfully";
+const RESEND_OTP_MESSAGE = "If an account exists, a new code has been sent.";
 
 export const validateOtp = async ({
   email,
@@ -105,7 +106,9 @@ export const validateOtp = async ({
 };
 
 // re-issues a verification code for unverified users.
-export const resendOtp = async (email: string): Promise<Result> => {
+export const resendOtp = async (
+  email: string,
+): Promise<{ ok: true; message: string }> => {
   const { otp, hashedOTP, expiresAt } = generateOTP();
 
   const client = await pool.connect();
@@ -119,17 +122,19 @@ export const resendOtp = async (email: string): Promise<Result> => {
       await client.query("ROLLBACK");
       return {
         ok: true,
-        message: "If an account exists, a new code has been sent.",
+        message: RESEND_OTP_MESSAGE,
       };
     }
 
     // handles already verified users
     if (user.is_verified) {
       await client.query("ROLLBACK");
-      await sendAlreadyRegisteredEmail(email);
+      sendAlreadyRegisteredEmail(email).catch((err) => {
+        console.error("Failed to send already registered email:", err);
+      });
       return {
         ok: true,
-        message: "If an account exists, a new code has been sent.",
+        message: RESEND_OTP_MESSAGE,
       };
     }
 
@@ -139,14 +144,21 @@ export const resendOtp = async (email: string): Promise<Result> => {
 
     await client.query("COMMIT");
 
-    await sendVerificationEmail(user.email, otp);
+    sendVerificationEmail(user.email, otp).catch((err) => {
+      console.error("Failed to send verification email:", err);
+    });
 
     return {
       ok: true,
-      message: "If an account exists, a new code has been sent.",
+      message: RESEND_OTP_MESSAGE,
     };
   } catch (error) {
     await client.query("ROLLBACK");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).code === "23505") {
+      return { ok: true, message: RESEND_OTP_MESSAGE };
+    }
     throw error;
   } finally {
     client.release();

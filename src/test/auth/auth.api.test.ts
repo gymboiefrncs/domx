@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
-const signupData = { email: "test@example.com", username: "testuser" };
+const signupData = { email: "test@example.com" };
 
 vi.mock("../../utils/generateOTP", () => ({
   generateOTP: vi.fn(() => ({
@@ -154,6 +154,43 @@ describe("Auth API", () => {
         .send({ password: "short" });
       expect(res.status).toBe(422);
       expect(res.body.errors.message).toBe("Invalid data");
+    });
+  });
+
+  describe("Set password edge cases", () => {
+    it("should only allow the password to be set once during a race condition", async () => {
+      await request(app).post("/api/v1/auth/signup").send(signupData);
+
+      const verifyRes = await request(app)
+        .post("/api/v1/verify-email")
+        .send({ email: signupData.email, otp: TEST_OTP });
+      const token = verifyRes.body?.message?.data;
+
+      const [res1, res2] = await Promise.all([
+        request(app)
+          .post("/api/v1/auth/set-password")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ password: TEST_PASSWORD }),
+        request(app)
+          .post("/api/v1/auth/set-password")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ password: "test_W2322422" }),
+      ]);
+
+      const statuses = [res1.status, res2.status];
+
+      expect(statuses).toContain(200);
+      expect(statuses).toContain(400);
+
+      const messages = [res1.body, res2.body];
+      expect(messages).toContainEqual({
+        success: true,
+        message: "Password set successfully",
+      });
+      expect(messages).toContainEqual({
+        success: false,
+        message: "Something went wrong. Please try again later",
+      });
     });
   });
 

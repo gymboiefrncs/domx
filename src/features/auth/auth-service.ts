@@ -11,10 +11,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "../../utils/error.js";
 import type { Role, Tokens, User } from "../../common/types.js";
-import {
-  sendAlreadyRegisteredEmail,
-  sendVerificationEmail,
-} from "../../utils/sendEmail.js";
+import { sendVerificationEmail } from "../../utils/sendEmail.js";
 import { pool } from "../../config/db.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
@@ -78,9 +75,7 @@ export const registerUser = async (
     if ((error as any).code === "23505") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((error as any).constraint === "users_email_key") {
-        sendAlreadyRegisteredEmail(data.email).catch((error) => {
-          console.error("failed to send email:", error);
-        });
+        // do nothing as this hit the constraint for unique email, meaning another request already created the user and OTP
         return { ok: true as const, message: EMAIL_MESSAGE };
       }
     }

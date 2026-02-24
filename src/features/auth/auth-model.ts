@@ -4,18 +4,18 @@ import type { EmailVerification, User } from "../../common/types.js";
 import type { PoolClient } from "pg";
 
 export const createUser = async (
-  data: Omit<SignupSchema, "password">,
+  data: SignupSchema,
   client: PoolClient,
 ): Promise<Pick<User, "id" | "email">> => {
-  const { username, email } = data;
+  const { email } = data;
 
   const query = `
-    INSERT INTO users (username, email)
-    VALUES ($1, $2)
+    INSERT INTO users(email)
+    VALUES ($1)
     RETURNING id, email
   `;
 
-  const values = [username, email];
+  const values = [email];
   const result = await client.query<Pick<User, "id" | "email">>(query, values);
   return result.rows[0]!;
 };

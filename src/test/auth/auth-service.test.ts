@@ -28,7 +28,6 @@ describe("Auth integration - Signup", () => {
   it("should create a new user with correct data", async () => {
     const signupData = {
       email: "sample@gmail.com",
-      username: "sampleuser",
     };
 
     const result = await registerUser(signupData);
@@ -42,7 +41,6 @@ describe("Auth integration - Signup", () => {
     expect(otp).toBeDefined();
     expect(user).toMatchObject({
       email: signupData.email,
-      username: signupData.username,
       is_verified: false,
       role: "user",
     });
@@ -52,25 +50,23 @@ describe("Auth integration - Signup", () => {
   it("should not create a new user if email is already verified", async () => {
     const signupData = {
       email: "verified@example.com",
-      username: "verifieduser",
     };
 
     // pre-insert a verified user
     await pool.query(
-      "INSERT INTO users (email, password, username, is_verified) VALUES ($1, $2, $3, $4)",
-      [signupData.email, "hashed_pw", signupData.username, true],
+      "INSERT INTO users (email, password, is_verified) VALUES ($1, $2, $3)",
+      [signupData.email, "hashed_pw", true],
     );
 
     // sign up again with the same email
     const result = await registerUser({
       ...signupData,
-      username: "newusername",
     });
 
     const user = await fetchUserByEmail(signupData.email);
 
     expect(user).toBeDefined();
-    expect(user?.username).toBe(signupData.username); // should not update username
+    expect(user?.email).toBe(signupData.email); // should not update email
     expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
   });
 
@@ -78,7 +74,6 @@ describe("Auth integration - Signup", () => {
   it("should not rotate OTP if cooldown is active", async () => {
     const signupData = {
       email: "unverified@example.com",
-      username: "unverifieduser",
     };
 
     // Pre-create an unverified user and OTP
@@ -104,7 +99,6 @@ describe("Auth integration - Signup", () => {
   it("should rotate OTP after the 2 minute cooldown expires", async () => {
     const signupData = {
       email: "rotated@example.com",
-      username: "rotateduser",
     };
 
     await registerUser(signupData);
@@ -132,7 +126,6 @@ describe("Auth integration - Signup", () => {
   it("should only create one verifitcation token if multiple concurrent signups with the same unverified email", async () => {
     const signupData = {
       email: "concurrent@example.com",
-      username: "concurrentuser",
     };
 
     await registerUser(signupData); // create unverified user
@@ -172,7 +165,6 @@ describe("Auth integration - Signup", () => {
   it("should handle real unique constraint (23505) during concurrent signup", async () => {
     const signupData = {
       email: "realrace@example.com",
-      username: "realracer",
     };
 
     // simulate two concurrent signups with the same email

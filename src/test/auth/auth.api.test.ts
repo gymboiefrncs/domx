@@ -144,14 +144,6 @@ describe("Auth API", () => {
       expect(res.status).toBe(422);
       expect(res.body.errors.message).toBe("Invalid data");
     });
-
-    it("rejects invalid username", async () => {
-      const res = await request(app)
-        .post("/api/v1/auth/signup")
-        .send({ email: "test@example.com", username: "user*name" });
-      expect(res.status).toBe(422);
-      expect(res.body.errors.message).toBe("Invalid data");
-    });
   });
 
   describe("Set password validation", () => {

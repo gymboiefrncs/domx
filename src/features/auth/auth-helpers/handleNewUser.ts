@@ -5,7 +5,7 @@ import { createSignupOtp } from "../../verification/verification-model.js";
 import { EMAIL_MESSAGE } from "../auth-service.js";
 
 export const handleNewUser = async (
-  data: Omit<SignupSchema, "password">,
+  data: SignupSchema,
   otpData: { hashedOTP: string; expiresAt: Date; otp: string },
   client: PoolClient,
 ) => {

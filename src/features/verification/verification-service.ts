@@ -117,7 +117,6 @@ export const resendOtp = async (
 
     const user = await fetchUserForSignup(email, client);
 
-    // if user not found, return generic message to prevent enumeration attacks
     if (!user) {
       await client.query("ROLLBACK");
       return {
@@ -126,7 +125,6 @@ export const resendOtp = async (
       };
     }
 
-    // handles already verified users
     if (user.is_verified) {
       await client.query("ROLLBACK");
       sendAlreadyRegisteredEmail(email).catch((err) => {
@@ -138,7 +136,6 @@ export const resendOtp = async (
       };
     }
 
-    // invalidate all previous tokens for the user before creating a new one
     await invalidateOldOtps(user.id, client);
     await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
@@ -155,10 +152,6 @@ export const resendOtp = async (
   } catch (error) {
     await client.query("ROLLBACK");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).code === "23505") {
-      return { ok: true, message: RESEND_OTP_MESSAGE };
-    }
     throw error;
   } finally {
     client.release();

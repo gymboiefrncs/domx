@@ -83,28 +83,14 @@ export const getLatestOTP = async (
   return result.rows[0];
 };
 
-export const fetchUserForPasswordSet = async (
-  userId: string,
-  client: PoolClient,
-): Promise<Pick<User, "id" | "is_verified" | "password"> | undefined> => {
-  const query = `
-    SELECT id, is_verified, password
-    FROM users
-    WHERE id = $1
-    FOR UPDATE
-  `;
-  const result = await client.query<
-    Pick<User, "id" | "is_verified" | "password">
-  >(query, [userId]);
-  return result.rows[0];
-};
-
 export const updateUserPassword = async (
   userId: string,
   hashedPassword: string,
-  client: PoolClient,
 ) => {
-  const query = "UPDATE users SET password = $1 WHERE id = $2";
+  const query =
+    "UPDATE users SET password = $1 WHERE id = $2 AND is_verified = true AND password IS NULL";
   const value = [hashedPassword, userId];
-  await client.query(query, value);
+  const result = await pool.query(query, value);
+
+  return result;
 };

@@ -7,7 +7,7 @@ import type { User } from "../../../common/types.js";
 import type { PoolClient } from "pg";
 import { COOLDOWN_MESSAGE, EMAIL_MESSAGE } from "../auth-service.js";
 
-const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
+export const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
 
 export const handleUnverifiedUser = async (
   user: Pick<User, "email" | "id" | "is_verified">,

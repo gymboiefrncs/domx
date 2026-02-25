@@ -1,6 +1,6 @@
 import { describe, vi, it, expect, beforeEach, afterEach } from "vitest";
 import { registerUser } from "../../features/auth/auth-service.js";
-import { pool, resetDB } from "../../config/db.js";
+import { pool } from "../../config/db.js";
 import { fetchUserByEmail } from "../../features/auth/auth-model.js";
 import {
   EMAIL_MESSAGE,
@@ -14,9 +14,8 @@ vi.mock("../../utils/sendEmail", () => ({
 
 describe("Auth integration - Signup", () => {
   beforeEach(async () => {
-    await resetDB();
     vi.clearAllMocks();
-
+    vi.resetModules();
     vi.useFakeTimers();
   });
 

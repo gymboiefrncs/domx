@@ -1,7 +1,6 @@
 import request from "supertest";
 import { app } from "../../app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
-import { resetDB } from "../../config/db.js";
 import { EMAIL_MESSAGE } from "../../features/auth/auth-service.js";
 import crypto from "crypto";
 
@@ -54,7 +53,7 @@ const setupAndLogin = async () => {
 
 describe("Auth API", () => {
   beforeEach(async () => {
-    await resetDB();
+    vi.resetModules();
     vi.clearAllMocks();
   });
 

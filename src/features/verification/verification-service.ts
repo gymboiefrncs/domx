@@ -12,14 +12,17 @@ import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../../utils/sendEmail.js";
-import { fetchUserForSignup } from "../auth/auth-model.js";
+import { fetchUserForSignup, getLatestOTP } from "../auth/auth-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import type { Result } from "../../common/types.js";
 import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";
+import { COOLDOWN_MESSAGE } from "../auth/auth-service.js";
+import { OTP_COOLDOWN_MS } from "../auth/auth-helpers/handleUnverifiedUser.js";
 
-const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
-const OTP_MESSAGE_SUCCESS = "Email verified successfully";
-const RESEND_OTP_MESSAGE = "If an account exists, a new code has been sent.";
+export const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
+export const OTP_MESSAGE_SUCCESS = "Email verified successfully";
+export const RESEND_OTP_MESSAGE =
+  "If an account exists, a new code has been sent.";
 
 export const validateOtp = async ({
   email,
@@ -28,27 +31,15 @@ export const validateOtp = async ({
   email: string;
   otp: string;
 }): Promise<Result> => {
-  // hash the incoming OTP to compare against the stored hash
   const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    // get the user associated with the OTP
     const otpRecord = await fetchOtp(email, client);
 
-    // ensure a verification request actually exists
-    if (!otpRecord) {
-      await client.query("ROLLBACK");
-      return {
-        ok: false,
-        reason: OTP_MESSAGE_FAIL,
-      };
-    }
-
-    // verify lifecycle status: used and expired tokens are invalid
-    if (otpRecord.used_at || otpRecord.expires_at < new Date()) {
+    if (!otpRecord || otpRecord.used_at || otpRecord.expires_at < new Date()) {
       await client.query("ROLLBACK");
       return { ok: false, reason: OTP_MESSAGE_FAIL };
     }
@@ -74,7 +65,6 @@ export const validateOtp = async ({
         };
       }
 
-      // invalidate otps after 5 failed attempts to prevent brute force attacks
       if (newRetryCount >= 5) {
         await invalidateOldOtps(otpRecord.user_id, client);
         await client.query("COMMIT");
@@ -105,7 +95,6 @@ export const validateOtp = async ({
   }
 };
 
-// re-issues a verification code for unverified users.
 export const resendOtp = async (
   email: string,
 ): Promise<{ ok: true; message: string }> => {
@@ -134,6 +123,18 @@ export const resendOtp = async (
         ok: true,
         message: RESEND_OTP_MESSAGE,
       };
+    }
+
+    const latestOTP = await getLatestOTP(user.id, client);
+
+    // Enforce a cooldown to prevent spamming OTP requests
+    const isTooSoon =
+      latestOTP &&
+      Date.now() - latestOTP.created_at.getTime() <= OTP_COOLDOWN_MS;
+
+    if (isTooSoon) {
+      await client.query("ROLLBACK");
+      return { ok: true as const, message: COOLDOWN_MESSAGE };
     }
 
     await invalidateOldOtps(user.id, client);

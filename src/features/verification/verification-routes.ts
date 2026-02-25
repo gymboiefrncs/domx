@@ -4,7 +4,7 @@ import {
   resendOtpHandler,
   verificationHandler,
 } from "./verification-controller.js";
-import { emailValidator, OTPValidator } from "./verification-validator.js";
+import { emailValidator, otpValidator } from "../../middlewares/validate.js";
 
 export const verificationRouter: Router = express.Router();
 
@@ -16,7 +16,7 @@ const verificationLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-verificationRouter.post("/verify-email", OTPValidator, verificationHandler);
+verificationRouter.post("/verify-email", otpValidator, verificationHandler);
 
 verificationRouter.post(
   "/resend-otp",

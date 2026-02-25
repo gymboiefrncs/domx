@@ -11,7 +11,7 @@ import {
   loginValidator,
   passwordValidator,
   signupValidator,
-} from "./auth-validator.js";
+} from "../../middlewares/validate.js";
 import { verifySetPasswordToken } from "../../middlewares/jwtHandler.js";
 
 export const authRouter: Router = express.Router();

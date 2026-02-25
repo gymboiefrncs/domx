@@ -92,7 +92,6 @@ describe("Auth API", () => {
         .post("/api/v1/auth/set-password")
         .set("Authorization", `Bearer ${token}`)
         .send({ password: TEST_PASSWORD });
-
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         success: true,

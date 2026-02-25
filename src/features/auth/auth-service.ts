@@ -11,7 +11,10 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "../../utils/error.js";
 import type { Role, Tokens, User } from "../../common/types.js";
-import { sendVerificationEmail } from "../../utils/sendEmail.js";
+import {
+  sendAlreadyRegisteredEmail,
+  sendVerificationEmail,
+} from "../../utils/sendEmail.js";
 import { pool } from "../../config/db.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
@@ -88,7 +91,7 @@ export const registerUser = async (
 export const loginUser = async (
   data: Pick<User, "email" | "password">,
 ): Promise<Tokens> => {
-  const user = await fetchUserByEmail(data.email);
+  const user = await fetchUserByEmail(data.email)
 
   // to prevent timing attacks
   const passwordMatch = await bcrypt.compare(
@@ -96,7 +99,14 @@ export const loginUser = async (
     user?.password ?? process.env.DUMMY_HASH!,
   );
 
-  if (!user || !passwordMatch || !user.is_verified || !user.password) {
+  if (!user || !user.is_verified || !user.password) {
+    throw new UnauthorizedError("Invalid credentials or account not verified");
+  }
+
+  if (!passwordMatch) {
+    sendAlreadyRegisteredEmail(data.email).catch((err) => {
+      console.error("Failed to send already registered email:", err);
+    });
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
 

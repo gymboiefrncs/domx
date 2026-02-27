@@ -80,11 +80,11 @@ export const createToken = async (
 
 export const fetchTokenByJti = async (
   jti: string,
-): Promise<RefreshTokenRecord> => {
+): Promise<RefreshTokenRecord | undefined> => {
   const query = `SELECT * FROM refresh_token WHERE jti = $1`;
 
   const value = [jti];
-  const result = await pool.query(query, value);
+  const result = await pool.query<RefreshTokenRecord>(query, value);
   return result.rows[0];
 };
 

@@ -51,3 +51,11 @@ export type EmailVerification = {
   created_at: Date;
   retries: number;
 };
+
+export type RefreshTokenRecord = {
+  jti: string;
+  user_id: string;
+  token_hash: string;
+  expires_at: Date;
+  created_at: Date;
+};

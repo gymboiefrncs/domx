@@ -79,7 +79,7 @@ export const setPasswordHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { password } = req.body;
     const userId = req.setPwd!.sub;

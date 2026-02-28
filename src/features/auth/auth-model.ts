@@ -10,7 +10,7 @@ import type { PoolClient } from "pg";
 export const createUser = async (
   data: SignupSchema,
   client: PoolClient,
-): Promise<Pick<User, "id" | "email">> => {
+): Promise<Pick<User, "id" | "email"> | undefined> => {
   const { email } = data;
 
   const query = `
@@ -22,7 +22,7 @@ export const createUser = async (
 
   const values = [email];
   const result = await client.query<Pick<User, "id" | "email">>(query, values);
-  return result.rows[0]!;
+  return result.rows[0];
 };
 
 export const fetchUserByEmail = async (

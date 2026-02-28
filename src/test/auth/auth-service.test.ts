@@ -36,7 +36,12 @@ describe("Auth integration - Signup", () => {
       [user?.id],
     );
 
-    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
+    expect(result).toEqual({
+      ok: true,
+      reason: "NEW_USER",
+      email: signupData.email,
+      message: EMAIL_MESSAGE,
+    });
     expect(otp).toBeDefined();
     expect(user).toMatchObject({
       email: signupData.email,
@@ -66,7 +71,12 @@ describe("Auth integration - Signup", () => {
 
     expect(user).toBeDefined();
     expect(user?.email).toBe(signupData.email); // should not update email
-    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
+    expect(result).toEqual({
+      ok: true,
+      reason: "ALREADY_VERIFIED",
+      email: signupData.email,
+      message: EMAIL_MESSAGE,
+    });
   });
 
   // =========================== UNVERIFIED USER & OTP ROTATION ============================
@@ -90,7 +100,11 @@ describe("Auth integration - Signup", () => {
       [user?.id],
     );
 
-    expect(result).toEqual({ ok: true, message: COOLDOWN_MESSAGE });
+    expect(result).toEqual({
+      ok: true,
+      reason: "COOLDOWN",
+      message: COOLDOWN_MESSAGE,
+    });
     expect(currentOtp.rows[0].id).toBe(firstOtp.rows[0].id); // OTP should not have rotated
     expect(currentOtp.rows[0].created_at).toEqual(firstOtp.rows[0].created_at); // created_at should be unchanged
   });
@@ -107,7 +121,7 @@ describe("Auth integration - Signup", () => {
       [user?.id],
     );
 
-    vi.setSystemTime(new Date(Date.now() + 2 * 60 * 1000 + 5000)); // advance time by 2 minutes and 1 second
+    vi.setSystemTime(new Date(Date.now() + 3 * 60 * 1000 + 5000)); // advance time by 2 minutes and 1 second
 
     const result = await registerUser(signupData); // trigger OTP rotation
     const secondOtp = await pool.query(
@@ -115,7 +129,13 @@ describe("Auth integration - Signup", () => {
       [user?.id],
     );
 
-    expect(result).toEqual({ ok: true, message: EMAIL_MESSAGE });
+    expect(result).toEqual({
+      ok: true,
+      reason: "RESENT_OTP",
+      email: signupData.email,
+      message: EMAIL_MESSAGE,
+    });
+
     expect(secondOtp.rows[0].id).not.toBe(firstOtp.rows[0].id); // OTP should have rotated
     expect(secondOtp.rows[0].created_at).not.toEqual(
       firstOtp.rows[0].created_at,
@@ -151,7 +171,6 @@ describe("Auth integration - Signup", () => {
       "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
     );
-
     /**
      * we cannot guarantee which request will get the lock first
      * so we just check that both possible messages are returned and that only one verification email is sent
@@ -180,8 +199,18 @@ describe("Auth integration - Signup", () => {
       [users.rows[0].id],
     );
 
-    expect(result1).toEqual({ ok: true, message: EMAIL_MESSAGE });
-    expect(result2).toEqual({ ok: true, message: EMAIL_MESSAGE });
+    expect(result1).toEqual({
+      ok: true,
+      reason: "NEW_USER",
+      email: signupData.email,
+      message: EMAIL_MESSAGE,
+    });
+    expect(result2).toEqual({
+      ok: true,
+      reason: "NEW_USER",
+      email: signupData.email,
+      message: EMAIL_MESSAGE,
+    });
     expect(otp.rows).toHaveLength(1); // only one OTP should be created
     expect(users.rows).toHaveLength(1); // should stilll be only one user
   });

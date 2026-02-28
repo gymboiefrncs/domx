@@ -16,6 +16,7 @@ export const createUser = async (
   const query = `
     INSERT INTO users(email)
     VALUES ($1)
+    ON CONFLICT (email) DO NOTHING
     RETURNING id, email
   `;
 

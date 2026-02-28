@@ -42,3 +42,5 @@ export const globalErrorHandler: ErrorRequestHandler = (
     ],
   });
 };
+
+//TODO: Add Sentry or another error tracking service for better monitoring in production and improve error handling..

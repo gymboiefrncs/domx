@@ -10,7 +10,12 @@ import type { SignupSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "../../utils/error.js";
-import type { Role, Tokens, User } from "../../common/types.js";
+import type {
+  RegistrationResult,
+  Role,
+  Tokens,
+  User,
+} from "../../common/types.js";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
@@ -26,72 +31,74 @@ import type { Result } from "../../common/types.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
+import { withTransaction } from "../../config/transaction.js";
 
-export const EMAIL_MESSAGE = "Verification email sent. Please check your email";
-export const COOLDOWN_MESSAGE =
-  "Verification email just sent. Please wait a moment before requesting again";
+// user facing messages.
+export const EMAIL_MESSAGE =
+  "Verification email sent. Please check your inbox.";
+export const COOLDOWN_MESSAGE = "Please wait before requesting another code.";
+export const ALREADY_REGISTERED_MESSAGE =
+  "If this email is registered, you'll hear from us shortly.";
 
 export const registerUser = async (
   data: SignupSchema,
-): Promise<{ ok: true; message: string }> => {
-  const { ...rest } = data;
+): Promise<RegistrationResult> => {
+  /**
+   * Intentionally returns a unified response shape for all cases to prevent user enumeration attacks.
+   * Regardless of whether the email is new, unverified, or already verified,
+   * the response is with a generic message and status.
+   *
+   * User needs to prove the ownership first of the email before the user can further finished signing up
+   * If concurrent signup requests provide different credentials for the same email,
+   * we cannot determine which set is legitimate.
+   *
+   * By verifying email ownership first, we can ensure that only the user with access to the email can proceed.
+   */
+
   const otpData = generateOTP();
 
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+  /**
+   * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
+   * Inside: return to commit, throw to rollback.
+   */
+  const result = await withTransaction(pool, async (client) => {
     const user = await fetchUserForSignup(data.email, client);
 
     if (user?.is_verified) {
-      await client.query("ROLLBACK");
-      return handleVerifiedUser(user.email);
+      return handleVerifiedUser(data.email);
     }
 
-    if (user) {
-      const result = await handleUnverifiedUser(user, otpData, client);
-      if (result.message === COOLDOWN_MESSAGE) {
-        await client.query("ROLLBACK");
-      } else {
-        await client.query("COMMIT");
-
-        sendVerificationEmail(user.email, otpData.otp).catch((error) => {
-          console.error("Failed to email:", error);
-        });
-        return { ok: true as const, message: EMAIL_MESSAGE };
-      }
-
-      return result;
+    if (user && !user.is_verified) {
+      return await handleUnverifiedUser(user, otpData, client);
     }
 
-    // New user
-    await handleNewUser(rest, otpData, client);
-    await client.query("COMMIT");
-    sendVerificationEmail(data.email, otpData.otp).catch((error) => {
-      console.error("Failed to email:", error);
+    return await handleNewUser(data, otpData, client);
+  });
+
+  /**
+   * Side effects are deliberately kept OUTSIDE the transaction.
+   * Sending an email can be slow; doing it inside the transaction
+   * would keep locks and a DB connection open unnecessarily.
+   */
+  if (result.reason === "NEW_USER" || result.reason === "RESENT_OTP") {
+    sendVerificationEmail(result.email, otpData.otp).catch((err) => {
+      console.error("Failed to send email:", err);
     });
-
-    return { ok: true as const, message: EMAIL_MESSAGE };
-  } catch (error) {
-    await client.query("ROLLBACK");
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).code === "23505") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((error as any).constraint === "users_email_key") {
-        // do nothing as this hit the constraint for unique email, meaning another request already created the user and OTP
-        return { ok: true as const, message: EMAIL_MESSAGE };
-      }
-    }
-    throw error;
-  } finally {
-    client.release();
   }
+
+  if (result.reason === "ALREADY_VERIFIED") {
+    sendAlreadyRegisteredEmail(data.email).catch((err) => {
+      console.error("Failed to email:", err);
+    });
+  }
+
+  return result;
 };
 
 export const loginUser = async (
   data: Pick<User, "email" | "password">,
 ): Promise<Tokens> => {
-  const user = await fetchUserByEmail(data.email)
+  const user = await fetchUserByEmail(data.email);
 
   // to prevent timing attacks
   const passwordMatch = await bcrypt.compare(

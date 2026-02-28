@@ -80,9 +80,9 @@ export const invalidateOldOtps = async (
 ): Promise<void> => {
   const query = `
     UPDATE email_verification 
-    SET expires_at = NOW() 
+    SET used_at = NOW() 
     WHERE user_id = $1 
-    AND expires_at > NOW()
+    AND used_at IS NULL
   `;
 
   const value = [userId];

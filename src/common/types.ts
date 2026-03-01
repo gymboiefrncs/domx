@@ -1,15 +1,3 @@
-import type { UserRow } from "../features/auth/auth.types.js";
-import type { PostSchema } from "../features/post/post-schema.js";
-
-export type Post = PostSchema & {
-  id: number;
-  author_id: string;
-  created_at: Date;
-  updated_at: Date;
-};
-
-export type Profile = Pick<UserRow, "username"> & { posts: Post[] | string };
-
 export type UserVerificationStatus = {
   id: string;
   user_id: string;

@@ -15,11 +15,17 @@ import {
 import { fetchUserForSignup } from "../auth/auth-model.js";
 import { getLatestOTP } from "./verification-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
-import type { Result } from "../../common/types.js";
 import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";
 import { COOLDOWN_MESSAGE } from "../auth/auth-service.js";
 import { OTP_COOLDOWN_MS } from "../auth/auth-helpers/handleUnverifiedUser.js";
+import { withTransaction } from "../../config/transaction.js";
+import type {
+  ResendOtpResult,
+  TransactionResult,
+  ValidateOtpResult,
+} from "./verification.types.js";
 
+// User-facing messages
 export const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
 export const OTP_MESSAGE_SUCCESS = "Email verified successfully";
 export const RESEND_OTP_MESSAGE =
@@ -31,131 +37,144 @@ export const validateOtp = async ({
 }: {
   email: string;
   otp: string;
-}): Promise<Result> => {
+}): Promise<ValidateOtpResult> => {
   const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
-  const client = await pool.connect();
 
-  try {
-    await client.query("BEGIN");
+  /**
+   * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
+   * Inside: return to commit, throw to rollback.
+   *
+   * The transaction result returns `userId` as an intermediate value to generate the token outside.
+   * The final function result replaces userId with the token, so the shape differ.
+   *
+   * We annotate explicitly so TypeScript knows the callback's return type upfront
+   * rather than inferring a widened type from return statements
+   */
+  const result = await withTransaction<TransactionResult>(
+    pool,
+    async (client) => {
+      const otpRecord = await fetchOtp(email, client);
 
-    const otpRecord = await fetchOtp(email, client);
+      if (
+        !otpRecord ||
+        otpRecord.used_at ||
+        otpRecord.expires_at < new Date()
+      ) {
+        return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+      }
 
-    if (!otpRecord || otpRecord.used_at || otpRecord.expires_at < new Date()) {
-      await client.query("ROLLBACK");
-      return { ok: false, reason: OTP_MESSAGE_FAIL };
-    }
-
-    // to prevent timing attacks
-    const isOtpValid = crypto.timingSafeEqual(
-      Buffer.from(otpRecord.otp_hash, "hex"),
-      Buffer.from(hashedOTP, "hex"),
-    );
-
-    if (!isOtpValid) {
-      const newRetryCount = await incrementRetries(
-        otpRecord.user_id,
-        otpRecord.id,
-        client,
+      // To prevent timing attacks
+      const isOtpValid = crypto.timingSafeEqual(
+        Buffer.from(otpRecord.otp_hash, "hex"),
+        Buffer.from(hashedOTP, "hex"),
       );
 
-      if (!newRetryCount) {
-        await client.query("ROLLBACK");
-        return {
-          ok: false,
-          reason: OTP_MESSAGE_FAIL,
-        };
+      if (!isOtpValid) {
+        const newRetryCount = await incrementRetries(
+          otpRecord.user_id,
+          otpRecord.id,
+          client,
+        );
+
+        if (!newRetryCount) {
+          return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+        }
+
+        if (newRetryCount >= 5) {
+          await invalidateOldOtps(otpRecord.user_id, client);
+          return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+        }
+        return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
       }
 
-      if (newRetryCount >= 5) {
-        await invalidateOldOtps(otpRecord.user_id, client);
-        await client.query("COMMIT");
-        return {
-          ok: false,
-          reason: OTP_MESSAGE_FAIL,
-        };
-      }
+      await markUserAsVerified(otpRecord.user_id, client);
+      await markTokenAsUsed(otpRecord.id, hashedOTP, client);
 
-      await client.query("COMMIT");
-      return { ok: false, reason: OTP_MESSAGE_FAIL };
-    }
+      return { ok: true as const, userId: otpRecord.user_id };
+    },
+  );
 
-    await markUserAsVerified(otpRecord.user_id, client);
-    await markTokenAsUsed(otpRecord.id, hashedOTP, client);
-
-    await client.query("COMMIT");
-
-    // Short-lived token for setting password
-    const token = await generateSetPasswordToken(otpRecord.user_id);
-
+  /**
+   * Generating token for setting a password happens outside the transaction
+   * because it serves no purpose inside it and it will hold the connection longer
+   */
+  if (result.ok) {
+    const token = await generateSetPasswordToken(result.userId);
     return { ok: true, message: OTP_MESSAGE_SUCCESS, data: token };
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
   }
+
+  return result;
 };
 
-export const resendOtp = async (
-  email: string,
-): Promise<{ ok: true; message: string }> => {
+export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
   const { otp, hashedOTP, expiresAt } = generateOTP();
 
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
+  const result = await withTransaction(pool, async (client) => {
+    /**
+     * Intentionally returns a unified response shape for all cases to prevent user enumeration attacks.
+     * Regardless of whether the user exists, is verified, OTP is on cooldown, or OTP is resent,
+     * the response is with a generic message and status.
+     */
 
     const user = await fetchUserForSignup(email, client);
 
-    if (!user) {
-      await client.query("ROLLBACK");
+    if (!user)
       return {
-        ok: true,
+        ok: true as const,
+        reason: "USER_NOT_FOUND" as const,
         message: RESEND_OTP_MESSAGE,
       };
-    }
-
-    if (user.is_verified) {
-      await client.query("ROLLBACK");
-      sendAlreadyRegisteredEmail(email).catch((err) => {
-        console.error("Failed to send already registered email:", err);
-      });
+    if (user.is_verified)
       return {
-        ok: true,
+        ok: true as const,
+        reason: "ALREADY_VERIFIED" as const,
+        email: user.email,
         message: RESEND_OTP_MESSAGE,
       };
-    }
 
+    /**
+     * Enforce a cooldown to prevent spamming OTP requests
+     * This also prevents double otp to be created or valid at the same time caused by a concurrent request.
+     */
     const latestOTP = await getLatestOTP(user.id, client);
-
-    // Enforce a cooldown to prevent spamming OTP requests
     const isTooSoon =
       latestOTP &&
       Date.now() - latestOTP.created_at.getTime() <= OTP_COOLDOWN_MS;
-
     if (isTooSoon) {
-      await client.query("ROLLBACK");
-      return { ok: true as const, message: COOLDOWN_MESSAGE };
+      return {
+        ok: true as const,
+        reason: "COOLDOWN" as const,
+        message: COOLDOWN_MESSAGE,
+      };
     }
 
     await invalidateOldOtps(user.id, client);
     await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
-    await client.query("COMMIT");
-
-    sendVerificationEmail(user.email, otp).catch((err) => {
-      console.error("Failed to send verification email:", err);
-    });
-
     return {
-      ok: true,
+      ok: true as const,
+      reason: "RESENT_OTP" as const,
+      email: user.email,
       message: RESEND_OTP_MESSAGE,
     };
-  } catch (error) {
-    await client.query("ROLLBACK");
+  });
 
-    throw error;
-  } finally {
-    client.release();
+  /**
+   * Side effects are deliberately kept OUTSIDE the transaction.
+   * Firing emails inside the transaction risks notifying the user
+   * before the transaction is committed, which could lead to
+   * confusion if ever the transaction rolls back after the email is sent
+   */
+  if (result.reason === "RESENT_OTP") {
+    sendVerificationEmail(result.email, otp).catch((err) => {
+      console.error("Failed to send verification email:", err);
+    });
   }
+  if (result.reason === "ALREADY_VERIFIED") {
+    sendAlreadyRegisteredEmail(result.email).catch((err) => {
+      console.error("Failed to send already registered email:", err);
+    });
+  }
+
+  return result;
 };

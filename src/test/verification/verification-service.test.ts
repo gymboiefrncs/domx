@@ -91,7 +91,7 @@ describe("Verification Service", () => {
 
       if (!validationRes.ok) {
         expect(validationRes.ok).toBe(false);
-        expect(validationRes.reason).toBe(OTP_MESSAGE_FAIL);
+        expect(validationRes.errMessage).toBe(OTP_MESSAGE_FAIL);
       }
       const userRecord = await pool.query(
         "SELECT is_verified FROM users WHERE email = $1",
@@ -109,7 +109,7 @@ describe("Verification Service", () => {
 
       if (!validationRes.ok) {
         expect(validationRes.ok).toBe(false);
-        expect(validationRes.reason).toBe(OTP_MESSAGE_FAIL);
+        expect(validationRes.errMessage).toBe(OTP_MESSAGE_FAIL);
       }
       const userRecord = await pool.query(
         "SELECT is_verified FROM users WHERE email = $1",
@@ -133,7 +133,7 @@ describe("Verification Service", () => {
 
       if (!validationRes.ok) {
         expect(validationRes.ok).toBe(false);
-        expect(validationRes.reason).toBe(OTP_MESSAGE_FAIL);
+        expect(validationRes.errMessage).toBe(OTP_MESSAGE_FAIL);
       }
     });
 
@@ -156,7 +156,7 @@ describe("Verification Service", () => {
       });
       if (!validationRes.ok) {
         expect(validationRes.ok).toBe(false);
-        expect(validationRes.reason).toBe(OTP_MESSAGE_FAIL);
+        expect(validationRes.errMessage).toBe(OTP_MESSAGE_FAIL);
       }
     });
 
@@ -175,7 +175,7 @@ describe("Verification Service", () => {
         });
         if (!validationRes.ok) {
           expect(validationRes.ok).toBe(false);
-          expect(validationRes.reason).toBe(OTP_MESSAGE_FAIL);
+          expect(validationRes.errMessage).toBe(OTP_MESSAGE_FAIL);
         }
       }
       const retries = await pool.query(

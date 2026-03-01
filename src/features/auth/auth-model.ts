@@ -91,7 +91,7 @@ export const deleteOldRefreshToken = async (jti: string): Promise<void> => {
 export const updateUserPassword = async (
   userId: string,
   hashedPassword: string,
-) => {
+): Promise<boolean> => {
   const query = `
       UPDATE users 
       SET password = $1 
@@ -103,5 +103,5 @@ export const updateUserPassword = async (
   const value = [hashedPassword, userId];
   const result = await pool.query(query, value);
 
-  return result;
+  return (result.rowCount ?? 0) > 0;
 };

@@ -13,7 +13,7 @@ export const setPassword = async ({
 
   const result = await updateUserPassword(userId, hashedPassword);
 
-  if (result.rowCount === 0) {
+  if (!result) {
     return {
       ok: false,
       reason: "Something went wrong. Please try again later",

@@ -83,7 +83,7 @@ export const registerUser = async (
   }
 
   if (result.reason === "ALREADY_VERIFIED") {
-    sendAlreadyRegisteredEmail(data.email).catch((err) => {
+    sendAlreadyRegisteredEmail(result.email).catch((err) => {
       console.error("Failed to email:", err);
     });
   }
@@ -95,7 +95,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
   const user = await fetchUserByEmail(data.email);
 
   /**
-   * Intentionally compare the passsword BEFORE checking id user exists or is verified.
+   * Intentionally compare the password BEFORE checking if user exists or is verified.
    * This ensures the response time is constant regardless of whether the email
    * is registered or not, preventing timing attacks that could enumerate emails
    *

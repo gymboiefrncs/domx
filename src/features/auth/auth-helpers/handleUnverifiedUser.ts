@@ -1,9 +1,10 @@
 import {
   invalidateOldOtps,
   createSignupOtp,
+  getLatestOTP,
 } from "../../verification/verification-model.js";
-import { getLatestOTP } from "../auth-model.js";
-import type { RegistrationResult, User } from "../../../common/types.js";
+import type { RegistrationResult } from "../../../common/types.js";
+import type { SignupUser } from "../auth.types.js";
 import type { PoolClient } from "pg";
 import { COOLDOWN_MESSAGE, EMAIL_MESSAGE } from "../auth-service.js";
 
@@ -25,7 +26,7 @@ export const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
  * to ensure only the most recent code remains valid.
  */
 export const handleUnverifiedUser = async (
-  user: Pick<User, "email" | "id" | "is_verified">,
+  user: SignupUser,
   otpData: {
     otp: string;
     hashedOTP: string;

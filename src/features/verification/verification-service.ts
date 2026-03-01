@@ -12,7 +12,8 @@ import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../../utils/sendEmail.js";
-import { fetchUserForSignup, getLatestOTP } from "../auth/auth-model.js";
+import { fetchUserForSignup } from "../auth/auth-model.js";
+import { getLatestOTP } from "./verification-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import type { Result } from "../../common/types.js";
 import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";

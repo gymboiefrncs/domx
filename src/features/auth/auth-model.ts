@@ -1,16 +1,18 @@
 import type { SignupSchema } from "./auth-schema.js";
 import { pool } from "../../config/db.js";
 import type {
-  EmailVerification,
-  RefreshTokenRecord,
-  User,
-} from "../../common/types.js";
+  AuthIdentity,
+  NewUser,
+  RefreshTokenRow,
+  SignupUser,
+  UserRow,
+} from "./auth.types.js";
 import type { PoolClient } from "pg";
 
 export const createUser = async (
   data: SignupSchema,
   client: PoolClient,
-): Promise<Pick<User, "id" | "email"> | undefined> => {
+): Promise<NewUser | undefined> => {
   const { email } = data;
 
   const query = `
@@ -21,34 +23,34 @@ export const createUser = async (
   `;
 
   const values = [email];
-  const result = await client.query<Pick<User, "id" | "email">>(query, values);
+  const result = await client.query<NewUser>(query, values);
   return result.rows[0];
 };
 
 export const fetchUserByEmail = async (
   email: string,
-): Promise<User | undefined> => {
+): Promise<UserRow | undefined> => {
   const query = "SELECT * FROM users WHERE email = $1";
   const values = [email];
 
-  const result = await pool.query<User>(query, values);
+  const result = await pool.query<UserRow>(query, values);
   return result.rows[0];
 };
 
 export const fetchUserById = async (
   id: string,
-): Promise<Pick<User, "id" | "role"> | undefined> => {
+): Promise<AuthIdentity | undefined> => {
   const query = "SELECT id, role FROM users WHERE id = $1";
   const values = [id];
 
-  const result = await pool.query<Pick<User, "id" | "role">>(query, values);
+  const result = await pool.query<AuthIdentity>(query, values);
   return result.rows[0];
 };
 
 export const fetchUserForSignup = async (
   email: string,
   client: PoolClient,
-): Promise<Pick<User, "id" | "is_verified" | "email"> | undefined> => {
+): Promise<SignupUser | undefined> => {
   const query = `
     SELECT id, is_verified, email 
     FROM users 
@@ -57,10 +59,7 @@ export const fetchUserForSignup = async (
   `;
   const values = [email];
 
-  const result = await client.query<Pick<User, "id" | "is_verified" | "email">>(
-    query,
-    values,
-  );
+  const result = await client.query<SignupUser>(query, values);
   return result.rows[0];
 };
 
@@ -81,11 +80,11 @@ export const createToken = async (
 
 export const fetchTokenByJti = async (
   jti: string,
-): Promise<RefreshTokenRecord | undefined> => {
+): Promise<RefreshTokenRow | undefined> => {
   const query = `SELECT * FROM refresh_token WHERE jti = $1`;
 
   const value = [jti];
-  const result = await pool.query<RefreshTokenRecord>(query, value);
+  const result = await pool.query<RefreshTokenRow>(query, value);
   return result.rows[0];
 };
 
@@ -94,24 +93,6 @@ export const deleteOldRefreshToken = async (jti: string): Promise<void> => {
 
   const value = [jti];
   await pool.query(query, value);
-};
-
-export const getLatestOTP = async (
-  userId: string,
-  client: PoolClient,
-): Promise<EmailVerification | undefined> => {
-  const query = `
-    SELECT * FROM email_verification 
-    WHERE user_id = $1 
-    ORDER BY created_at 
-    DESC 
-    LIMIT 1 
-    FOR UPDATE
-  `;
-
-  const value = [userId];
-  const result = await client.query<EmailVerification>(query, value);
-  return result.rows[0];
 };
 
 export const updateUserPassword = async (

@@ -1,14 +1,5 @@
+import type { UserRow } from "../features/auth/auth.types.js";
 import type { PostSchema } from "../features/post/post-schema.js";
-
-export type User = {
-  id: string;
-  username: string;
-  email: string;
-  password: string;
-  role: Role;
-  created_at: Date;
-  is_verified: boolean;
-};
 
 export type Post = PostSchema & {
   id: number;
@@ -17,7 +8,7 @@ export type Post = PostSchema & {
   updated_at: Date;
 };
 
-export type Profile = Pick<User, "username"> & { posts: Post[] | string };
+export type Profile = Pick<UserRow, "username"> & { posts: Post[] | string };
 
 export type UserVerificationStatus = {
   id: string;
@@ -63,12 +54,4 @@ export type EmailVerification = {
   used_at: Date | null;
   created_at: Date;
   retries: number;
-};
-
-export type RefreshTokenRecord = {
-  jti: string;
-  user_id: string;
-  token_hash: string;
-  expires_at: Date;
-  created_at: Date;
 };

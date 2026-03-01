@@ -1,5 +1,8 @@
 import type { PoolClient } from "pg";
-import type { UserVerificationStatus } from "../../common/types.js";
+import type {
+  EmailVerification,
+  UserVerificationStatus,
+} from "../../common/types.js";
 
 export const createSignupOtp = async (
   userId: string,
@@ -87,4 +90,22 @@ export const invalidateOldOtps = async (
 
   const value = [userId];
   await client.query(query, value);
+};
+
+export const getLatestOTP = async (
+  userId: string,
+  client: PoolClient,
+): Promise<EmailVerification | undefined> => {
+  const query = `
+    SELECT * FROM email_verification 
+    WHERE user_id = $1 
+    ORDER BY created_at 
+    DESC 
+    LIMIT 1 
+    FOR UPDATE
+  `;
+
+  const value = [userId];
+  const result = await client.query<EmailVerification>(query, value);
+  return result.rows[0];
 };

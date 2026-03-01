@@ -6,16 +6,11 @@ import {
   fetchUserForSignup,
   createToken,
 } from "./auth-model.js";
-import type { SignupSchema } from "./auth-schema.js";
+import type { SignupSchema, LoginSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "../../utils/error.js";
-import type {
-  RegistrationResult,
-  Role,
-  Tokens,
-  User,
-} from "../../common/types.js";
+import type { RegistrationResult, Tokens } from "../../common/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
@@ -97,9 +92,7 @@ export const registerUser = async (
   return result;
 };
 
-export const loginUser = async (
-  data: Pick<User, "email" | "password">,
-): Promise<Tokens> => {
+export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
   const user = await fetchUserByEmail(data.email);
 
   /**
@@ -129,7 +122,7 @@ export const loginUser = async (
 
   const { accessToken, refreshToken } = await generateTokens(
     user.id,
-    user.role as Role,
+    user.role,
     jti,
   );
 

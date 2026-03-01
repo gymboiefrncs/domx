@@ -1,12 +1,6 @@
 import type { SignupSchema } from "./auth-schema.js";
 import { pool } from "../../config/db.js";
-import type {
-  AuthIdentity,
-  NewUser,
-  RefreshTokenRow,
-  SignupUser,
-  UserRow,
-} from "./auth.types.js";
+import type { UserRole, LoginUser, NewUser, SignupUser } from "./auth.types.js";
 import type { PoolClient } from "pg";
 
 export const createUser = async (
@@ -29,21 +23,22 @@ export const createUser = async (
 
 export const fetchUserByEmail = async (
   email: string,
-): Promise<UserRow | undefined> => {
-  const query = "SELECT * FROM users WHERE email = $1";
+): Promise<LoginUser | undefined> => {
+  const query =
+    "SELECT id, email,password, is_verified, role FROM users WHERE email = $1";
   const values = [email];
 
-  const result = await pool.query<UserRow>(query, values);
+  const result = await pool.query<LoginUser>(query, values);
   return result.rows[0];
 };
 
 export const fetchUserById = async (
   id: string,
-): Promise<AuthIdentity | undefined> => {
-  const query = "SELECT id, role FROM users WHERE id = $1";
+): Promise<UserRole | undefined> => {
+  const query = "SELECT role FROM users WHERE id = $1";
   const values = [id];
 
-  const result = await pool.query<AuthIdentity>(query, values);
+  const result = await pool.query<UserRole>(query, values);
   return result.rows[0];
 };
 
@@ -66,7 +61,7 @@ export const fetchUserForSignup = async (
 export const createToken = async (
   jti: string,
   userId: string,
-  refreshToken: string,
+  refreshTokenHash: string,
   expiresAt: Date,
 ): Promise<void> => {
   const query = `
@@ -74,18 +69,16 @@ export const createToken = async (
     VALUES ($1, $2, $3, $4)
   `;
 
-  const values = [jti, userId, refreshToken, expiresAt];
+  const values = [jti, userId, refreshTokenHash, expiresAt];
   await pool.query(query, values);
 };
 
-export const fetchTokenByJti = async (
-  jti: string,
-): Promise<RefreshTokenRow | undefined> => {
-  const query = `SELECT * FROM refresh_token WHERE jti = $1`;
+export const tokenExists = async (jti: string): Promise<boolean> => {
+  const query = `SELECT 1 FROM refresh_token WHERE jti = $1`;
 
   const value = [jti];
-  const result = await pool.query<RefreshTokenRow>(query, value);
-  return result.rows[0];
+  const result = await pool.query(query, value);
+  return (result.rowCount ?? 0) > 0;
 };
 
 export const deleteOldRefreshToken = async (jti: string): Promise<void> => {

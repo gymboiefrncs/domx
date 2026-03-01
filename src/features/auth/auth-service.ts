@@ -1,6 +1,6 @@
 import {
   deleteOldRefreshToken,
-  fetchTokenByJti,
+  tokenExists,
   fetchUserByEmail,
   fetchUserById,
   fetchUserForSignup,
@@ -10,7 +10,7 @@ import type { SignupSchema, LoginSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "../../utils/error.js";
-import type { RegistrationResult, Tokens } from "../../common/types.js";
+import type { RegistrationResult, Tokens, Result } from "../../common/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
@@ -23,7 +23,6 @@ import {
   generateTokens,
   refreshTokenExpiry,
 } from "../../utils/generateToken.js";
-import type { Result } from "../../common/types.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
@@ -145,8 +144,8 @@ export const rotateTokens = async (
   const userId = payload.userId as string;
 
   // check if token exists in DB
-  const storedRefreshToken = await fetchTokenByJti(payload.jti as string);
-  if (!storedRefreshToken)
+  const hasToken = await tokenExists(payload.jti as string);
+  if (!hasToken)
     throw new UnauthorizedError("Session expired, please login again");
 
   // prevent reuse of refresh token

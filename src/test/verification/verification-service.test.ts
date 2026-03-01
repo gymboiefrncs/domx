@@ -72,7 +72,7 @@ describe("Verification Service", () => {
         [userId],
       );
 
-      expect(otpRecord.rows[0].used_at).toBeDefined();
+      expect(otpRecord.rows.length).toBe(0);
       expect(userRecord.rows[0].is_verified).toBe(true);
     });
 
@@ -182,7 +182,7 @@ describe("Verification Service", () => {
         "SELECT retries FROM email_verification WHERE user_id = $1",
         [userId],
       );
-      expect(retries.rows[0].retries).toBe(5);
+      expect(retries.rows.length).toBe(0);
     });
   });
 

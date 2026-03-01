@@ -56,17 +56,6 @@ export const fetchOtp = async (
   return result.rows[0];
 };
 
-export const markTokenAsUsed = async (
-  id: string,
-  hashedOTP: string,
-  client: PoolClient,
-): Promise<void> => {
-  const query = `UPDATE email_verification SET used_at = NOW() WHERE id = $1 AND otp_hash = $2`;
-  const values = [id, hashedOTP];
-
-  await client.query(query, values);
-};
-
 export const markUserAsVerified = async (
   userId: string,
   client: PoolClient,
@@ -77,15 +66,13 @@ export const markUserAsVerified = async (
   await client.query(query, value);
 };
 
-export const invalidateOldOtps = async (
+export const deleteOtp = async (
   userId: string,
   client: PoolClient,
 ): Promise<void> => {
   const query = `
-    UPDATE email_verification 
-    SET used_at = NOW() 
+    DELETE FROM email_verification
     WHERE user_id = $1 
-    AND used_at IS NULL
   `;
 
   const value = [userId];

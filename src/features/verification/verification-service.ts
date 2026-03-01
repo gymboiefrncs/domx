@@ -3,8 +3,7 @@ import {
   createSignupOtp,
   fetchOtp,
   incrementRetries,
-  invalidateOldOtps,
-  markTokenAsUsed,
+  deleteOtp,
   markUserAsVerified,
 } from "./verification-model.js";
 import crypto from "crypto";
@@ -81,14 +80,14 @@ export const validateOtp = async ({
         }
 
         if (newRetryCount >= 5) {
-          await invalidateOldOtps(otpRecord.user_id, client);
+          await deleteOtp(otpRecord.user_id, client);
           return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
         }
         return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
       }
 
       await markUserAsVerified(otpRecord.user_id, client);
-      await markTokenAsUsed(otpRecord.id, hashedOTP, client);
+      await deleteOtp(otpRecord.user_id, client);
 
       return { ok: true as const, userId: otpRecord.user_id };
     },
@@ -148,7 +147,7 @@ export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
       };
     }
 
-    await invalidateOldOtps(user.id, client);
+    await deleteOtp(user.id, client);
     await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
     return {

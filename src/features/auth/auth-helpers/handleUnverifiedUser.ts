@@ -1,5 +1,5 @@
 import {
-  invalidateOldOtps,
+  deleteOtp,
   createSignupOtp,
   getLatestOTP,
 } from "../../verification/verification-model.js";
@@ -52,7 +52,7 @@ export const handleUnverifiedUser = async (
   }
 
   // Ensures only one valid OTP is active at a time
-  await invalidateOldOtps(user.id, client);
+  await deleteOtp(user.id, client);
   await createSignupOtp(user.id, otpData.hashedOTP, otpData.expiresAt, client);
 
   return {

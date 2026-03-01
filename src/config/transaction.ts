@@ -1,8 +1,8 @@
 import type { Pool, PoolClient } from "pg";
 
 /**
- * This wrapper owns teh enitre transaction lifecycle.
- * Isolates transaction management from business logic
+ * This wrapper owns the entire transaction lifecycle.
+ * Isolates transaction management from business logic.
  */
 export const withTransaction = async <T>(
   pool: Pool,

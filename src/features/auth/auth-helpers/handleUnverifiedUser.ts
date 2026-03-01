@@ -51,7 +51,7 @@ export const handleUnverifiedUser = async (
     };
   }
 
-  // Ensures only one vlaid OTP is active at a time
+  // Ensures only one valid OTP is active at a time
   await invalidateOldOtps(user.id, client);
   await createSignupOtp(user.id, otpData.hashedOTP, otpData.expiresAt, client);
 

@@ -22,7 +22,7 @@ const setupVerifiedUser = async () => {
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
-  const token = verifyRes.body?.message?.data;
+  const token = verifyRes.body?.data;
   await request(app)
     .post("/api/v1/auth/set-password")
     .set("Authorization", `Bearer ${token}`)
@@ -35,7 +35,7 @@ const setupAndLogin = async () => {
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
 
-  const token = verifyRes.body?.message?.data;
+  const token = verifyRes.body?.data;
   await request(app)
     .post("/api/v1/auth/set-password")
     .set("Authorization", `Bearer ${token}`)
@@ -76,7 +76,7 @@ describe("Auth API", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(typeof res.body?.message?.data).toBe("string");
+      expect(typeof res.body?.data).toBe("string");
     });
 
     it("sets password after verification", async () => {
@@ -86,7 +86,7 @@ describe("Auth API", () => {
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
 
-      const token = verifyRes.body?.message?.data;
+      const token = verifyRes.body?.data;
 
       const res = await request(app)
         .post("/api/v1/auth/set-password")
@@ -162,7 +162,7 @@ describe("Auth API", () => {
       const verifyRes = await request(app)
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
-      const token = verifyRes.body?.message?.data;
+      const token = verifyRes.body?.data;
 
       const [res1, res2] = await Promise.all([
         request(app)
@@ -187,7 +187,7 @@ describe("Auth API", () => {
       });
       expect(messages).toContainEqual({
         success: false,
-        message: "Something went wrong. Please try again later",
+        message: "Something went wrong. Please try again later.",
       });
     });
   });

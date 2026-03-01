@@ -10,14 +10,14 @@ export type UserVerificationStatus = {
 
 export type Result =
   | { ok: true; message: string; data?: unknown }
-  | { ok: false; reason: string };
+  | { ok: false; reason: string; message: string };
 
 /**
  * `reason` is a machine-readable discriminant used for control flow (e.g. determining which email to send).
- * `message is a user facing string that is intended for display and is subject to change
+ * `message` is a user-facing string that is intended for display and is subject to change.
  *
  * By keeping them separate, we can freely change user-facing messages
- * without risking bbreaking any control flow logic
+ * without risking breaking any control flow logic.
  */
 export type RegistrationResult =
   | { ok: true; reason: "NEW_USER"; email: string; message: string }

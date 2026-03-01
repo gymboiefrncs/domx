@@ -86,7 +86,7 @@ export const setPasswordHandler = async (
     const result = await setPassword({ userId, password });
     res.status(result.ok ? 200 : 400).json({
       success: result.ok,
-      message: result.ok ? result.message : result.reason,
+      message: result.message,
     });
   } catch (error) {
     next(error);

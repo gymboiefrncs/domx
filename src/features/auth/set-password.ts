@@ -16,7 +16,8 @@ export const setPassword = async ({
   if (!result) {
     return {
       ok: false,
-      reason: "Something went wrong. Please try again later",
+      reason: "PASSWORD_SET_FAILED",
+      message: "Something went wrong. Please try again later.",
     };
   }
 

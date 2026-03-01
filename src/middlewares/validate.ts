@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { type ZodObject } from "zod";
+import type { ZodTypeAny } from "zod";
 import {
   loginSchema,
   passwordSchema,
@@ -10,11 +10,11 @@ import {
   emailSchema,
   otpSchema,
 } from "../features/verification/verification-schema.js";
-import { postSchema } from "../features/post/post-schema.js";
 
 // Generic validation middleware factory
 const validate =
-  (schema: ZodObject) => (req: Request, _res: Response, next: NextFunction) => {
+  (schema: ZodTypeAny) =>
+  (req: Request, _res: Response, next: NextFunction) => {
     const validation = schema.safeParse(req.body);
 
     if (!validation.success) {
@@ -37,4 +37,3 @@ export const signupValidator = validate(signupSchema);
 export const passwordValidator = validate(passwordSchema);
 export const otpValidator = validate(otpSchema);
 export const emailValidator = validate(emailSchema);
-export const postValidator = validate(postSchema);

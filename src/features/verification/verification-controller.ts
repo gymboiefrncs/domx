@@ -12,6 +12,7 @@ export const verificationHandler = async (
     res.status(statusCode).json({
       success: result.ok,
       message: result.ok ? result.message : result.errMessage,
+      ...(result.ok && { data: result.data }),
     });
   } catch (error) {
     next(error);

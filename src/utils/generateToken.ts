@@ -3,9 +3,14 @@ import type { Role, Tokens } from "../common/types.js";
 
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
-export const refreshTokenExpiry = new Date(
-  Date.now() + 7 * 24 * 60 * 60 * 1000,
-);
+
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Returns a fresh expiry date relative to now.
+ * Must be called per token, not cached at module level.
+ */
+export const getRefreshTokenExpiry = (): Date =>
+  new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
 
 export const generateTokens = async (
   userId: string,
@@ -27,7 +32,7 @@ export const generateTokens = async (
     .setProtectedHeader({ alg: "HS256" })
     .setJti(jti)
     .setIssuedAt()
-    .setExpirationTime(refreshTokenExpiry)
+    .setExpirationTime(getRefreshTokenExpiry())
     .sign(refreshSecret);
 
   return { accessToken, refreshToken };

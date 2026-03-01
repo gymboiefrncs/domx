@@ -21,7 +21,7 @@ import { generateOTP } from "../../utils/generateOTP.js";
 import * as jose from "jose";
 import {
   generateTokens,
-  refreshTokenExpiry,
+  getRefreshTokenExpiry,
 } from "../../utils/generateToken.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
@@ -130,7 +130,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
     .update(refreshToken)
     .digest("hex");
 
-  await createToken(jti, user.id, hashedToken, refreshTokenExpiry);
+  await createToken(jti, user.id, hashedToken, getRefreshTokenExpiry());
 
   return { accessToken, refreshToken };
 };
@@ -141,15 +141,20 @@ export const rotateTokens = async (
   const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 
   const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
-  const userId = payload.userId as string;
+
+  const userId = payload.userId;
+  const jti = payload.jti;
+  if (typeof userId !== "string" || typeof jti !== "string") {
+    throw new UnauthorizedError("Invalid token payload");
+  }
 
   // check if token exists in DB
-  const hasToken = await tokenExists(payload.jti as string);
+  const hasToken = await tokenExists(jti);
   if (!hasToken)
     throw new UnauthorizedError("Session expired, please login again");
 
   // prevent reuse of refresh token
-  await deleteOldRefreshToken(payload.jti as string);
+  await deleteOldRefreshToken(jti);
 
   const user = await fetchUserById(userId);
   if (!user) throw new UnauthorizedError("Session expired, please login again");
@@ -167,7 +172,12 @@ export const rotateTokens = async (
     .update(refreshToken)
     .digest("hex");
 
-  await createToken(newJti, userId, hashedNewRefreshToken, refreshTokenExpiry);
+  await createToken(
+    newJti,
+    userId,
+    hashedNewRefreshToken,
+    getRefreshTokenExpiry(),
+  );
 
   return { accessToken, refreshToken };
 };
@@ -176,7 +186,13 @@ export const logoutUser = async (refreshToken: string): Promise<Result> => {
   const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 
   const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);
-  await deleteOldRefreshToken(payload.jti as string);
+
+  const jti = payload.jti;
+  if (typeof jti !== "string") {
+    throw new UnauthorizedError("Invalid token payload");
+  }
+
+  await deleteOldRefreshToken(jti);
 
   return { ok: true, message: "Logged out successfully" };
 };

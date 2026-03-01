@@ -19,7 +19,14 @@ export const jwtHandler = async (
     }
 
     const { payload } = await jose.jwtVerify(token, accessSecret);
-    req.user = { userId: payload.userId as string, role: payload.role as Role };
+
+    const userId = payload.userId;
+    const role = payload.role;
+    if (typeof userId !== "string" || typeof role !== "string") {
+      throw new UnauthorizedError("Invalid token payload");
+    }
+
+    req.user = { userId, role: role as Role };
     next();
   } catch (error) {
     next(error);

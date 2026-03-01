@@ -17,6 +17,7 @@ import type {
   User,
 } from "../../common/types.js";
 import {
+  loginFailedEmail,
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../../utils/sendEmail.js";
@@ -77,8 +78,9 @@ export const registerUser = async (
 
   /**
    * Side effects are deliberately kept OUTSIDE the transaction.
-   * Sending an email can be slow; doing it inside the transaction
-   * would keep locks and a DB connection open unnecessarily.
+   * Firing emails inside the transaction risks notifying the user
+   * before the transaction is committed, which could lead to
+   * confusion if ever the transaction rolls back after the email is sent
    */
   if (result.reason === "NEW_USER" || result.reason === "RESENT_OTP") {
     sendVerificationEmail(result.email, otpData.otp).catch((err) => {
@@ -100,7 +102,13 @@ export const loginUser = async (
 ): Promise<Tokens> => {
   const user = await fetchUserByEmail(data.email);
 
-  // to prevent timing attacks
+  /**
+   * Intentionally compare the passsword BEFORE checking id user exists or is verified.
+   * This ensures the response time is constant regardless of whether the email
+   * is registered or not, preventing timing attacks that could enumerate emails
+   *
+   * If user doesn't exist, we compare against a dummy hash to simulate the same workload
+   */
   const passwordMatch = await bcrypt.compare(
     data.password,
     user?.password ?? process.env.DUMMY_HASH!,
@@ -111,8 +119,8 @@ export const loginUser = async (
   }
 
   if (!passwordMatch) {
-    sendAlreadyRegisteredEmail(data.email).catch((err) => {
-      console.error("Failed to send already registered email:", err);
+    loginFailedEmail(data.email).catch((err) => {
+      console.error("Failed to send email:", err);
     });
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }

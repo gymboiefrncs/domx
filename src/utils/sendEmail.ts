@@ -25,3 +25,17 @@ export const sendAlreadyRegisteredEmail = async (email: string) => {
   `,
   });
 };
+
+export const loginFailedEmail = async (email: string) => {
+  await resend.emails.send({
+    from: "Acme <onboarding@resend.dev>",
+    to: email,
+    subject: "Login Failed",
+    html: `
+      <h3>Login Failed</h3>
+      <p>Someone tried to log in to your account with an incorrect password.</p>
+      <p>If this was you, ignore this email</p>
+      <p>If this wasn't you, you should change your password immediately.</p>
+    `,
+  });
+};

@@ -153,9 +153,6 @@ export const rotateTokens = async (
   if (!hasToken)
     throw new UnauthorizedError("Session expired, please login again");
 
-  // prevent reuse of refresh token
-  await deleteOldRefreshToken(jti);
-
   const user = await fetchUserById(userId);
   if (!user) throw new UnauthorizedError("Session expired, please login again");
 
@@ -172,12 +169,21 @@ export const rotateTokens = async (
     .update(refreshToken)
     .digest("hex");
 
-  await createToken(
-    newJti,
-    userId,
-    hashedNewRefreshToken,
-    getRefreshTokenExpiry(),
-  );
+  /**
+   * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
+   * Inside: return to commit, throw to rollback.
+   */
+  await withTransaction(pool, async (client) => {
+    // prevent reuse of refresh token
+    await deleteOldRefreshToken(jti, client);
+    await createToken(
+      newJti,
+      userId,
+      hashedNewRefreshToken,
+      getRefreshTokenExpiry(),
+      client,
+    );
+  });
 
   return { accessToken, refreshToken };
 };

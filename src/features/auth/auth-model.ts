@@ -1,7 +1,7 @@
 import type { SignupSchema } from "./auth-schema.js";
 import { pool } from "../../config/db.js";
 import type { UserRole, LoginUser, NewUser, SignupUser } from "./auth.types.js";
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
 
 export const createUser = async (
   data: SignupSchema,
@@ -63,6 +63,7 @@ export const createToken = async (
   userId: string,
   refreshTokenHash: string,
   expiresAt: Date,
+  con: PoolClient | Pool = pool,
 ): Promise<void> => {
   const query = `
     INSERT INTO refresh_token (jti, user_id, token_hash, expires_at) 
@@ -70,7 +71,7 @@ export const createToken = async (
   `;
 
   const values = [jti, userId, refreshTokenHash, expiresAt];
-  await pool.query(query, values);
+  await con.query(query, values);
 };
 
 export const tokenExists = async (jti: string): Promise<boolean> => {
@@ -81,11 +82,14 @@ export const tokenExists = async (jti: string): Promise<boolean> => {
   return (result.rowCount ?? 0) > 0;
 };
 
-export const deleteOldRefreshToken = async (jti: string): Promise<void> => {
+export const deleteOldRefreshToken = async (
+  jti: string,
+  con: PoolClient | Pool = pool,
+): Promise<void> => {
   const query = `DELETE FROM refresh_token WHERE jti = $1`;
 
   const value = [jti];
-  await pool.query(query, value);
+  await con.query(query, value);
 };
 
 export const updateUserPassword = async (

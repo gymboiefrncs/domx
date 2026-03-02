@@ -1,12 +1,8 @@
-import { describe, vi, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, vi, it, expect, beforeEach } from "vitest";
 import { registerUser } from "../../features/auth/auth-service.js";
 import { pool } from "../../config/db.js";
 import { fetchUserByEmail } from "../../features/auth/auth-model.js";
-import {
-  EMAIL_MESSAGE,
-  COOLDOWN_MESSAGE,
-} from "../../features/auth/auth-service.js";
-import { OTP_COOLDOWN_MS } from "../../features/auth/auth-helpers/handleUnverifiedUser.js";
+import { EMAIL_MESSAGE, COOLDOWN_MESSAGE } from "../../common/constants.js";
 
 vi.mock("../../utils/sendEmail", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
@@ -18,11 +14,6 @@ describe("Auth integration - Signup", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   // =========================== NEW USER ============================
@@ -108,8 +99,13 @@ describe("Auth integration - Signup", () => {
       [user?.id],
     );
 
-    // Advance past the OTP_COOLDOWN_MS (2 minutes) with a buffer
-    vi.setSystemTime(new Date(Date.now() + OTP_COOLDOWN_MS + 5000));
+    // Move the OTP's created_at into the past to simulate cooldown expiry
+    await pool.query(
+      `UPDATE email_verification
+       SET created_at = NOW() - INTERVAL '3 minutes'
+       WHERE user_id = $1`,
+      [user?.id],
+    );
 
     const result = await registerUser(signupData);
     const secondOtp = await pool.query(
@@ -177,21 +173,19 @@ describe("Auth integration - Signup", () => {
       [users.rows[0].id],
     );
 
-    // With ON CONFLICT DO NOTHING, the race loser in handleNewUser now also
-    // returns NEW_USER and steps aside, so both responses are identical.
-    expect(result1).toEqual({
-      ok: true,
-      reason: "NEW_USER",
-      email: signupData.email,
-      message: EMAIL_MESSAGE,
-    });
-    expect(result2).toEqual({
-      ok: true,
-      reason: "NEW_USER",
-      email: signupData.email,
-      message: EMAIL_MESSAGE,
-    });
+    // System invariants: exactly one user, exactly one OTP, no errors.
+    // The exact reason per call depends on scheduling:
+    //   - If both fetch null → both take handleNewUser → both return NEW_USER
+    //   - If Request A commits before Request B fetches → Request B sees the user → COOLDOWN
     expect(users.rows).toHaveLength(1);
     expect(otp.rows).toHaveLength(1);
+    expect(result1.ok).toBe(true);
+    expect(result2.ok).toBe(true);
+
+    const reasons = [result1.reason, result2.reason];
+    expect(reasons).toContain("NEW_USER");
+    expect(reasons.every((r) => r === "NEW_USER" || r === "COOLDOWN")).toBe(
+      true,
+    );
   });
 });

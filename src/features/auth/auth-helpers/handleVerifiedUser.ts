@@ -1,5 +1,5 @@
 import type { RegistrationResult } from "../../../common/types.js";
-import { EMAIL_MESSAGE } from "../auth-service.js";
+import { EMAIL_MESSAGE } from "../../../common/constants.js";
 
 export const handleVerifiedUser = (email: string): RegistrationResult => {
   return {

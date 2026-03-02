@@ -3,9 +3,9 @@ import {
   tokenExists,
   fetchUserByEmail,
   fetchUserById,
-  fetchUserForSignup,
   createToken,
 } from "./auth-model.js";
+import { fetchUserForSignup } from "../../common/models.js";
 import type { SignupSchema, LoginSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -27,13 +27,7 @@ import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 import { withTransaction } from "../../config/transaction.js";
-
-// user facing messages.
-export const EMAIL_MESSAGE =
-  "Verification email sent. Please check your inbox.";
-export const COOLDOWN_MESSAGE = "Please wait before requesting another code.";
-export const ALREADY_REGISTERED_MESSAGE =
-  "If this email is registered, you'll hear from us shortly.";
+import { LOGOUT_MESSAGE } from "../../common/constants.js";
 
 export const registerUser = async (
   data: SignupSchema,
@@ -200,5 +194,5 @@ export const logoutUser = async (refreshToken: string): Promise<Result> => {
 
   await deleteOldRefreshToken(jti);
 
-  return { ok: true, message: "Logged out successfully" };
+  return { ok: true, message: LOGOUT_MESSAGE };
 };

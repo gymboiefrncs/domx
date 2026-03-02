@@ -1,14 +1,16 @@
 import {
+  getLatestOTP,
   deleteOtp,
   createSignupOtp,
-  getLatestOTP,
-} from "../../verification/verification-model.js";
+} from "../../../common/models.js";
 import type { RegistrationResult } from "../../../common/types.js";
 import type { SignupUser } from "../auth.types.js";
 import type { PoolClient } from "pg";
-import { COOLDOWN_MESSAGE, EMAIL_MESSAGE } from "../auth-service.js";
-
-export const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
+import {
+  COOLDOWN_MESSAGE,
+  EMAIL_MESSAGE,
+  OTP_COOLDOWN_MS,
+} from "../../../common/constants.js";
 
 /**
  * Handles signup attempts for an existing but unverified user.

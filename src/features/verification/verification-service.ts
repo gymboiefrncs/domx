@@ -1,34 +1,34 @@
 import { pool } from "../../config/db.js";
 import {
-  createSignupOtp,
   fetchOtp,
   incrementRetries,
-  deleteOtp,
   markUserAsVerified,
 } from "./verification-model.js";
+import {
+  deleteOtp,
+  getLatestOTP,
+  createSignupOtp,
+  fetchUserForSignup,
+} from "../../common/models.js";
+import {
+  OTP_MESSAGE_FAIL,
+  OTP_MESSAGE_SUCCESS,
+  RESEND_OTP_MESSAGE,
+} from "../../common/constants.js";
 import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "../../utils/sendEmail.js";
-import { fetchUserForSignup } from "../auth/auth-model.js";
-import { getLatestOTP } from "./verification-model.js";
 import { generateOTP } from "../../utils/generateOTP.js";
 import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";
-import { COOLDOWN_MESSAGE } from "../auth/auth-service.js";
-import { OTP_COOLDOWN_MS } from "../auth/auth-helpers/handleUnverifiedUser.js";
+import { COOLDOWN_MESSAGE, OTP_COOLDOWN_MS } from "../../common/constants.js";
 import { withTransaction } from "../../config/transaction.js";
 import type {
   ResendOtpResult,
   TransactionResult,
   ValidateOtpResult,
 } from "./verification.types.js";
-
-// User-facing messages
-export const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
-export const OTP_MESSAGE_SUCCESS = "Email verified successfully";
-export const RESEND_OTP_MESSAGE =
-  "If an account exists, a new code has been sent.";
 
 export const validateOtp = async ({
   email,

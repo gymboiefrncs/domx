@@ -2,13 +2,15 @@ import { describe, it, vi, beforeEach, expect } from "vitest";
 import { pool } from "../../config/db.js";
 import crypto from "crypto";
 import {
-  OTP_MESSAGE_FAIL,
-  OTP_MESSAGE_SUCCESS,
-  RESEND_OTP_MESSAGE,
   resendOtp,
   validateOtp,
 } from "../../features/verification/verification-service.js";
-import { COOLDOWN_MESSAGE } from "../../features/auth/auth-service.js";
+import {
+  COOLDOWN_MESSAGE,
+  OTP_MESSAGE_FAIL,
+  OTP_MESSAGE_SUCCESS,
+  RESEND_OTP_MESSAGE,
+} from "../../common/constants.js";
 
 const TEST_OTP = "123456";
 

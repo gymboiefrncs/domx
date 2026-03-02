@@ -1,7 +1,7 @@
 import request from "supertest";
 import { app } from "../../app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
-import { EMAIL_MESSAGE } from "../../features/auth/auth-service.js";
+import { EMAIL_MESSAGE } from "../../common/constants.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";

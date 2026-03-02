@@ -23,7 +23,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
   }
 
   // Handle invalid json
-  if (err.type === "entity.parse.failed") {
+  if (err instanceof SyntaxError && err.message.includes("JSON")) {
     return res
       .status(400)
       .json({ errors: [{ message: "Invalid JSON payload" }] });

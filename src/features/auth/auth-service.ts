@@ -183,16 +183,19 @@ export const rotateTokens = async (
 };
 
 export const logoutUser = async (refreshToken: string): Promise<Result> => {
-  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
+  try {
+    const refreshSecret = new TextEncoder().encode(
+      process.env.JWT_REFRESH_TOKEN,
+    );
 
-  const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);
+    const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);
 
-  const jti = payload.jti;
-  if (typeof jti !== "string") {
-    throw new UnauthorizedError("Invalid token payload");
+    const jti = payload.jti;
+    if (typeof jti === "string") {
+      await deleteOldRefreshToken(jti);
+    }
+  } catch (_error) {
+    // Ignore errors and allow logout to succeed
   }
-
-  await deleteOldRefreshToken(jti);
-
   return { ok: true, message: LOGOUT_MESSAGE };
 };

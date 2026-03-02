@@ -9,3 +9,8 @@ process.on("SIGINT", () => {
   console.log("Shutting down server...");
   process.exit();
 });
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
+});

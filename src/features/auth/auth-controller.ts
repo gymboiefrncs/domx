@@ -7,6 +7,7 @@ import {
 } from "./auth-service.js";
 import { setPassword } from "./set-password.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
+import { UnauthorizedError } from "../../utils/error.js";
 
 export const signupHandler = async (
   req: Request,
@@ -47,6 +48,7 @@ export const rotateTokensHandler = async (
 ): Promise<void> => {
   try {
     const oldRefreshToken = req.cookies.refreshToken;
+    if (!oldRefreshToken) throw new UnauthorizedError("Invalid refresh token");
     const { accessToken, refreshToken } = await rotateTokens(oldRefreshToken);
     setCookies(refreshToken, accessToken, res);
 
@@ -82,7 +84,9 @@ export const setPasswordHandler = async (
 ): Promise<void> => {
   try {
     const { password } = req.body;
-    const userId = req.setPwd!.sub;
+    const userId = req.setPwd?.sub;
+    if (!userId) throw new UnauthorizedError("Invalid token payload");
+
     const result = await setPassword({ userId, password });
     res.status(result.ok ? 200 : 400).json({
       success: result.ok,

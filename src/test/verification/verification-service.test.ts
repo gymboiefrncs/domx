@@ -25,9 +25,9 @@ vi.mock("../../utils/generateOTP", () => ({
   })),
 }));
 vi.mock(
-  "../../features/verification/verification-helpers/generateSetPasswordToken.ts",
+  "../../features/verification/verification-helpers/generateSetInfoToken.ts",
   () => ({
-    generateSetPasswordToken: vi.fn().mockResolvedValue("mocked_token"),
+    generateSetInfoToken: vi.fn().mockResolvedValue("mocked_token"),
   }),
 );
 

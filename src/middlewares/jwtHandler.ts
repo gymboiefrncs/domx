@@ -4,9 +4,7 @@ import type { Role } from "../common/types.js";
 import { UnauthorizedError, ForbiddenError } from "../utils/error.js";
 
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
-const setPasswordSecret = new TextEncoder().encode(
-  process.env.SET_PASSWORD_TOKEN,
-);
+const setInfoSecret = new TextEncoder().encode(process.env.SET_PASSWORD_TOKEN);
 export const jwtHandler = async (
   req: Request,
   _res: Response,
@@ -33,7 +31,7 @@ export const jwtHandler = async (
   }
 };
 
-export const verifySetPasswordToken = async (
+export const verifySetInfoToken = async (
   req: Request,
   _res: Response,
   next: NextFunction,
@@ -44,14 +42,14 @@ export const verifySetPasswordToken = async (
       throw new UnauthorizedError("Invalid or expired token");
     const token = authHeader.split(" ")[1]!;
 
-    const { payload } = await jose.jwtVerify(token, setPasswordSecret);
+    const { payload } = await jose.jwtVerify(token, setInfoSecret);
 
-    if (payload.purpose !== "set-password")
+    if (payload.purpose !== "set-info")
       throw new ForbiddenError("Invalid token purpose");
 
-    req.setPwd = {
+    req.setInfo = {
       sub: payload.sub as string,
-      purpose: payload.purpose as "set-password",
+      purpose: payload.purpose as "set-info",
     };
 
     next();

@@ -10,3 +10,5 @@ export const OTP_MESSAGE_SUCCESS = "Email verified successfully";
 export const RESEND_OTP_MESSAGE =
   "If an account exists, a new code has been sent.";
 export const LOGOUT_MESSAGE = "You have been logged out successfully.";
+export const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
+export const INFO_SET_FAILED_MESSAGE = "Failed to set information";

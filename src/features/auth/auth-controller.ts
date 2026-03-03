@@ -5,7 +5,7 @@ import {
   rotateTokens,
   logoutUser,
 } from "./auth-service.js";
-import { setPassword } from "./set-password.js";
+import { setInfo } from "./set-info.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "../../utils/error.js";
 
@@ -77,17 +77,17 @@ export const logoutHandler = async (
   }
 };
 
-export const setPasswordHandler = async (
+export const setInfoHandler = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { password } = req.body;
-    const userId = req.setPwd?.sub;
+    const { password, username } = req.body;
+    const userId = req.setInfo?.sub;
     if (!userId) throw new UnauthorizedError("Invalid token payload");
 
-    const result = await setPassword({ userId, password });
+    const result = await setInfo({ userId, password, username });
     res.status(result.ok ? 200 : 400).json({
       success: result.ok,
       message: result.message,

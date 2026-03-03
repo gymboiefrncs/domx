@@ -13,12 +13,12 @@ export abstract class AppError extends Error {
     Object.setPrototypeOf(this, new.target.prototype);
   }
 
-  get errors(): CustomErrorContent {
+  get errors(): CustomErrorContent[] {
     // Only include context when there is actually context to share
     if (Object.keys(this.context).length === 0) {
-      return { message: this.message };
+      return [{ message: this.message }];
     }
-    return { message: this.message, context: this.context };
+    return [{ message: this.message, context: this.context }];
   }
 }
 

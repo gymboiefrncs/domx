@@ -10,7 +10,7 @@ export type UserVerificationStatus = {
 
 export type Result =
   | { ok: true; message: string; data?: unknown }
-  | { ok: false; reason: string; message: string };
+  | { ok: false; message: string };
 
 /**
  * `reason` is a machine-readable discriminant used for control flow (e.g. determining which email to send).
@@ -24,6 +24,10 @@ export type RegistrationResult =
   | { ok: true; reason: "RESENT_OTP"; email: string; message: string }
   | { ok: true; reason: "ALREADY_VERIFIED"; email: string; message: string }
   | { ok: true; reason: "COOLDOWN"; message: string };
+
+export type SetInfoResult =
+  | { ok: true; reason: "INFO_SET_SUCCESS"; message: string }
+  | { ok: false; reason: "INFO_SET_FAILED"; message: string };
 
 export type Tokens = { accessToken: string; refreshToken: string };
 

@@ -2,7 +2,14 @@ import { describe, vi, it, expect, beforeEach } from "vitest";
 import { registerUser } from "../../features/auth/auth-service.js";
 import { pool } from "../../config/db.js";
 import { fetchUserByEmail } from "../../features/auth/auth-model.js";
-import { EMAIL_MESSAGE, COOLDOWN_MESSAGE } from "../../common/constants.js";
+import {
+  EMAIL_MESSAGE,
+  COOLDOWN_MESSAGE,
+  INFO_SET_SUCCESS_MESSAGE,
+  INFO_SET_FAILED_MESSAGE,
+} from "../../common/constants.js";
+import { setInfo } from "../../features/auth/set-info.js";
+import bcrypt from "bcrypt";
 
 vi.mock("../../utils/sendEmail", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
@@ -187,5 +194,108 @@ describe("Auth integration - Signup", () => {
     expect(reasons.every((r) => r === "NEW_USER" || r === "COOLDOWN")).toBe(
       true,
     );
+  });
+});
+
+describe("Auth integration - Set Info", () => {
+  const TEST_EMAIL = "setinfo@example.com";
+  const TEST_USERNAME = "testuser";
+  const TEST_PASSWORD = "SecurePass123_";
+
+  const createVerifiedUser = async (): Promise<string> => {
+    const result = await pool.query<{ id: string }>(
+      "INSERT INTO users (email, is_verified) VALUES ($1, true) RETURNING id",
+      [TEST_EMAIL],
+    );
+    return result.rows[0]!.id;
+  };
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  it("should update password, username, and create display_id for a verified user", async () => {
+    const userId = await createVerifiedUser();
+
+    const result = await setInfo({
+      userId,
+      username: TEST_USERNAME,
+      password: TEST_PASSWORD,
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      message: INFO_SET_SUCCESS_MESSAGE,
+    });
+
+    const user = await pool.query(
+      "SELECT password, username, display_id FROM users WHERE id = $1",
+      [userId],
+    );
+
+    const row = user.rows[0];
+    expect(row.username).toBe(TEST_USERNAME);
+    expect(row.display_id).toBeDefined();
+    expect(row.display_id).toBeDefined();
+    expect(row.password).toBeDefined();
+
+    const passwordMatch = await bcrypt.compare(TEST_PASSWORD, row.password);
+    expect(passwordMatch).toBe(true);
+  });
+
+  it("should fail if the user already has a password set", async () => {
+    const userId = await createVerifiedUser();
+
+    await setInfo({
+      userId,
+      username: TEST_USERNAME,
+      password: TEST_PASSWORD,
+    });
+
+    const result = await setInfo({
+      userId,
+      username: "anotheruser",
+      password: "AnotherPass456_",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      message: INFO_SET_FAILED_MESSAGE,
+    });
+
+    const user = await pool.query(
+      "SELECT password, username FROM users WHERE id = $1",
+      [userId],
+    );
+    const passwordStillOriginal = await bcrypt.compare(
+      TEST_PASSWORD,
+      user.rows[0].password,
+    );
+    expect(passwordStillOriginal).toBe(true);
+  });
+
+  it("should fail for a non-verified user", async () => {
+    const unverified = await pool.query<{ id: string }>(
+      "INSERT INTO users (email, is_verified) VALUES ($1, false) RETURNING id",
+      ["unverified-setinfo@example.com"],
+    );
+    const userId = unverified.rows[0]!.id;
+
+    const result = await setInfo({
+      userId,
+      username: TEST_USERNAME,
+      password: TEST_PASSWORD,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      message: INFO_SET_FAILED_MESSAGE,
+    });
+
+    const user = await pool.query("SELECT password FROM users WHERE id = $1", [
+      userId,
+    ]);
+    expect(user.rows[0].password).toBeNull();
   });
 });

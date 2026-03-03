@@ -21,7 +21,7 @@ import {
   sendVerificationEmail,
 } from "../../utils/sendEmail.js";
 import { generateOTP } from "../../utils/generateOTP.js";
-import { generateSetPasswordToken } from "./verification-helpers/generateSetPasswordToken.js";
+import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
 import { COOLDOWN_MESSAGE, OTP_COOLDOWN_MS } from "../../common/constants.js";
 import { withTransaction } from "../../config/transaction.js";
 import type {
@@ -94,11 +94,11 @@ export const validateOtp = async ({
   );
 
   /**
-   * Generating token for setting a password happens outside the transaction
+   * Generating token for setting a further information happens outside the transaction
    * because it serves no purpose inside it and it will hold the connection longer
    */
   if (result.ok) {
-    const token = await generateSetPasswordToken(result.userId);
+    const token = await generateSetInfoToken(result.userId);
     return { ok: true, message: OTP_MESSAGE_SUCCESS, data: token };
   }
 

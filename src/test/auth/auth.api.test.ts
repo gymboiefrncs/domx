@@ -1,11 +1,16 @@
 import request from "supertest";
 import { app } from "../../app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
-import { EMAIL_MESSAGE } from "../../common/constants.js";
+import {
+  EMAIL_MESSAGE,
+  INFO_SET_FAILED_MESSAGE,
+  INFO_SET_SUCCESS_MESSAGE,
+} from "../../common/constants.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
+const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
 
 vi.mock("../../utils/generateOTP", () => ({
@@ -24,9 +29,9 @@ const setupVerifiedUser = async () => {
     .send({ email: signupData.email, otp: TEST_OTP });
   const token = verifyRes.body?.data;
   await request(app)
-    .post("/api/v1/auth/set-password")
+    .post("/api/v1/auth/set-info")
     .set("Authorization", `Bearer ${token}`)
-    .send({ password: TEST_PASSWORD });
+    .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 };
 
 const setupAndLogin = async () => {
@@ -37,9 +42,9 @@ const setupAndLogin = async () => {
 
   const token = verifyRes.body?.data;
   await request(app)
-    .post("/api/v1/auth/set-password")
+    .post("/api/v1/auth/set-info")
     .set("Authorization", `Bearer ${token}`)
-    .send({ password: TEST_PASSWORD });
+    .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 
   const loginRes = await request(app)
     .post("/api/v1/auth/login")
@@ -79,7 +84,7 @@ describe("Auth API", () => {
       expect(typeof res.body?.data).toBe("string");
     });
 
-    it("sets password after verification", async () => {
+    it("sets info after verification", async () => {
       await request(app).post("/api/v1/auth/signup").send(signupData);
 
       const verifyRes = await request(app)
@@ -89,13 +94,13 @@ describe("Auth API", () => {
       const token = verifyRes.body?.data;
 
       const res = await request(app)
-        .post("/api/v1/auth/set-password")
+        .post("/api/v1/auth/set-info")
         .set("Authorization", `Bearer ${token}`)
-        .send({ password: TEST_PASSWORD });
+        .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         success: true,
-        message: "Password set successfully",
+        message: INFO_SET_SUCCESS_MESSAGE,
       });
     });
 
@@ -140,23 +145,31 @@ describe("Auth API", () => {
         .post("/api/v1/auth/signup")
         .send({ email: "invalidemail", username: "user" });
       expect(res.status).toBe(422);
-      expect(res.body.errors.message).toBe("Invalid data");
+      expect(res.body.errors[0].message).toBe("Invalid data");
     });
   });
 
-  describe("Set password validation", () => {
+  describe("Set info validation", () => {
     it("rejects password that is too short", async () => {
       const res = await request(app)
-        .post("/api/v1/auth/set-password")
+        .post("/api/v1/auth/set-info")
         .set("Authorization", "Bearer token")
-        .send({ password: "short" });
+        .send({ password: "short", username: TEST_USERNAME });
       expect(res.status).toBe(422);
-      expect(res.body.errors.message).toBe("Invalid data");
+      expect(res.body.errors[0].message).toBe("Invalid data");
+    });
+    it("rejects invalid username", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/set-info")
+        .set("Authorization", "Bearer token")
+        .send({ password: TEST_PASSWORD, username: "ab+" });
+      expect(res.status).toBe(422);
+      expect(res.body.errors[0].message).toBe("Invalid data");
     });
   });
 
-  describe("Set password edge cases", () => {
-    it("should only allow the password to be set once during a race condition", async () => {
+  describe("Set info edge cases", () => {
+    it("should only allow the info to be set once during a race condition", async () => {
       await request(app).post("/api/v1/auth/signup").send(signupData);
 
       const verifyRes = await request(app)
@@ -166,13 +179,13 @@ describe("Auth API", () => {
 
       const [res1, res2] = await Promise.all([
         request(app)
-          .post("/api/v1/auth/set-password")
+          .post("/api/v1/auth/set-info")
           .set("Authorization", `Bearer ${token}`)
-          .send({ password: TEST_PASSWORD }),
+          .send({ username: TEST_USERNAME, password: TEST_PASSWORD }),
         request(app)
-          .post("/api/v1/auth/set-password")
+          .post("/api/v1/auth/set-info")
           .set("Authorization", `Bearer ${token}`)
-          .send({ password: "test_W2322422" }),
+          .send({ username: TEST_USERNAME, password: "test_W2322422" }),
       ]);
 
       const statuses = [res1.status, res2.status];
@@ -183,11 +196,11 @@ describe("Auth API", () => {
       const messages = [res1.body, res2.body];
       expect(messages).toContainEqual({
         success: true,
-        message: "Password set successfully",
+        message: INFO_SET_SUCCESS_MESSAGE,
       });
       expect(messages).toContainEqual({
         success: false,
-        message: "Something went wrong. Please try again later.",
+        message: INFO_SET_FAILED_MESSAGE,
       });
     });
   });
@@ -198,7 +211,7 @@ describe("Auth API", () => {
         .post("/api/v1/auth/login")
         .send({ email: "notanemail", password: TEST_PASSWORD });
       expect(res.status).toBe(422);
-      expect(res.body.errors.message).toBe("Invalid data");
+      expect(res.body.errors[0].message).toBe("Invalid data");
     });
   });
 
@@ -213,7 +226,7 @@ describe("Auth API", () => {
         .send({ email: signupData.email, password: "wrongpassword" });
 
       expect(res.status).toBe(401);
-      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+      expect(res.body.errors[0].message).toBe(EXPECTED_ERROR);
     });
 
     it("rejects unverified account", async () => {
@@ -224,7 +237,7 @@ describe("Auth API", () => {
         .send({ email: signupData.email, password: TEST_PASSWORD });
 
       expect(res.status).toBe(401);
-      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+      expect(res.body.errors[0].message).toBe(EXPECTED_ERROR);
     });
 
     it("rejects account with no password set", async () => {
@@ -239,7 +252,7 @@ describe("Auth API", () => {
         .send({ email: signupData.email, password: TEST_PASSWORD });
 
       expect(res.status).toBe(401);
-      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+      expect(res.body.errors[0].message).toBe(EXPECTED_ERROR);
     });
 
     it("rejects non-existent email", async () => {
@@ -248,7 +261,7 @@ describe("Auth API", () => {
         .send({ email: signupData.email, password: TEST_PASSWORD });
 
       expect(res.status).toBe(401);
-      expect(res.body.errors.message).toBe(EXPECTED_ERROR);
+      expect(res.body.errors[0].message).toBe(EXPECTED_ERROR);
     });
   });
 
@@ -287,7 +300,7 @@ describe("Auth API", () => {
       const res = await request(app).post("/api/v1/auth/refresh");
 
       expect(res.status).toBe(401);
-      expect(res.body.errors[0].message).toBe("Invalid or expired token");
+      expect(res.body.errors[0].message).toBe("Invalid refresh token");
     });
 
     it("rejects a tampered refresh token", async () => {
@@ -317,7 +330,7 @@ describe("Auth API", () => {
         .set("Cookie", cookies as string[]);
 
       expect(res.status).toBe(401);
-      expect(res.body.errors.message).toBe(
+      expect(res.body.errors[0].message).toBe(
         "Session expired, please login again",
       );
     });

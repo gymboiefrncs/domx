@@ -9,7 +9,15 @@ export const signupSchema = z.object({
     .toLowerCase(),
 });
 
-export const passwordSchema = z.object({
+export const infoSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1, "Username is required")
+    .regex(
+      /^[a-zA-Z][a-zA-Z0-9_]*$/,
+      "Username must start with a letter and contain only letters, numbers, and underscores",
+    ),
   password: z
     .string()
     .trim()

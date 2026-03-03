@@ -79,6 +79,7 @@ export const deleteOldRefreshToken = async (
 export const updateUserPassword = async (
   userId: string,
   hashedPassword: string,
+  client: PoolClient,
 ): Promise<boolean> => {
   const query = `
       UPDATE users 
@@ -89,7 +90,38 @@ export const updateUserPassword = async (
     `;
 
   const value = [hashedPassword, userId];
-  const result = await pool.query(query, value);
+  const result = await client.query(query, value);
+
+  return (result.rowCount ?? 0) > 0;
+};
+
+export const createDisplayId = async (
+  userId: string,
+  displayId: string,
+  client: PoolClient,
+): Promise<boolean> => {
+  const query = `
+    UPDATE users 
+    SET display_id = $1
+    WHERE id = $2
+  `;
+  const values = [displayId, userId];
+  const result = await client.query(query, values);
+
+  return (result.rowCount ?? 0) > 0;
+};
+
+export const updateUsername = async (
+  userId: string,
+  username: string,
+  client: PoolClient,
+): Promise<boolean> => {
+  const query = `
+    UPDATE users SET username=$1 
+    WHERE id=$2
+  `;
+  const values = [username, userId];
+  const result = await client.query(query, values);
 
   return (result.rowCount ?? 0) > 0;
 };

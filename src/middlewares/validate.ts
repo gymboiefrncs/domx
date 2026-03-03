@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { ZodTypeAny } from "zod";
 import {
   loginSchema,
-  passwordSchema,
+  infoSchema,
   signupSchema,
 } from "../features/auth/auth-schema.js";
 import { ValidationError } from "../utils/error.js";
@@ -34,6 +34,6 @@ const validate =
 
 export const loginValidator = validate(loginSchema);
 export const signupValidator = validate(signupSchema);
-export const passwordValidator = validate(passwordSchema);
+export const infoValidator = validate(infoSchema);
 export const otpValidator = validate(otpSchema);
 export const emailValidator = validate(emailSchema);

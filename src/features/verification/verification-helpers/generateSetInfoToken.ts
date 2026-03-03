@@ -1,20 +1,18 @@
 import * as jose from "jose";
 
-const SET_PASSWORD_SECRET = new TextEncoder().encode(
+const SET_INFO_SECRET = new TextEncoder().encode(
   process.env.SET_PASSWORD_TOKEN!,
 );
 
-export const generateSetPasswordToken = async (
-  userId: string,
-): Promise<string> => {
+export const generateSetInfoToken = async (userId: string): Promise<string> => {
   const token = await new jose.SignJWT({
     sub: userId,
-    purpose: "set-password",
+    purpose: "set-info",
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("10m")
-    .sign(SET_PASSWORD_SECRET);
+    .sign(SET_INFO_SECRET);
 
   return token;
 };

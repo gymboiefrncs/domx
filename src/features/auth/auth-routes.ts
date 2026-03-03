@@ -4,15 +4,15 @@ import {
   loginHandler,
   logoutHandler,
   rotateTokensHandler,
-  setPasswordHandler,
+  setInfoHandler,
   signupHandler,
 } from "./auth-controller.js";
 import {
   loginValidator,
-  passwordValidator,
+  infoValidator,
   signupValidator,
 } from "../../middlewares/validate.js";
-import { verifySetPasswordToken } from "../../middlewares/jwtHandler.js";
+import { verifySetInfoToken } from "../../middlewares/jwtHandler.js";
 
 export const authRouter: Router = express.Router();
 
@@ -38,8 +38,8 @@ authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post("/auth/logout", logoutHandler);
 
 authRouter.post(
-  "/auth/set-password",
-  passwordValidator,
-  verifySetPasswordToken,
-  setPasswordHandler,
+  "/auth/set-info",
+  infoValidator,
+  verifySetInfoToken,
+  setInfoHandler,
 );

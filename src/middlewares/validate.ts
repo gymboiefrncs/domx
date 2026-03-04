@@ -10,6 +10,7 @@ import {
   emailSchema,
   otpSchema,
 } from "../features/verification/verification-schema.js";
+import { GroupSchema } from "../features/groups/group-schema.js";
 
 // Generic validation middleware factory
 const validate =
@@ -37,3 +38,4 @@ export const signupValidator = validate(signupSchema);
 export const infoValidator = validate(infoSchema);
 export const otpValidator = validate(otpSchema);
 export const emailValidator = validate(emailSchema);
+export const groupValidator = validate(GroupSchema);

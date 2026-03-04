@@ -12,3 +12,4 @@ export const RESEND_OTP_MESSAGE =
 export const LOGOUT_MESSAGE = "You have been logged out successfully.";
 export const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
 export const INFO_SET_FAILED_MESSAGE = "Failed to set information";
+export const SUCCESSFULLY_CREATED_GROUP_MESSAGE = "Successfully created group";

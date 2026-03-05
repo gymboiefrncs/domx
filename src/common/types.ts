@@ -21,6 +21,7 @@ export type Result =
  */
 export type RegistrationResult =
   | { ok: true; reason: "NEW_USER"; email: string; message: string }
+  | { ok: true; reason: "UNIQUE_EMAIL_VIOLATION"; message: string }
   | { ok: true; reason: "RESENT_OTP"; email: string; message: string }
   | { ok: true; reason: "ALREADY_VERIFIED"; email: string; message: string }
   | { ok: true; reason: "COOLDOWN"; message: string };

@@ -24,8 +24,7 @@ export const handleNewUser = async (
      */
     return {
       ok: true as const,
-      reason: "NEW_USER" as const,
-      email: data.email,
+      reason: "UNIQUE_EMAIL_VIOLATION" as const,
       message: EMAIL_MESSAGE,
     };
   }

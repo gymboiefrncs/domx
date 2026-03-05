@@ -10,7 +10,11 @@ import {
   emailSchema,
   otpSchema,
 } from "../features/verification/verification-schema.js";
-import { GroupSchema } from "../features/groups/group-schema.js";
+import {
+  AddMemberSchema,
+  GroupSchema,
+} from "../features/groups/group-schema.js";
+import type { ParamsDictionary } from "express-serve-static-core";
 
 // Generic validation middleware factory
 const validate =
@@ -39,3 +43,26 @@ export const infoValidator = validate(infoSchema);
 export const otpValidator = validate(otpSchema);
 export const emailValidator = validate(emailSchema);
 export const groupValidator = validate(GroupSchema);
+
+// For params
+const validateParams =
+  (schema: ZodTypeAny) =>
+  (req: Request, _res: Response, next: NextFunction) => {
+    const validation = schema.safeParse(req.params);
+
+    if (!validation.success) {
+      next(
+        new ValidationError(
+          "Invalid data",
+          true,
+          validation.error.flatten().fieldErrors,
+        ),
+      );
+      return;
+    }
+
+    req.params = validation.data as ParamsDictionary;
+    next();
+  };
+
+export const addMemberValidator = validateParams(AddMemberSchema);

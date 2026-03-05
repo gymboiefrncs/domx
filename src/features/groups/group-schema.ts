@@ -8,4 +8,16 @@ export const GroupSchema = z.object({
     .trim(),
 });
 
+export const AddMemberSchema = z.object({
+  groupId: z.string().uuid("Invalid group ID"),
+  displayId: z
+    .string()
+    .trim()
+    .regex(
+      /^[A-Z0-9]{8}$/,
+      "Display ID must be 8 uppercase alphanumeric characters",
+    ),
+});
+
 export type GroupInput = z.infer<typeof GroupSchema>;
+export type AddMemberInput = z.infer<typeof AddMemberSchema>;

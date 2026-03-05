@@ -13,3 +13,8 @@ export const LOGOUT_MESSAGE = "You have been logged out successfully.";
 export const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
 export const INFO_SET_FAILED_MESSAGE = "Failed to set information";
 export const SUCCESSFULLY_CREATED_GROUP_MESSAGE = "Successfully created group";
+export const MEMBER_ADDED = "Member added successfully";
+export const GROUP_NOT_FOUND = "Group does not exist.";
+export const ALREADY_A_MEMBER = "User is already a member of this group.";
+export const NOT_A_GROUP_MEMBER =
+  "You must be a member of this group to add others.";

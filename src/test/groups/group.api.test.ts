@@ -42,6 +42,7 @@ const setupAndLogin = async () => {
 
 describe("Group API", () => {
   beforeEach(async () => {
+    await pool.query("TRUNCATE table groups RESTART IDENTITY CASCADE");
     vi.resetModules();
     vi.clearAllMocks();
   });
@@ -61,13 +62,11 @@ describe("Group API", () => {
         message: SUCCESSFULLY_CREATED_GROUP_MESSAGE,
       });
 
-      // Verify the group exists in the database
       const groups = await pool.query("SELECT * FROM groups WHERE name = $1", [
         "My Group",
       ]);
       expect(groups.rows).toHaveLength(1);
 
-      // Verify the creator was added as admin
       const members = await pool.query(
         "SELECT * FROM group_members WHERE group_id = $1",
         [groups.rows[0].group_id],

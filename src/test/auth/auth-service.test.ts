@@ -151,7 +151,7 @@ describe("Auth integration - Signup", () => {
       registerUser(signupData),
     ]);
 
-    const messages = [result1.message, result2.message];
+    const reasons = [result1.reason, result2.reason];
     const { rows } = await pool.query(
       "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
@@ -159,8 +159,8 @@ describe("Auth integration - Signup", () => {
 
     // The FOR UPDATE lock in fetchUserForSignup serializes these requests.
     // One will rotate the OTP, the other will hit the cooldown guard.
-    expect(messages).toContain(EMAIL_MESSAGE);
-    expect(messages).toContain(COOLDOWN_MESSAGE);
+    expect(reasons).toContain("RESENT_OTP");
+    expect(reasons).toContain("COOLDOWN");
     expect(rows).toHaveLength(1);
   });
 
@@ -191,9 +191,7 @@ describe("Auth integration - Signup", () => {
 
     const reasons = [result1.reason, result2.reason];
     expect(reasons).toContain("NEW_USER");
-    expect(reasons.every((r) => r === "NEW_USER" || r === "COOLDOWN")).toBe(
-      true,
-    );
+    expect(reasons).toContain("UNIQUE_EMAIL_VIOLATION");
   });
 });
 

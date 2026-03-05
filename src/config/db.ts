@@ -20,7 +20,7 @@ export const disconnectDB = async () => {
 
 export const resetDB = async () => {
   const query = `
-  TRUNCATE TABLE users cascade;
+  TRUNCATE TABLE users restart identity cascade;
   `;
   await pool.query(query);
 };

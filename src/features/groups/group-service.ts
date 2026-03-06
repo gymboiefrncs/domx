@@ -45,6 +45,12 @@ export const createGroup = async (
   };
 };
 
+/**
+ * Adds a member to a group by their display ID.
+ * Any existing member can add others without requiring admin approval.
+ * This avoids bottlenecks in situations where the admin is unavailable
+ * and a member needs to be added urgently.
+ */
 export const addMember = async (
   groupId: string,
   displayId: string,
@@ -61,11 +67,31 @@ export const addMember = async (
     throw new NotFoundError(
       "User with the provided display ID does not exist.",
     );
+  try {
+    /**
+     * insertMember may throw a unique constraint violation if the user
+     * is already a member of the group. We catch it here and translate
+     * it into a ConflictError so the raw database error never reaches
+     * the global error handler. Any other error is re-thrown as-is.
+     */
 
-  const existingUser = await fetchMemberRole(groupId, targetUserId);
-  if (existingUser) throw new ConflictError(ALREADY_A_MEMBER);
-
-  await insertMember(groupId, targetUserId);
+    await insertMember(groupId, targetUserId);
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      "constraint" in error
+    ) {
+      if (
+        error.code === "23505" &&
+        error.constraint === "members_group_id_user_id_key"
+      ) {
+        throw new ConflictError(ALREADY_A_MEMBER);
+      }
+    }
+    throw error;
+  }
 
   return { ok: true, message: MEMBER_ADDED };
 };

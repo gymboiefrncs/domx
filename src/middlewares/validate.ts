@@ -11,7 +11,7 @@ import {
   otpSchema,
 } from "../features/verification/verification-schema.js";
 import {
-  AddMemberSchema,
+  ManageMemberSchema,
   GroupSchema,
 } from "../features/groups/group-schema.js";
 import type { ParamsDictionary } from "express-serve-static-core";
@@ -65,4 +65,4 @@ const validateParams =
     next();
   };
 
-export const addMemberValidator = validateParams(AddMemberSchema);
+export const ManageMemberValidator = validateParams(ManageMemberSchema);

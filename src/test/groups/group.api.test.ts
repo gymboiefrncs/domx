@@ -7,6 +7,7 @@ import {
   MEMBER_ADDED,
   NOT_A_GROUP_MEMBER,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
+  USER_NOT_FOUND,
 } from "../../common/constants.js";
 import { pool } from "../../config/db.js";
 import crypto from "crypto";
@@ -252,6 +253,149 @@ describe("Group API", () => {
       const res = await request(app)
         .post(`/api/v1/groups/not-a-uuid/add/${targetDisplayId}`)
         .set("Cookie", memberCookies as string[]);
+
+      expect(res.status).toBe(422);
+    });
+  });
+
+  describe("Kick member", () => {
+    let adminCookies: string | string[] | undefined;
+    let memberCookies: string | string[] | undefined;
+    let outsiderCookies: string | string[] | undefined;
+    let memberDisplayId: string;
+    let adminDisplayId: string;
+    let groupId: string;
+
+    beforeEach(async () => {
+      adminCookies = await setupAndLogin();
+      memberCookies = await setupAndLoginAs("member@example.com", "memberuser");
+      outsiderCookies = await setupAndLoginAs(
+        "outsider@example.com",
+        "outsideruser",
+      );
+
+      const memberRow = await pool.query(
+        "SELECT display_id FROM users WHERE email = $1",
+        ["member@example.com"],
+      );
+      memberDisplayId = memberRow.rows[0].display_id;
+
+      const adminRow = await pool.query(
+        "SELECT display_id FROM users WHERE email = $1",
+        ["grouptest@example.com"],
+      );
+      adminDisplayId = adminRow.rows[0].display_id;
+
+      const groupRes = await request(app)
+        .post("/api/v1/groups")
+        .set("Cookie", adminCookies as string[])
+        .send({ groupName: "Kick Test Group" });
+
+      groupId = groupRes.body.data;
+
+      // Add the member to the group
+      await request(app)
+        .post(`/api/v1/groups/${groupId}/add/${memberDisplayId}`)
+        .set("Cookie", adminCookies as string[]);
+    });
+
+    it("successfully kicks a member when requester is admin", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/${memberDisplayId}`)
+        .set("Cookie", adminCookies as string[]);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        success: true,
+        message: "Member has been removed from the group.",
+      });
+
+      const members = await pool.query(
+        "SELECT * FROM group_members WHERE group_id = $1",
+        [groupId],
+      );
+      expect(members.rows).toHaveLength(1);
+      expect(members.rows[0].role).toBe("admin");
+    });
+
+    it("rejects unauthenticated requests", async () => {
+      const res = await request(app).delete(
+        `/api/v1/groups/${groupId}/kick/${memberDisplayId}`,
+      );
+
+      expect(res.status).toBe(401);
+    });
+
+    it("rejects request when requester is not a member of the group", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/${memberDisplayId}`)
+        .set("Cookie", outsiderCookies as string[]);
+
+      expect(res.status).toBe(403);
+      expect(res.body.errors[0].message).toBe(NOT_A_GROUP_MEMBER);
+    });
+
+    it("rejects request when requester is a member but not admin", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/${adminDisplayId}`)
+        .set("Cookie", memberCookies as string[]);
+
+      expect(res.status).toBe(403);
+      expect(res.body.errors[0].message).toBe(
+        "Only group admins can kick members.",
+      );
+    });
+
+    it("rejects request when the group does not exist", async () => {
+      const fakeGroupId = crypto.randomUUID();
+
+      const res = await request(app)
+        .delete(`/api/v1/groups/${fakeGroupId}/kick/${memberDisplayId}`)
+        .set("Cookie", adminCookies as string[]);
+
+      expect(res.status).toBe(404);
+      expect(res.body.errors[0].message).toBe(GROUP_NOT_FOUND);
+    });
+
+    it("rejects request when the target display ID does not exist", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/XXXXXXXX`)
+        .set("Cookie", adminCookies as string[]);
+
+      expect(res.status).toBe(404);
+      expect(res.body.errors[0].message).toBe(USER_NOT_FOUND);
+    });
+
+    it("rejects request when the target is not a member of the group", async () => {
+      const outsiderRow = await pool.query(
+        "SELECT display_id FROM users WHERE email = $1",
+        ["outsider@example.com"],
+      );
+      const outsiderDisplayId = outsiderRow.rows[0].display_id;
+
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/${outsiderDisplayId}`)
+        .set("Cookie", adminCookies as string[]);
+
+      expect(res.status).toBe(404);
+      expect(res.body.errors[0].message).toBe(USER_NOT_FOUND);
+    });
+
+    it("rejects request when admin tries to kick themselves", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/${adminDisplayId}`)
+        .set("Cookie", adminCookies as string[]);
+
+      expect(res.status).toBe(403);
+      expect(res.body.errors[0].message).toBe(
+        "You cannot remove yourself from the group.",
+      );
+    });
+
+    it("rejects request when displayId format is invalid", async () => {
+      const res = await request(app)
+        .delete(`/api/v1/groups/${groupId}/kick/invalid!!`)
+        .set("Cookie", adminCookies as string[]);
 
       expect(res.status).toBe(422);
     });

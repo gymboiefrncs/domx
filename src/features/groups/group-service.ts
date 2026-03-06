@@ -1,5 +1,6 @@
 import { withTransaction } from "../../config/transaction.js";
 import {
+  deleteMember,
   fetchGroupById,
   fetchMemberRole,
   fetchUserByDisplayId,
@@ -13,6 +14,7 @@ import {
   MEMBER_ADDED,
   NOT_A_GROUP_MEMBER,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
+  USER_NOT_FOUND,
 } from "../../common/constants.js";
 import type { Result } from "../../common/types.js";
 import {
@@ -63,10 +65,7 @@ export const addMember = async (
   if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
 
   const targetUserId = await fetchUserByDisplayId(displayId);
-  if (!targetUserId)
-    throw new NotFoundError(
-      "User with the provided display ID does not exist.",
-    );
+  if (!targetUserId) throw new NotFoundError(USER_NOT_FOUND);
   try {
     /**
      * insertMember may throw a unique constraint violation if the user
@@ -83,10 +82,7 @@ export const addMember = async (
       "code" in error &&
       "constraint" in error
     ) {
-      if (
-        error.code === "23505" &&
-        error.constraint === "members_group_id_user_id_key"
-      ) {
+      if (error.code === "23505" && error.constraint === "group_members_pkey") {
         throw new ConflictError(ALREADY_A_MEMBER);
       }
     }
@@ -94,4 +90,39 @@ export const addMember = async (
   }
 
   return { ok: true, message: MEMBER_ADDED };
+};
+
+/**
+ * Removes a member from a group by their display ID.
+ * Restricted to admin, kick is a privileged action that forcibly
+ * removes another member, as opposed to leaving which is self-initiated.
+ * Admins who want to leave the group should use the leave flow instead.
+ */
+export const kickMember = async (
+  groupId: string,
+  displayId: string,
+  requesterId: string,
+): Promise<Result> => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+
+  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  if (requesterRole !== "admin")
+    throw new ForbiddenError("Only group admins can kick members.");
+
+  const userId = await fetchUserByDisplayId(displayId);
+  if (!userId) throw new NotFoundError(USER_NOT_FOUND);
+
+  /**
+   * Prevents admins from using kick as a substitute for leaving.
+   * Self-removal is handled separately by the leave flow.
+   */
+  if (userId === requesterId)
+    throw new ForbiddenError("You cannot remove yourself from the group.");
+
+  const deleted = await deleteMember(userId, groupId);
+  if (!deleted) throw new NotFoundError(USER_NOT_FOUND);
+
+  return { ok: true, message: "Member has been removed from the group." };
 };

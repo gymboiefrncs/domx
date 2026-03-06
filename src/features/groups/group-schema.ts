@@ -8,7 +8,7 @@ export const GroupSchema = z.object({
     .trim(),
 });
 
-export const AddMemberSchema = z.object({
+export const ManageMemberSchema = z.object({
   groupId: z.string().uuid("Invalid group ID"),
   displayId: z
     .string()
@@ -20,4 +20,4 @@ export const AddMemberSchema = z.object({
 });
 
 export type GroupInput = z.infer<typeof GroupSchema>;
-export type AddMemberInput = z.infer<typeof AddMemberSchema>;
+export type AddMemberInput = z.infer<typeof ManageMemberSchema>;

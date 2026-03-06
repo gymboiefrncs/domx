@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { addMember, createGroup } from "./group-service.js";
-import type { AddMemberParams } from "./group-types.js";
+import { addMember, createGroup, kickMember } from "./group-service.js";
+import type { Params } from "./group-types.js";
 
 export const handleCreateGroup = async (
   req: Request,
@@ -21,7 +21,7 @@ export const handleCreateGroup = async (
 };
 
 export const handleAddMember = async (
-  req: Request<AddMemberParams>,
+  req: Request<Params>,
   res: Response,
   next: NextFunction,
 ) => {
@@ -30,6 +30,24 @@ export const handleAddMember = async (
     const requesterId = req.user!.userId;
 
     const result = await addMember(groupId, displayId, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleKickMember = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { displayId, groupId } = req.params;
+    const requesterId = req.user!.userId;
+    const result = await kickMember(groupId, displayId, requesterId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

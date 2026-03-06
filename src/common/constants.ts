@@ -17,4 +17,6 @@ export const MEMBER_ADDED = "Member added successfully";
 export const GROUP_NOT_FOUND = "Group does not exist.";
 export const ALREADY_A_MEMBER = "User is already a member of this group.";
 export const NOT_A_GROUP_MEMBER =
-  "You must be a member of this group to add others.";
+  "You must be a member of this group to perform this action.";
+export const USER_NOT_FOUND =
+  "User with the provided display ID does not exist.";

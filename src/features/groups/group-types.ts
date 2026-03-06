@@ -1,2 +1,2 @@
 export type GroupRoles = "admin" | "member";
-export type AddMemberParams = { displayId: string; groupId: string };
+export type Params = { displayId: string; groupId: string };

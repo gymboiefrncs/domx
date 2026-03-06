@@ -50,3 +50,13 @@ export const fetchMemberRole = async (
   const result = await pool.query(query, values);
   return result.rows[0]?.role;
 };
+
+export const deleteMember = async (
+  userId: string,
+  groupId: string,
+): Promise<boolean> => {
+  const query = `DELETE FROM group_members WHERE group_id = $1 AND user_id = $2`;
+  const values = [groupId, userId];
+  const result = await pool.query(query, values);
+  return (result.rowCount ?? 0) > 0;
+};

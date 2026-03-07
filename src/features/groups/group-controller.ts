@@ -1,5 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
-import { addMember, createGroup, kickMember } from "./group-service.js";
+import {
+  addMember,
+  createGroup,
+  demoteMember,
+  kickMember,
+  leaveMember,
+  promoteMember,
+} from "./group-service.js";
 import type { Params } from "./group-types.js";
 
 export const handleCreateGroup = async (
@@ -48,6 +55,60 @@ export const handleKickMember = async (
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
     const result = await kickMember(groupId, displayId, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handlePromoteMember = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { displayId, groupId } = req.params;
+    const requesterId = req.user!.userId;
+    const result = await promoteMember(groupId, displayId, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleDemoteMember = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { displayId, groupId } = req.params;
+    const requesterId = req.user!.userId;
+    const result = await demoteMember(groupId, displayId, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleLeaveGroup = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { displayId, groupId } = req.params;
+    const requesterId = req.user!.userId;
+    const result = await leaveMember(groupId, displayId, requesterId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

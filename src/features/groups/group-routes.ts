@@ -7,7 +7,10 @@ import {
 import {
   handleAddMember,
   handleCreateGroup,
+  handleDemoteMember,
   handleKickMember,
+  handleLeaveGroup,
+  handlePromoteMember,
 } from "./group-controller.js";
 
 export const groupRouter: Router = express.Router();
@@ -24,4 +27,23 @@ groupRouter.delete(
   jwtHandler,
   ManageMemberValidator,
   handleKickMember,
+);
+groupRouter.patch(
+  "/groups/:groupId/promote/:displayId",
+  jwtHandler,
+  ManageMemberValidator,
+  handlePromoteMember,
+);
+groupRouter.patch(
+  "/groups/:groupId/demote/:displayId",
+  jwtHandler,
+  ManageMemberValidator,
+  handleDemoteMember,
+);
+
+groupRouter.delete(
+  "/groups/:groupId/leave/:displayId",
+  jwtHandler,
+  ManageMemberValidator,
+  handleLeaveGroup,
 );

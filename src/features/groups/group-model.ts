@@ -92,7 +92,13 @@ export const countMembers = async (
   groupId: string,
   client: PoolClient,
 ): Promise<number> => {
-  const query = `SELECT COUNT(*)::int AS total FROM group_members WHERE group_id = $1 FOR UPDATE`;
+  // Lock all member rows first, then count.
+  // FOR UPDATE cannot be combined with aggregate functions directly.
+  await client.query(
+    `SELECT 1 FROM group_members WHERE group_id = $1 FOR UPDATE`,
+    [groupId],
+  );
+  const query = `SELECT COUNT(*)::int AS total FROM group_members WHERE group_id = $1`;
   const values = [groupId];
   const result = await client.query(query, values);
   return result.rows[0].total;

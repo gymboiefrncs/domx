@@ -22,7 +22,10 @@ export const setInfo = async ({
   username: string;
   password: string;
 }): Promise<Result> => {
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = await bcrypt.hash(
+    password,
+    process.env.NODE_ENV === "production" ? 12 : 10,
+  );
 
   /**
    * Generate display ID for user.

@@ -14,9 +14,18 @@ import {
 import { pool } from "../../config/db.js";
 import {
   ALREADY_A_MEMBER,
+  ALREADY_AN_ADMIN,
+  ALREADY_A_REGULAR_MEMBER,
+  CANNOT_KICK_SELF,
   GROUP_NOT_FOUND,
+  LEFT_GROUP,
   MEMBER_ADDED,
+  MEMBER_DEMOTED,
+  MEMBER_KICKED,
+  MEMBER_PROMOTED,
   NOT_A_GROUP_MEMBER,
+  SOLE_ADMIN_CANNOT_DEMOTE,
+  SOLE_ADMIN_CANNOT_LEAVE,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
   USER_NOT_FOUND,
 } from "../../common/constants.js";
@@ -26,36 +35,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../../utils/error.js";
-import type { GroupRoles } from "./group-types.js";
-
-/**
- * Shared preamble for group member actions.
- * Validates that the group exists, resolves the target displayId to a userId,
- * and optionally verifies the requester's role meets a minimum privilege.
- *
- * @param requireRole - If provided, the requester must have this exact role.
- */
-const resolveGroupAction = async (
-  groupId: string,
-  displayId: string,
-  requesterId: string,
-  requireRole?: GroupRoles,
-): Promise<{ userId: string; requesterRole: GroupRoles }> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
-  if (requireRole && requesterRole !== requireRole)
-    throw new ForbiddenError(
-      `Only group ${requireRole}s can perform this action.`,
-    );
-
-  const userId = await fetchUserByDisplayId(displayId);
-  if (!userId) throw new NotFoundError(USER_NOT_FOUND);
-
-  return { userId, requesterRole };
-};
+import { resolveGroupAction } from "./group-helper.js";
 
 export const createGroup = async (
   groupName: string,
@@ -148,13 +128,12 @@ export const kickMember = async (
    * Prevents admins from using kick as a substitute for leaving.
    * Self-removal is handled separately by the leave flow.
    */
-  if (userId === requesterId)
-    throw new ForbiddenError("You cannot remove yourself from the group.");
+  if (userId === requesterId) throw new ForbiddenError(CANNOT_KICK_SELF);
 
   const deleted = await deleteMember(userId, groupId);
   if (!deleted) throw new NotFoundError(USER_NOT_FOUND);
 
-  return { ok: true, message: "Member has been removed from the group." };
+  return { ok: true, message: MEMBER_KICKED };
 };
 
 /**
@@ -202,8 +181,8 @@ export const leaveMember = async (
       await deleteMember(userId, groupId, client);
       await deleteGroup(groupId, client);
       return {
-        ok: true as const,
-        message: "You have left the group",
+        ok: true,
+        message: LEFT_GROUP,
       };
     }
 
@@ -214,17 +193,14 @@ export const leaveMember = async (
        * and both leaving, which would leave the group without any admins.
        */
       const otherAdminsExist = await hasOtherAdmins(groupId, userId, client);
-      if (!otherAdminsExist)
-        throw new ConflictError(
-          "Promote a member to admin before leaving this group.",
-        );
+      if (!otherAdminsExist) throw new ConflictError(SOLE_ADMIN_CANNOT_LEAVE);
     }
 
     // Regular members (or admins with co-admins) can leave freely
     const deleted = await deleteMember(userId, groupId, client);
     if (!deleted) throw new NotFoundError(USER_NOT_FOUND);
 
-    return { ok: true as const, message: "You have left the group." };
+    return { ok: true, message: LEFT_GROUP };
   });
 };
 
@@ -242,13 +218,12 @@ export const promoteMember = async (
 
   const targetRole = await fetchMemberRole(groupId, userId);
   if (!targetRole) throw new NotFoundError(NOT_A_GROUP_MEMBER);
-  if (targetRole === "admin")
-    throw new ConflictError("User is already an admin.");
+  if (targetRole === "admin") throw new ConflictError(ALREADY_AN_ADMIN);
 
   const promoted = await updateRole("admin", userId, groupId);
   if (!promoted) throw new NotFoundError(USER_NOT_FOUND);
 
-  return { ok: true, message: "Member has been promoted" };
+  return { ok: true, message: MEMBER_PROMOTED };
 };
 
 /**
@@ -275,21 +250,18 @@ export const demoteMember = async (
   const targetRole = await fetchMemberRole(groupId, userId);
   if (!targetRole) throw new NotFoundError(NOT_A_GROUP_MEMBER);
   if (targetRole === "member")
-    throw new ConflictError("User is already a regular member.");
+    throw new ConflictError(ALREADY_A_REGULAR_MEMBER);
 
   await withTransaction(pool, async (client) => {
     // Ensure at least one admin remains after demotion.
     // Guards both self-demotion and mutual-demotion races
     // (e.g. Admin A demotes B while B demotes A simultaneously).
     const otherAdminsExist = await hasOtherAdmins(groupId, userId, client);
-    if (!otherAdminsExist)
-      throw new ConflictError(
-        "Cannot demote. This would leave the group with no admins.",
-      );
+    if (!otherAdminsExist) throw new ConflictError(SOLE_ADMIN_CANNOT_DEMOTE);
 
     const demoted = await updateRole("member", userId, groupId, client);
     if (!demoted) throw new NotFoundError(USER_NOT_FOUND);
   });
 
-  return { ok: true, message: "Member has been demoted" };
+  return { ok: true, message: MEMBER_DEMOTED };
 };

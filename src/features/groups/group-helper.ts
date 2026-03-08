@@ -1,15 +1,12 @@
 import type { GroupRoles } from "./group-types.js";
-import {
-  fetchGroupById,
-  fetchMemberRole,
-  fetchUserByDisplayId,
-} from "./group-model.js";
+import { fetchGroupById, fetchMemberRole } from "../../common/models.js";
 import { ForbiddenError, NotFoundError } from "../../utils/error.js";
 import {
   GROUP_NOT_FOUND,
   NOT_A_GROUP_MEMBER,
   USER_NOT_FOUND,
 } from "../../common/constants.js";
+import { fetchUserByDisplayId } from "./group-model.js";
 
 /**
  * Shared preamble for group member actions.

@@ -2,6 +2,7 @@ import {
   CANNOT_DELETE_POST,
   CANNOT_EDIT_POST,
   POST_CREATED,
+  POST_DELETED,
   POST_EDITED,
   POST_NOT_FOUND,
 } from "../../common/constants.js";
@@ -65,7 +66,7 @@ export const removePost = async (
   postId: string,
   groupId: string,
   requesterId: string,
-) => {
+): Promise<Result> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   const requesterRole = await performChecks(groupId, requesterId);
 
@@ -81,6 +82,6 @@ export const removePost = async (
 
   return {
     ok: true,
-    message: post,
+    message: POST_DELETED,
   };
 };

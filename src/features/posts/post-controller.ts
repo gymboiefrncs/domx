@@ -51,7 +51,7 @@ export const handleDeletePost = async (
     const { groupId, postId } = req.params;
     const requesterId = req.user!.userId;
 
-    const result = await removePost(requesterId, groupId, postId);
+    const result = await removePost(postId, groupId, requesterId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

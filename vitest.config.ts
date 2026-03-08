@@ -17,6 +17,7 @@ export default defineConfig({
             "src/test/auth/auth.api.test.ts",
             "src/test/verification/verification-service.test.ts",
             "src/test/groups/group.api.test.ts",
+            "src/test/posts/post.api.test.ts",
           ],
         },
       },

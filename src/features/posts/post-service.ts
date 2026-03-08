@@ -1,16 +1,23 @@
 import {
-  GROUP_NOT_FOUND,
-  NOT_A_GROUP_MEMBER,
+  CANNOT_DELETE_POST,
+  CANNOT_EDIT_POST,
   POST_CREATED,
+  POST_EDITED,
+  POST_NOT_FOUND,
 } from "../../common/constants.js";
 import type { Result } from "../../common/types.js";
 import { ForbiddenError, NotFoundError } from "../../utils/error.js";
-import { fetchGroupById, fetchMemberRole } from "../../common/models.js";
-import { insertPost } from "./post-model.js";
+import {
+  deletePost,
+  fetchPostById,
+  insertPost,
+  updatePost,
+} from "./post-model.js";
+import { performChecks } from "./post-helpers.js";
 
 /**
  * Creates a new post in a group.
- * Any group member can create a post
+ * Any group member can create a post.
  * Validates that the group exists and the requester is a member.
  */
 export const createPost = async (
@@ -18,16 +25,62 @@ export const createPost = async (
   requesterId: string,
   groupId: string,
 ): Promise<Result> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  // Perform necessary checks (e.g., group existence, membership) and get requester role.
+  await performChecks(groupId, requesterId);
 
   await insertPost(body, requesterId, groupId);
 
   return {
     ok: true,
     message: POST_CREATED,
+  };
+};
+
+export const editPost = async (
+  body: string,
+  requesterId: string,
+  groupId: string,
+  postId: string,
+): Promise<Result> => {
+  // Perform necessary checks (e.g., group existence, membership) and get requester role.
+  const requesterRole = await performChecks(groupId, requesterId);
+
+  const post = await fetchPostById(postId, groupId);
+  if (!post) throw new NotFoundError(POST_NOT_FOUND);
+
+  //  Only the post author or a group admin can edit a post.
+  if (post.user_id !== requesterId && requesterRole !== "admin") {
+    throw new ForbiddenError(CANNOT_EDIT_POST);
+  }
+
+  await updatePost(body, postId, groupId);
+
+  return {
+    ok: true,
+    message: POST_EDITED,
+  };
+};
+
+export const removePost = async (
+  postId: string,
+  groupId: string,
+  requesterId: string,
+) => {
+  // Perform necessary checks (e.g., group existence, membership) and get requester role.
+  const requesterRole = await performChecks(groupId, requesterId);
+
+  const post = await fetchPostById(postId, groupId);
+  if (!post) throw new NotFoundError(POST_NOT_FOUND);
+
+  // Only post author and group admin can delete a post.
+  if (post.user_id !== requesterId && requesterRole !== "admin") {
+    throw new ForbiddenError(CANNOT_DELETE_POST);
+  }
+
+  await deletePost(postId, groupId);
+
+  return {
+    ok: true,
+    message: post,
   };
 };

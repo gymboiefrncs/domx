@@ -15,7 +15,12 @@ import {
   GroupSchema,
 } from "../features/groups/group-schema.js";
 import type { ParamsDictionary } from "express-serve-static-core";
-import { PostSchema, PostParamsSchema } from "../features/posts/post-schema.js";
+import {
+  PostSchema,
+  PostParamsSchema,
+  EditPostParamsSchema,
+  DeletePostParamsSchema,
+} from "../features/posts/post-schema.js";
 
 // Generic validation middleware factory
 const validate =
@@ -69,3 +74,5 @@ const validateParams =
 
 export const ManageMemberValidator = validateParams(ManageMemberSchema);
 export const postParamsValidator = validateParams(PostParamsSchema);
+export const editPostParamsValidator = validateParams(EditPostParamsSchema);
+export const deletePostParamsValidator = validateParams(DeletePostParamsSchema);

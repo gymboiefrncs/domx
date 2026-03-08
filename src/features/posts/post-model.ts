@@ -10,4 +10,29 @@ export const insertPost = async (
   await pool.query(query, values);
 };
 
-export const updatePost = async () => {};
+export const fetchPostById = async (
+  postId: string,
+  groupId: string,
+): Promise<{ id: string; user_id: string } | undefined> => {
+  const query = `SELECT id, user_id FROM posts WHERE id = $1 AND group_id = $2`;
+  const values = [postId, groupId];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+};
+
+export const updatePost = async (
+  body: string,
+  postId: string,
+  groupId: string,
+): Promise<void> => {
+  const query = `UPDATE posts SET body = $1 WHERE id = $2 AND group_id = $3`;
+  const values = [body, postId, groupId];
+  await pool.query(query, values);
+};
+
+export const deletePost = async (postid: string, groupId: string) => {
+  const query = `DELETE FROM posts WHERE id = $1 AND group_id = $2`;
+
+  const values = [postid, groupId];
+  await pool.query(query, values);
+};

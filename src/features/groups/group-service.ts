@@ -4,13 +4,13 @@ import {
   deleteGroup,
   deleteMember,
   hasOtherAdmins,
-  fetchGroupById,
-  fetchMemberRole,
   fetchUserByDisplayId,
   insertGroup,
   insertMember,
   updateRole,
 } from "./group-model.js";
+
+import { fetchMemberRole, fetchGroupById } from "../../common/models.js";
 import { pool } from "../../config/db.js";
 import {
   ALREADY_A_MEMBER,

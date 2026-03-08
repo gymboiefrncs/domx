@@ -5,7 +5,7 @@ import {
 } from "../../common/constants.js";
 import type { Result } from "../../common/types.js";
 import { ForbiddenError, NotFoundError } from "../../utils/error.js";
-import { fetchGroupById, fetchMemberRole } from "../groups/group-model.js";
+import { fetchGroupById, fetchMemberRole } from "../../common/models.js";
 import { insertPost } from "./post-model.js";
 
 /**

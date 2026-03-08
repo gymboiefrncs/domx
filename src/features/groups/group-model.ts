@@ -32,27 +32,6 @@ export const fetchUserByDisplayId = async (
   return result.rows[0]?.id;
 };
 
-export const fetchGroupById = async (
-  groupId: string,
-): Promise<{ group_id: string } | undefined> => {
-  const query = `SELECT group_id FROM groups WHERE group_id = $1`;
-  const values = [groupId];
-  const result = await pool.query(query, values);
-  return result.rows[0];
-};
-
-export const fetchMemberRole = async (
-  groupId: string,
-  userId: string,
-  con: Pool | PoolClient = pool,
-  forUpdate = false,
-): Promise<GroupRoles | undefined> => {
-  const query = `SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2${forUpdate ? " FOR UPDATE" : ""}`;
-  const values = [groupId, userId];
-  const result = await con.query(query, values);
-  return result.rows[0]?.role;
-};
-
 export const deleteMember = async (
   userId: string,
   groupId: string,

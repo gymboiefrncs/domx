@@ -32,3 +32,6 @@ export const SOLE_ADMIN_CANNOT_LEAVE =
   "Promote a member to admin before leaving this group.";
 export const SOLE_ADMIN_CANNOT_DEMOTE =
   "Cannot demote. This would leave the group with no admins.";
+
+// Post messages
+export const POST_CREATED = "Post created successfully.";

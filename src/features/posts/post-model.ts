@@ -1,4 +1,20 @@
 import { pool } from "../../config/db.js";
+import type { Post } from "./post-types.js";
+
+export const fetchAllPostsByGroupId = async (
+  groupId: string,
+): Promise<Post[]> => {
+  const query = `
+  SELECT p.*, u.username, u.display_id 
+  FROM posts p 
+  JOIN users u 
+  ON p.user_id = u.id
+  WHERE p.group_id = $1`;
+  const values = [groupId];
+
+  const result = await pool.query(query, values);
+  return result.rows;
+};
 
 export const insertPost = async (
   body: string,

@@ -3,11 +3,30 @@ import {
   addMember,
   createGroup,
   demoteMember,
+  getUserGroups,
   kickMember,
   leaveMember,
   promoteMember,
 } from "./group-service.js";
 import type { Params } from "./group-types.js";
+
+export const handleGetGroups = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId;
+    const result = await getUserGroups(userId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+      data: result.ok ? result.data : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const handleCreateGroup = async (
   req: Request,

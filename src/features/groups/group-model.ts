@@ -1,5 +1,5 @@
 import type { Pool, PoolClient } from "pg";
-import type { GroupRoles } from "./group-types.js";
+import type { Group, GroupRoles } from "./group-types.js";
 import { pool } from "../../config/db.js";
 
 export const insertGroup = async (
@@ -91,4 +91,17 @@ export const deleteGroup = async (
   const values = [groupId];
   const result = await client.query(query, values);
   return (result.rowCount ?? 0) > 0;
+};
+
+export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
+  const query = `
+    SELECT g.group_id, g.name, gm.role
+    FROM group_members gm
+    JOIN groups g ON g.group_id = gm.group_id
+    WHERE gm.user_id = $1
+    ORDER BY g.name
+  `;
+  const values = [userId];
+  const result = await pool.query(query, values);
+  return result.rows;
 };

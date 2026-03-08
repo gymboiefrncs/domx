@@ -10,11 +10,26 @@ import type { Result } from "../../common/types.js";
 import { ForbiddenError, NotFoundError } from "../../utils/error.js";
 import {
   deletePost,
+  fetchAllPostsByGroupId,
   fetchPostById,
   insertPost,
   updatePost,
 } from "./post-model.js";
 import { performChecks } from "./post-helpers.js";
+
+/**
+ * Fetches all posts in a group.
+ * Any group member can view posts.
+ */
+export const getGroupPosts = async (
+  groupId: string,
+  requesterId: string,
+): Promise<Result> => {
+  await performChecks(groupId, requesterId);
+
+  const posts = await fetchAllPostsByGroupId(groupId);
+  return { ok: true, message: "Posts fetched successfully.", data: posts };
+};
 
 /**
  * Creates a new post in a group.

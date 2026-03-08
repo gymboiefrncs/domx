@@ -10,9 +10,17 @@ import {
   handleCreatePost,
   handleDeletePost,
   handleEditPost,
+  handleGetPosts,
 } from "./post-controller.js";
 
 export const postRouter: Router = express.Router();
+
+postRouter.get(
+  "/groups/:groupId/posts",
+  jwtHandler,
+  postParamsValidator,
+  handleGetPosts,
+);
 
 postRouter.post(
   "/groups/:groupId/posts",

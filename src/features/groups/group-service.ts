@@ -5,6 +5,7 @@ import {
   deleteMember,
   hasOtherAdmins,
   fetchUserByDisplayId,
+  fetchUserGroups,
   insertGroup,
   insertMember,
   updateRole,
@@ -36,6 +37,11 @@ import {
   NotFoundError,
 } from "../../utils/error.js";
 import { resolveGroupAction } from "./group-helper.js";
+
+export const getUserGroups = async (userId: string): Promise<Result> => {
+  const groups = await fetchUserGroups(userId);
+  return { ok: true, message: "Groups fetched successfully.", data: groups };
+};
 
 export const createGroup = async (
   groupName: string,

@@ -2,22 +2,24 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    // isolate: true,
+    typecheck: {
+      tsconfig: "./tsconfig.test.json",
+    },
     fileParallelism: false,
     globals: true,
     environment: "node",
-    setupFiles: "./src/test/setup.ts",
+    setupFiles: "./test/setup.ts",
     projects: [
       {
         extends: true,
         test: {
           name: "auth-suite",
           include: [
-            "src/test/auth/auth-service.test.ts",
-            "src/test/auth/auth.api.test.ts",
-            "src/test/verification/verification-service.test.ts",
-            "src/test/groups/group.api.test.ts",
-            "src/test/posts/post.api.test.ts",
+            "./test/auth/auth-service.test.ts",
+            "./test/auth/auth.api.test.ts",
+            "./test/verification/verification-service.test.ts",
+            "./test/groups/group.api.test.ts",
+            "./test/posts/post.api.test.ts",
           ],
         },
       },

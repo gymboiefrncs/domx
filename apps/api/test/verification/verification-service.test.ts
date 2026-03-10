@@ -1,23 +1,23 @@
 import { describe, it, vi, beforeEach, expect } from "vitest";
-import { pool } from "../../config/db.js";
+import { pool } from "../../src/config/db.js";
 import crypto from "crypto";
 import {
   resendOtp,
   validateOtp,
-} from "../../features/verification/verification-service.js";
+} from "../../src/features/verification/verification-service.js";
 import {
   COOLDOWN_MESSAGE,
   OTP_MESSAGE_FAIL,
   OTP_MESSAGE_SUCCESS,
   RESEND_OTP_MESSAGE,
-} from "../../common/constants.js";
+} from "../../src/common/constants.js";
 
 const TEST_OTP = "123456";
 
 const hashOTP = () => {
   return crypto.createHash("sha256").update(TEST_OTP).digest("hex");
 };
-vi.mock("../../utils/generateOTP", () => ({
+vi.mock("../../src/utils/generateOTP.ts", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -25,7 +25,7 @@ vi.mock("../../utils/generateOTP", () => ({
   })),
 }));
 vi.mock(
-  "../../features/verification/verification-helpers/generateSetInfoToken.ts",
+  "../../src/features/verification/verification-helpers/generateSetInfoToken.ts",
   () => ({
     generateSetInfoToken: vi.fn().mockResolvedValue("mocked_token"),
   }),

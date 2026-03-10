@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../../app.js";
+import { app } from "../../src/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
   CANNOT_DELETE_POST,
@@ -10,14 +10,14 @@ import {
   POST_DELETED,
   POST_EDITED,
   POST_NOT_FOUND,
-} from "../../common/constants.js";
-import { pool } from "../../config/db.js";
+} from "../../src/common/constants.js";
+import { pool } from "../../src/config/db.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
 
-vi.mock("../../utils/generateOTP", () => ({
+vi.mock("../../src/utils/generateOTP.ts", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),

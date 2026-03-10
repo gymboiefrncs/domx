@@ -1,17 +1,17 @@
 import { describe, vi, it, expect, beforeEach } from "vitest";
-import { registerUser } from "../../features/auth/auth-service.js";
-import { pool } from "../../config/db.js";
-import { fetchUserByEmail } from "../../features/auth/auth-model.js";
+import { registerUser } from "../../src/features/auth/auth-service.js";
+import { pool } from "../../src/config/db.js";
+import { fetchUserByEmail } from "../../src/features/auth/auth-model.js";
 import {
   EMAIL_MESSAGE,
   COOLDOWN_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
   INFO_SET_FAILED_MESSAGE,
-} from "../../common/constants.js";
-import { setInfo } from "../../features/auth/set-info.js";
+} from "../../src/common/constants.js";
+import { setInfo } from "../../src/features/auth/set-info.js";
 import bcrypt from "bcrypt";
 
-vi.mock("../../utils/sendEmail", () => ({
+vi.mock("../../src/utils/sendEmail.ts", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
   sendAlreadyRegisteredEmail: vi.fn().mockResolvedValue(undefined),
 }));

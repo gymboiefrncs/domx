@@ -1,12 +1,11 @@
-// eslint.config.mjs
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+/** @type {import("eslint").Linter.Config[]} */
 export default tseslint.config(
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    // js.configs.recommended already includes the recommended rules
     extends: [js.configs.recommended],
     languageOptions: { globals: globals.node },
     rules: {

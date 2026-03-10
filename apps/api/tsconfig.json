@@ -1,0 +1,10 @@
+{
+  "extends": "@domx/typescript-config/node.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "jsx": "react-jsx",
+    "exactOptionalPropertyTypes": true
+  },
+  "include": ["src"]
+}

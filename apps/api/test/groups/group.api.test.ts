@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app } from "../../src/app.js";
+import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
   ALREADY_A_MEMBER,
@@ -17,8 +17,8 @@ import {
   SOLE_ADMIN_CANNOT_LEAVE,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
   USER_NOT_FOUND,
-} from "../../src/common/constants.js";
-import { pool } from "../../src/config/db.js";
+} from "@api/common/constants.js";
+import { pool } from "@api/config/db.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
@@ -26,7 +26,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "grouptest@example.com" };
 
-vi.mock("../../src/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.ts", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),

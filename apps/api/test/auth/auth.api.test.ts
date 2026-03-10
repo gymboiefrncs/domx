@@ -1,11 +1,11 @@
 import request from "supertest";
-import { app } from "../../src/app.js";
+import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
   EMAIL_MESSAGE,
   INFO_SET_FAILED_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
-} from "../../src/common/constants.js";
+} from "@api/common/constants.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
@@ -13,7 +13,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
 
-vi.mock("../../src/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.ts", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),

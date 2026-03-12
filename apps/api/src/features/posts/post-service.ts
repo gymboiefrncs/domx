@@ -37,6 +37,7 @@ export const getGroupPosts = async (
  * Validates that the group exists and the requester is a member.
  */
 export const createPost = async (
+  title: string,
   body: string,
   requesterId: string,
   groupId: string,
@@ -44,7 +45,7 @@ export const createPost = async (
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   await performChecks(groupId, requesterId);
 
-  await insertPost(body, requesterId, groupId);
+  await insertPost(title, body, requesterId, groupId);
 
   return {
     ok: true,
@@ -53,6 +54,7 @@ export const createPost = async (
 };
 
 export const editPost = async (
+  title: string,
   body: string,
   requesterId: string,
   groupId: string,
@@ -69,7 +71,7 @@ export const editPost = async (
     throw new ForbiddenError(CANNOT_EDIT_POST);
   }
 
-  await updatePost(body, postId, groupId);
+  await updatePost(title, body, postId, groupId);
 
   return {
     ok: true,

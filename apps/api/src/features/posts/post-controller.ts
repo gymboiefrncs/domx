@@ -35,9 +35,9 @@ export const handleCreatePost = async (
   try {
     const { groupId } = req.params;
     const requesterId = req.user!.userId;
-    const { body } = req.body;
+    const { body, title } = req.body;
 
-    const result = await createPost(body, requesterId, groupId);
+    const result = await createPost(title, body, requesterId, groupId);
     res.status(201).json({
       success: result.ok,
       message: result.message,
@@ -55,9 +55,9 @@ export const handleEditPost = async (
   try {
     const { groupId, postId } = req.params;
     const requesterId = req.user!.userId;
-    const { body } = req.body;
+    const { body, title } = req.body;
 
-    const result = await editPost(body, requesterId, groupId, postId);
+    const result = await editPost(title, body, requesterId, groupId, postId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

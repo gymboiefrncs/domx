@@ -17,12 +17,13 @@ export const fetchAllPostsByGroupId = async (
 };
 
 export const insertPost = async (
+  title: string,
   body: string,
   userId: string,
   groupId: string,
 ): Promise<void> => {
-  const query = `INSERT INTO posts (body, user_id, group_id) VALUES ($1, $2, $3)`;
-  const values = [body, userId, groupId];
+  const query = `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4)`;
+  const values = [title, body, userId, groupId];
   await pool.query(query, values);
 };
 
@@ -37,18 +38,24 @@ export const fetchPostById = async (
 };
 
 export const updatePost = async (
+  title: string,
   body: string,
   postId: string,
   groupId: string,
 ): Promise<void> => {
-  const query = `UPDATE posts SET body = $1 WHERE id = $2 AND group_id = $3`;
-  const values = [body, postId, groupId];
+  const query = `
+  UPDATE posts 
+  SET title = coalesce($1, title), 
+      body = coalesce($2, body), 
+      updated_at = now()
+  WHERE id = $3 AND group_id = $4`;
+  const values = [title, body, postId, groupId];
   await pool.query(query, values);
 };
 
-export const deletePost = async (postid: string, groupId: string) => {
+export const deletePost = async (postId: string, groupId: string) => {
   const query = `DELETE FROM posts WHERE id = $1 AND group_id = $2`;
 
-  const values = [postid, groupId];
+  const values = [postId, groupId];
   await pool.query(query, values);
 };

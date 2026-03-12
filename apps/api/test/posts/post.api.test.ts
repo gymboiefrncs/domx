@@ -73,13 +73,14 @@ const addMember = async (
 };
 
 const insertPostDirectly = async (
+  title: string,
   body: string,
   userId: string,
   groupId: string,
 ) => {
   const result = await pool.query(
-    `INSERT INTO posts (body, user_id, group_id) VALUES ($1, $2, $3) RETURNING id`,
-    [body, userId, groupId],
+    `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4) RETURNING id`,
+    [title, body, userId, groupId],
   );
   return result.rows[0].id as string;
 };
@@ -109,7 +110,7 @@ describe("Post API", () => {
       const res = await request(app)
         .post(`/api/v1/groups/${groupId}/posts`)
         .set("Cookie", cookies)
-        .send({ body: "Hello world" });
+        .send({ title: "sample", body: "Hello world" });
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual({
@@ -122,6 +123,7 @@ describe("Post API", () => {
         [groupId],
       );
       expect(posts.rows).toHaveLength(1);
+      expect(posts.rows[0].title).toBe("sample");
       expect(posts.rows[0].body).toBe("Hello world");
     });
 
@@ -137,7 +139,7 @@ describe("Post API", () => {
       const res = await request(app)
         .post(`/api/v1/groups/${groupId}/posts`)
         .set("Cookie", outsiderCookies)
-        .send({ body: "I'm not a member" });
+        .send({ title: "sample", body: "I'm not a member" });
 
       expect(res.status).toBe(403);
       expect(res.body.errors[0].message).toBe(NOT_A_GROUP_MEMBER);
@@ -149,20 +151,20 @@ describe("Post API", () => {
       const res = await request(app)
         .post(`/api/v1/groups/${FAKE_UUID}/posts`)
         .set("Cookie", cookies)
-        .send({ body: "No group" });
+        .send({ title: "sample", body: "No group" });
 
       expect(res.status).toBe(404);
       expect(res.body.errors[0].message).toBe(GROUP_NOT_FOUND);
     });
 
-    it("rejects empty post body", async () => {
+    it("rejects empty post title and body", async () => {
       const cookies = await setupAndLoginAs("post4@test.com", "poster4");
       const groupId = await createGroup(cookies);
 
       const res = await request(app)
         .post(`/api/v1/groups/${groupId}/posts`)
         .set("Cookie", cookies)
-        .send({ body: "" });
+        .send({ title: "", body: "" });
 
       expect(res.status).toBe(422);
     });
@@ -170,7 +172,7 @@ describe("Post API", () => {
     it("rejects unauthenticated post creation", async () => {
       const res = await request(app)
         .post(`/api/v1/groups/${FAKE_UUID}/posts`)
-        .send({ body: "No auth" });
+        .send({ title: "sample", body: "No auth" });
 
       expect(res.status).toBe(401);
     });
@@ -182,20 +184,27 @@ describe("Post API", () => {
       const cookies = await setupAndLoginAs("edit1@test.com", "editor1");
       const groupId = await createGroup(cookies);
       const userId = await getUserId("edit1@test.com");
-      const postId = await insertPostDirectly("Original", userId, groupId);
+      const postId = await insertPostDirectly(
+        "Original Title",
+        "Original Body",
+        userId,
+        groupId,
+      );
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${postId}`)
+        .put(`/api/v1/groups/${groupId}/posts/${postId}`)
         .set("Cookie", cookies)
-        .send({ body: "Updated" });
+        .send({ title: "Updated Title", body: "Updated Body" });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ success: true, message: POST_EDITED });
 
-      const post = await pool.query(`SELECT body FROM posts WHERE id = $1`, [
-        postId,
-      ]);
-      expect(post.rows[0].body).toBe("Updated");
+      const post = await pool.query(
+        `SELECT title, body FROM posts WHERE id = $1`,
+        [postId],
+      );
+      expect(post.rows[0].title).toBe("Updated Title");
+      expect(post.rows[0].body).toBe("Updated Body");
     });
 
     it("allows a group admin to edit another member's post", async () => {
@@ -207,12 +216,17 @@ describe("Post API", () => {
       await addMember(adminCookies, groupId, memberDisplayId);
 
       const memberId = await getUserId("edit2m@test.com");
-      const postId = await insertPostDirectly("Member post", memberId, groupId);
+      const postId = await insertPostDirectly(
+        "Member post",
+        "Member body",
+        memberId,
+        groupId,
+      );
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${postId}`)
+        .put(`/api/v1/groups/${groupId}/posts/${postId}`)
         .set("Cookie", adminCookies)
-        .send({ body: "Admin edited" });
+        .send({ title: "Admin Updated Title", body: "Admin edited" });
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe(POST_EDITED);
@@ -236,14 +250,15 @@ describe("Post API", () => {
       const member1Id = await getUserId("edit3a@test.com");
       const postId = await insertPostDirectly(
         "Member1 post",
+        "Member1 body",
         member1Id,
         groupId,
       );
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${postId}`)
+        .put(`/api/v1/groups/${groupId}/posts/${postId}`)
         .set("Cookie", member2Cookies)
-        .send({ body: "Sneaky edit" });
+        .send({ title: "Sneaky edit", body: "Sneaky edit" });
 
       expect(res.status).toBe(403);
       expect(res.body.errors[0].message).toBe(CANNOT_EDIT_POST);
@@ -254,9 +269,9 @@ describe("Post API", () => {
       const groupId = await createGroup(cookies);
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${FAKE_UUID}`)
+        .put(`/api/v1/groups/${groupId}/posts/${FAKE_UUID}`)
         .set("Cookie", cookies)
-        .send({ body: "Ghost post" });
+        .send({ title: "Ghost title", body: "Ghost post" });
 
       expect(res.status).toBe(404);
       expect(res.body.errors[0].message).toBe(POST_NOT_FOUND);
@@ -266,7 +281,12 @@ describe("Post API", () => {
       const adminCookies = await setupAndLoginAs("edit5@test.com", "edit5adm");
       const groupId = await createGroup(adminCookies);
       const adminId = await getUserId("edit5@test.com");
-      const postId = await insertPostDirectly("Admin post", adminId, groupId);
+      const postId = await insertPostDirectly(
+        "Admin post",
+        "Admin body",
+        adminId,
+        groupId,
+      );
 
       const outsiderCookies = await setupAndLoginAs(
         "edit5out@test.com",
@@ -274,9 +294,9 @@ describe("Post API", () => {
       );
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${postId}`)
+        .put(`/api/v1/groups/${groupId}/posts/${postId}`)
         .set("Cookie", outsiderCookies)
-        .send({ body: "Not my group" });
+        .send({ title: "Non-member edit", body: "Not my group" });
 
       expect(res.status).toBe(403);
       expect(res.body.errors[0].message).toBe(NOT_A_GROUP_MEMBER);
@@ -286,12 +306,17 @@ describe("Post API", () => {
       const cookies = await setupAndLoginAs("edit6@test.com", "editor6");
       const groupId = await createGroup(cookies);
       const userId = await getUserId("edit6@test.com");
-      const postId = await insertPostDirectly("Original", userId, groupId);
+      const postId = await insertPostDirectly(
+        "Original Title",
+        "Original Body",
+        userId,
+        groupId,
+      );
 
       const res = await request(app)
-        .patch(`/api/v1/groups/${groupId}/posts/${postId}`)
+        .put(`/api/v1/groups/${groupId}/posts/${postId}`)
         .set("Cookie", cookies)
-        .send({ body: "" });
+        .send({ title: "Updated Title", body: "" });
 
       expect(res.status).toBe(422);
     });
@@ -303,7 +328,12 @@ describe("Post API", () => {
       const cookies = await setupAndLoginAs("del1@test.com", "deleter1");
       const groupId = await createGroup(cookies);
       const userId = await getUserId("del1@test.com");
-      const postId = await insertPostDirectly("To delete", userId, groupId);
+      const postId = await insertPostDirectly(
+        "To delete",
+        "To delete body",
+        userId,
+        groupId,
+      );
 
       const res = await request(app)
         .delete(`/api/v1/groups/${groupId}/posts/${postId}`)
@@ -327,7 +357,12 @@ describe("Post API", () => {
       await addMember(adminCookies, groupId, memberDisplayId);
 
       const memberId = await getUserId("del2m@test.com");
-      const postId = await insertPostDirectly("Member post", memberId, groupId);
+      const postId = await insertPostDirectly(
+        "Member post",
+        "Member body",
+        memberId,
+        groupId,
+      );
 
       const res = await request(app)
         .delete(`/api/v1/groups/${groupId}/posts/${postId}`)
@@ -355,6 +390,7 @@ describe("Post API", () => {
       const member1Id = await getUserId("del3a@test.com");
       const postId = await insertPostDirectly(
         "Member1 post",
+        "Member1 body",
         member1Id,
         groupId,
       );
@@ -383,7 +419,12 @@ describe("Post API", () => {
       const adminCookies = await setupAndLoginAs("del5@test.com", "del5admin");
       const groupId = await createGroup(adminCookies);
       const adminId = await getUserId("del5@test.com");
-      const postId = await insertPostDirectly("Admin post", adminId, groupId);
+      const postId = await insertPostDirectly(
+        "Admin post",
+        "Admin body",
+        adminId,
+        groupId,
+      );
 
       const outsiderCookies = await setupAndLoginAs(
         "del5out@test.com",

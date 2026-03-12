@@ -30,7 +30,7 @@ postRouter.post(
   handleCreatePost,
 );
 
-postRouter.patch(
+postRouter.put(
   "/groups/:groupId/posts/:postId",
   jwtHandler,
   editPostParamsValidator,

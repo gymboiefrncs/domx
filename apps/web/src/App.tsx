@@ -1,13 +1,15 @@
 import { Header } from "./components/Header";
 import { Nav } from "./components/Nav";
-import { HomePage } from "./pages/Feed";
+import { GroupPage } from "./pages/GroupPage";
 
 export function App() {
   return (
     <div className="flex flex-col h-full">
       <Header />
-      <HomePage />
+      <GroupPage />
       <Nav />
     </div>
   );
 }
+
+// TODO: create signup ui

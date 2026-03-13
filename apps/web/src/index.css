@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+.custom-font {
+  font-family: "Times New Roman", serif;
+}
+body {
+  background-color: #ddd7d7;
+}
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+}

@@ -95,13 +95,32 @@ export const deleteGroup = async (
 
 export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
   const query = `
-    SELECT g.group_id, g.name, gm.role
+    SELECT 
+    g.group_id, 
+    g.name, 
+    gm.role
+    gm.last_seen_at,
+    COUNT(p.post_id) FILTER (WHERE p.created_at > gm.last_seen_at) AS unread_count
     FROM group_members gm
     JOIN groups g ON g.group_id = gm.group_id
+    LEFT JOIN posts p ON p.group_id = g.group_id
     WHERE gm.user_id = $1
+    GROUP BY g.group_id, g.name, gm.role, gm.last_seen_at
     ORDER BY g.name
   `;
+
   const values = [userId];
   const result = await pool.query(query, values);
   return result.rows;
+};
+
+export const updateSeen = async (
+  groupId: string,
+  userId: string,
+  con: Pool | PoolClient = pool,
+): Promise<boolean> => {
+  const query = `UPDATE group_members SET last_seen_at = NOW() WHERE group_id = $1 AND user_id = $2`;
+  const values = [groupId, userId];
+  const result = await con.query(query, values);
+  return (result.rowCount ?? 0) > 0;
 };

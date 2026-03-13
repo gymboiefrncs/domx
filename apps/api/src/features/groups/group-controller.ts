@@ -7,6 +7,7 @@ import {
   kickMember,
   leaveMember,
   promoteMember,
+  updateLastSeen,
 } from "./group-service.js";
 import type { Params } from "./group-types.js";
 
@@ -22,6 +23,24 @@ export const handleGetGroups = async (
       success: result.ok,
       message: result.message,
       data: result.ok ? result.data : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateSeen = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user!.userId;
+    const { groupId } = req.params;
+    const result = await updateLastSeen(groupId, userId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
     });
   } catch (error) {
     next(error);

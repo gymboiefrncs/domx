@@ -12,11 +12,19 @@ import {
   handleKickMember,
   handleLeaveGroup,
   handlePromoteMember,
+  handleUpdateSeen,
 } from "./group-controller.js";
 
 export const groupRouter: Router = express.Router();
 
 groupRouter.get("/groups", jwtHandler, handleGetGroups);
+
+groupRouter.patch(
+  "/groups/:groupId/seen",
+  jwtHandler,
+  groupValidator,
+  handleUpdateSeen,
+);
 
 groupRouter.post("/groups", jwtHandler, groupValidator, handleCreateGroup);
 groupRouter.post(

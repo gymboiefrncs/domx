@@ -9,6 +9,7 @@ import {
   insertGroup,
   insertMember,
   updateRole,
+  updateSeen,
 } from "./group-model.js";
 
 import { fetchMemberRole, fetchGroupById } from "../../common/models.js";
@@ -41,6 +42,18 @@ import { resolveGroupAction } from "./group-helper.js";
 export const getUserGroups = async (userId: string): Promise<Result> => {
   const groups = await fetchUserGroups(userId);
   return { ok: true, message: "Groups fetched successfully.", data: groups };
+};
+
+export const updateLastSeen = async (groupId: string, requesterId: string) => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+
+  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+
+  await updateSeen(groupId, requesterId);
+
+  return { ok: true, message: "Last seen updated." };
 };
 
 export const createGroup = async (

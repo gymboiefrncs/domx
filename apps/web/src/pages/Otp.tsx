@@ -49,14 +49,14 @@ export default function OtpPage() {
   const isComplete: boolean = digits.every(Boolean);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] flex items-center px-5 py-8 font-sans">
-      <div className="w-full max-w-sm mx-auto bg-white border border-[#E2E0D8] rounded-2xl px-7 py-9">
-        <p className="text-[11px] uppercase tracking-widest text-[#a9a5a0] mb-2 font-normal">
+    <div className="min-h-screen bgbg flex items-center px-5 py-8 font-sans">
+      <div className="card">
+        <p className=" uppercase tracking-widest text-text-muted mb-6 font-normal">
           Verify your email
         </p>
 
-        <p className="text-sm text-[#7f7e7c] font-light leading-relaxed mb-8">
-          We sent a 6-digit code to your email. It expires in 2 minutes.
+        <p className="text-sm text-text-secondary font-normal leading-relaxed mb-4">
+          We sent a 6-digit code to your email
         </p>
 
         <div className="flex gap-2 justify-between mb-6">
@@ -77,21 +77,21 @@ export default function OtpPage() {
                 handleKeyDown(e, i)
               }
               onPaste={handlePaste}
-              className="w-full aspect-square text-center text-lg font-normal text-[#1C1B18] bg-[#FAFAF8] border border-[#D8D4CC] rounded-lg focus:outline-none focus:border-[#7C6F5B] focus:bg-white transition-colors"
+              className="input"
             />
           ))}
         </div>
 
         <button
           disabled={!isComplete}
-          className="w-full h-11.5 bg-[#1C1B18] text-[#FAF9F6] rounded-lg text-[13.5px] tracking-wide font-normal transition-all cursor-pointer hover:bg-[#2E2D29] active:scale-[0.985] disabled:opacity-30 disabled:cursor-not-allowed"
+          className="btn w-full disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Verify code
         </button>
 
-        <p className="text-[11px] text-[#838280] text-center mt-5 leading-relaxed font-light">
+        <p className="text-text-muted text-center mt-5 leading-relaxed font-normal">
           Didn't receive anything?{" "}
-          <button className="text-[#7C6F5B] border-b border-[#7C6F5B] pb-px bg-transparent cursor-pointer text-[11px]">
+          <button className="text-text-secondary border-b border-text-secondary pb-px bg-transparent cursor-pointer text-[11px]">
             Resend code
           </button>
         </p>

@@ -1,15 +1,153 @@
 @import "tailwindcss";
 
-.custom-font {
-  font-family: "Times New Roman", serif;
+@theme {
+  /* ----------------------------------------------------------
+       COLORS
+    ---------------------------------------------------------- */
+  /* Primary for main actions, links, focus rings. */
+  --color-primary: hsl(217 91% 47%);
+  --color-primary-hover: hsl(217 91% 40%);
+  --color-primary-subtle: hsl(217 100% 95%);
+  --color-primary-border: hsl(217 97% 83%);
+  --color-on-primary: hsl(0 0% 100%);
+
+  /* Secondary for less prominent actions, tags, pills. */
+  --color-secondary: hsl(262 47% 47%);
+  --color-secondary-hover: hsl(262 47% 40%);
+  --color-secondary-subtle: hsl(262 80% 97%);
+  --color-secondary-border: hsl(262 66% 84%);
+  --color-on-secondary: hsl(0 0% 100%);
+
+  /* Accent Amber for Highlights, badges, decorative callouts.
+       NOTE: Always pair with --color-on-accent (dark text).
+       Amber is too bright for white text to be readable on it. */
+  --color-accent: hsl(35 92% 47%);
+  --color-accent-hover: hsl(35 88% 40%);
+  --color-accent-subtle: hsl(35 100% 95%);
+  --color-accent-border: hsl(35 97% 80%);
+  --color-on-accent: hsl(220 20% 11%); /* dark text, not white */
+
+  /* Background */
+  --color-bg: hsl(220 20% 97%); /* slightly off-white, easier on eyes */
+  --color-bg-subtle: hsl(220 18% 94%); /* sidebars, footers, tinted sections */
+
+  /* Surface */
+  --color-surface: hsl(0 0% 100%); /* cards, modals, panels */
+  --color-surface-raised: hsl(220 20% 97%); /* dropdowns, popovers */
+  --color-surface-overlay: hsl(
+    220 18% 94%
+  ); /* hover/pressed state on a surface */
+
+  /* Text */
+  --color-text: hsl(220 20% 11%); /* headings and body — high contrast */
+  --color-text-secondary: hsl(220 13% 38%); /* captions, labels, helper text */
+  --color-text-muted: hsl(220 10% 50%); /* placeholders, hints */
+  --color-text-disabled: hsl(220 12% 64%); /* disabled controls */
+  --color-text-inverse: hsl(0 0% 100%); /* text on dark surfaces */
+  --color-text-link: hsl(217 91% 47%);
+  --color-text-link-hover: hsl(217 91% 40%);
+
+  /* Border */
+  --color-border-subtle: hsl(220 18% 94%); /* hairline dividers */
+  --color-border: hsl(220, 3%, 81%); /* default input/card border */
+  --color-border-strong: hsl(220 14% 78%); /* focused input border */
+
+  /* Error */
+  --color-error: hsl(0 72% 50%);
+  --color-error-hover: hsl(0 72% 43%);
+  --color-error-subtle: hsl(0 100% 97%);
+  --color-error-border: hsl(0 87% 85%);
+  --color-on-error: hsl(0 0% 100%);
+
+  /* Success */
+  --color-success: hsl(142 66% 37%);
+  --color-success-subtle: hsl(142 72% 95%);
+  --color-success-border: hsl(142 62% 76%);
+  --color-on-success: hsl(0 0% 100%);
+
+  /* Warning */
+  --color-warning: hsl(46 93% 50%);
+  --color-warning-subtle: hsl(46 100% 95%);
+  --color-warning-border: hsl(46 97% 77%);
+  --color-on-warning: hsl(220 20% 11%); /* dark text, not white */
+
+  /* ----------------------------------------------------------
+       TYPOGRAPHY
+    ---------------------------------------------------------- */
+  /* Font stacks */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* ----------------------------------------------------------
+       Z-INDEX
+    ---------------------------------------------------------- */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
 }
-body {
-  background-color: #ddd7d7;
-}
+
 @layer base {
   html,
   body,
   #root {
     height: 100%;
+  }
+  body {
+    font-family: var(--font-mono);
+    background-color: var(--color-bg);
+  }
+  p {
+    font-size: 11px;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md;
+    @apply bg-black/90 text-white shadow-sm shadow-black/20;
+    @apply transition-colors duration-200 ease-in cursor-pointer;
+  }
+  .btn-primary {
+    @apply transition-colors duration-200 ease-in hover:bg-primary-hover;
+    @apply bg-primary text-on-primary shadow-md shadow-primary-hover;
+  }
+  .btn-secondary {
+    @apply transition-colors duration-200 ease-in hover:bg-secondary-hover;
+    @apply bg-secondary text-on-secondary shadow-md shadow-secondary-hover;
+  }
+  .btn-accent {
+    @apply transition-colors duration-200 ease-in hover:bg-accent-hover;
+    @apply bg-accent text-on-accent shadow-md shadow-accent-hover;
+  }
+  .field {
+    @apply flex flex-col gap-1;
+  }
+  .field-label {
+    @apply font-medium text-text-secondary;
+  }
+  .input {
+    @apply w-full py-2 px-3 rounded-md;
+    @apply bg-surface border border-border text-text;
+    @apply transition-all;
+    &::placeholder {
+      @apply text-text-muted;
+    }
+    &:focus:not(.input--error) {
+      @apply border border-border shadow-md shadow-black/50;
+    }
+  }
+  .input--error {
+    @apply bg-error-subtle border-error transition-all;
+    &:focus {
+      @apply border border-error outline-none;
+      @apply shadow-md shadow-error/50;
+    }
+  }
+  .card {
+    @apply max-w-max rounded-lg p-4;
+    @apply bg-surface shadow-sm shadow-black/10;
   }
 }

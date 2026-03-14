@@ -23,4 +23,5 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: true,
   },
+  logLevel: "warn",
 });

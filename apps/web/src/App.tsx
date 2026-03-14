@@ -1,15 +1,11 @@
-import { Header } from "./components/Header";
-import { Nav } from "./components/Nav";
-import { GroupPage } from "./pages/GroupPage";
+import SignupPage from "./pages/Signup";
 
 export function App() {
   return (
     <div className="flex flex-col h-full">
-      <Header />
-      <GroupPage />
-      <Nav />
+      <SignupPage />
     </div>
   );
 }
 
-// TODO: create signup ui
+// TODO: add routing

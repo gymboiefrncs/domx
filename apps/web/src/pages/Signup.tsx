@@ -8,8 +8,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-5 py-8 font-sans">
-      <div className="card">
+    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
+      <div className="card w-full">
         {/* Eyebrow */}
         <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
           Create account

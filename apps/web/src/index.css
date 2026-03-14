@@ -147,7 +147,7 @@
     }
   }
   .card {
-    @apply max-w-max rounded-lg p-4;
+    @apply rounded-lg p-4;
     @apply bg-surface shadow-sm shadow-black/10;
   }
 }

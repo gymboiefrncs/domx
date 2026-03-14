@@ -49,8 +49,8 @@ export default function OtpPage() {
   const isComplete: boolean = digits.every(Boolean);
 
   return (
-    <div className="min-h-screen bgbg flex items-center px-5 py-8 font-sans">
-      <div className="card">
+    <div className="min-h-screen bgbg flex items-center p-8 font-sans">
+      <div className="card w-full">
         <p className=" uppercase tracking-widest text-text-muted mb-6 font-normal">
           Verify your email
         </p>

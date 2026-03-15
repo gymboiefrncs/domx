@@ -10,7 +10,11 @@ export const useSignup = () => {
   async function handleSignup(email: string) {
     setLoading(true);
     try {
-      await signup(email);
+      const result = await signup(email);
+      if (result.success && result.message === "INCOMPLETE_SIGNUP") {
+        navigate("/setup-profile", { replace: true });
+        return;
+      }
       navigate("/otp", { state: { email }, replace: true });
     } catch (err) {
       // use any for now since we don't have a defined error type

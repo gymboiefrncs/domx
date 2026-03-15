@@ -2,7 +2,7 @@ import { GroupCard } from "../components/GroupCard";
 import { useMyGroups } from "../hooks/useMyGroups";
 import type { Group } from "../components/GroupCard";
 
-export function GroupPage() {
+export const GroupPage = () => {
   const { groups, loading, error } = useMyGroups();
 
   if (loading) {
@@ -30,7 +30,7 @@ export function GroupPage() {
               My Groups
             </h1>
             <p className="text-xs text-neutral-400 mt-1">
-              {groups.length} groups
+              {groups.length > 0 ? groups.length : "No"} groups
             </p>
           </div>
         </div>
@@ -42,4 +42,4 @@ export function GroupPage() {
       </div>
     </div>
   );
-}
+};

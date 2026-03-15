@@ -33,7 +33,12 @@ export type RegistrationResult =
     };
 
 export type SetInfoResult =
-  | { ok: true; reason: "INFO_SET_SUCCESS"; message: string }
+  | {
+      ok: true;
+      reason: "INFO_SET_SUCCESS";
+      message: string;
+      data: { role: Role };
+    }
   | { ok: false; reason: "INFO_SET_FAILED"; message: string };
 
 export type Tokens = { accessToken: string; refreshToken: string };

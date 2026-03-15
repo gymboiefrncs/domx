@@ -1,8 +1,10 @@
+import { useSetInfo } from "@/hooks/useSignup";
 import { useState, type ChangeEvent } from "react";
 
 export default function SetupProfilePage() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const { handleSetInfo, loading, error } = useSetInfo();
 
   const passwordTooShort: boolean = password.length > 0 && password.length < 8;
   const canSubmit: boolean = username.length > 0 && password.length >= 8;
@@ -14,52 +16,61 @@ export default function SetupProfilePage() {
           One last step
         </p>
 
-        <div className="field mb-4">
-          <label htmlFor="username" className="field-label">
-            Username
-          </label>
-          <input
-            id="username"
-            type="text"
-            placeholder="mara_reyes"
-            value={username}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setUsername(e.target.value)
-            }
-            className="input"
-          />
-          <p className="text-text-secondary mt-1.5 font-normal">
-            This is how others will see you on the platform.
-          </p>
-        </div>
-
-        <div className="field mb-4">
-          <label htmlFor="password" className="field-label">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Min. 8 characters"
-            value={password}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setPassword(e.target.value)
-            }
-            className="input"
-          />
-          {passwordTooShort && (
-            <p className=" text-error mt-1.5 font-light">
-              Password must be at least 8 characters.
-            </p>
-          )}
-        </div>
-
-        <button
-          disabled={!canSubmit}
-          className="w-full btn disabled:opacity-30 disabled:cursor-not-allowed"
+        {error && <p className="text-error mb-4 font-light">{error}</p>}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSetInfo(username, password);
+          }}
         >
-          Finish setup
-        </button>
+          <div className="field mb-4">
+            <label htmlFor="username" className="field-label">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              placeholder="mara_reyes"
+              value={username}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setUsername(e.target.value)
+              }
+              className="input"
+            />
+            <p className="text-text-secondary mt-1.5 font-normal">
+              This is how others will see you on the platform.
+            </p>
+          </div>
+
+          <div className="field mb-4">
+            <label htmlFor="password" className="field-label">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Min. 8 characters"
+              value={password}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
+              className="input"
+            />
+            {passwordTooShort && (
+              <p className=" text-error mt-1.5 font-light">
+                Password must be at least 8 characters.
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="w-full btn disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {loading ? "Finishing..." : "Finish Signup"}
+          </button>
+        </form>
       </div>
     </div>
   );

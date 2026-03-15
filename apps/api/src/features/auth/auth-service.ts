@@ -29,6 +29,7 @@ import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 import { withTransaction } from "../../config/transaction.js";
 import { LOGOUT_MESSAGE } from "../../common/constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
+import { generateSession } from "./auth-helpers/generateSession.js";
 
 export const registerUser = async (
   data: SignupSchema,
@@ -132,22 +133,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
     throw new UnauthorizedError("Invalid credentials or account not verified");
   }
 
-  const jti = crypto.randomUUID();
-
-  const { accessToken, refreshToken } = await generateTokens(
-    user.id,
-    user.role,
-    jti,
-  );
-
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(refreshToken)
-    .digest("hex");
-
-  await createToken(jti, user.id, hashedToken, getRefreshTokenExpiry());
-
-  return { accessToken, refreshToken };
+  return generateSession(user.id, user.role);
 };
 
 export const rotateTokens = async (

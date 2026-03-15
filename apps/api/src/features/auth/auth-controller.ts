@@ -9,6 +9,9 @@ import { setInfo } from "./set-info.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "../../utils/error.js";
 import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "../../common/constants.js";
+import { generateSession } from "./auth-helpers/generateSession.js";
+import type { Role } from "@api/common/types.js";
+
 export const signupHandler = async (
   req: Request,
   res: Response,
@@ -101,6 +104,18 @@ export const setInfoHandler = async (
     if (!userId) throw new UnauthorizedError("Invalid token payload");
 
     const result = await setInfo({ userId, password, username });
+    if (!result.ok) {
+      res.status(400).json({ success: false, message: result.message });
+      return;
+    }
+
+    const { refreshToken, accessToken } = await generateSession(
+      userId,
+      result.data as Role,
+    );
+    console.log(result.data);
+    setCookies(refreshToken, accessToken, res);
+
     res.clearCookie("setInfoToken");
 
     res.status(result.ok ? 200 : 400).json({

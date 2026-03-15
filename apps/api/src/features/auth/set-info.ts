@@ -40,17 +40,14 @@ export const setInfo = async ({
       client,
     );
     const updateUsernameReuslt = await updateUsername(userId, username, client);
-    const createDisplayIdResult = await createDisplayId(
-      userId,
-      displayId,
-      client,
-    );
+    const role = await createDisplayId(userId, displayId, client);
 
-    if (updatePasswordResult && updateUsernameReuslt && createDisplayIdResult)
+    if (updatePasswordResult && updateUsernameReuslt && role)
       return {
         ok: true,
         reason: "INFO_SET_SUCCESS",
         message: INFO_SET_SUCCESS_MESSAGE,
+        data: { role },
       };
 
     return {
@@ -61,6 +58,6 @@ export const setInfo = async ({
   });
 
   if (result.reason === "INFO_SET_SUCCESS")
-    return { ok: true, message: result.message };
+    return { ok: true, message: result.message, data: result.data.role };
   return { ok: false, message: result.message };
 };

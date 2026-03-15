@@ -8,12 +8,13 @@ export const useMyGroups = () => {
 
   useEffect(() => {
     async function fetchGroup() {
+      setLoading(true);
       try {
         const res = await fetch("http://localhost:8080/api/v1/groups", {
           credentials: "include",
         });
         const json = await res.json();
-        setGroups(json.data);
+        setGroups(json.data ?? []);
       } catch (err) {
         // use any for now since we don't have a defined error type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

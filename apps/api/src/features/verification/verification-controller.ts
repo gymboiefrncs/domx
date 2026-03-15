@@ -16,11 +16,15 @@ export const verificationHandler = async (
         sameSite: "strict",
         maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
       });
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+      return;
     }
-    const statusCode = result.ok ? 200 : 400;
-    res.status(statusCode).json({
-      success: result.ok,
-      message: result.ok ? result.message : result.errMessage,
+    res.status(400).json({
+      success: false,
+      message: result.errMessage,
     });
   } catch (error) {
     next(error);

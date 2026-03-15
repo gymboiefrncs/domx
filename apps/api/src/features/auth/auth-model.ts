@@ -2,6 +2,7 @@ import type { SignupSchema } from "./auth-schema.js";
 import { pool } from "../../config/db.js";
 import type { UserRole, LoginUser, NewUser } from "./auth.types.js";
 import type { Pool, PoolClient } from "pg";
+import type { Role } from "@api/common/types.js";
 
 export const createUser = async (
   data: SignupSchema,
@@ -99,16 +100,17 @@ export const createDisplayId = async (
   userId: string,
   displayId: string,
   client: PoolClient,
-): Promise<boolean> => {
+): Promise<Role | null> => {
   const query = `
     UPDATE users 
     SET display_id = $1
     WHERE id = $2
+    RETURNING role
   `;
   const values = [displayId, userId];
   const result = await client.query(query, values);
 
-  return (result.rowCount ?? 0) > 0;
+  return result.rows[0]?.role ?? null;
 };
 
 export const updateUsername = async (

@@ -23,13 +23,16 @@ export const signupHandler = async (
         sameSite: "strict",
         maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
       });
+      res.status(200).json({
+        success: true,
+        message: result.reason,
+      });
     }
 
     res.status(201).json({
       success: result.ok,
       message: result.message,
     });
-    return;
   } catch (error) {
     next(error);
   }
@@ -97,6 +100,8 @@ export const setInfoHandler = async (
     if (!userId) throw new UnauthorizedError("Invalid token payload");
 
     const result = await setInfo({ userId, password, username });
+    res.clearCookie("setInfoToken");
+
     res.status(result.ok ? 200 : 400).json({
       success: result.ok,
       message: result.message,

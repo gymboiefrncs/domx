@@ -27,6 +27,7 @@ export const signupHandler = async (
         success: true,
         message: result.reason,
       });
+      return;
     }
 
     res.status(201).json({

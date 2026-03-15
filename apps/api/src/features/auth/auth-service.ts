@@ -71,15 +71,25 @@ export const registerUser = async (
    * confusion if ever the transaction rolls back after the email is sent
    */
   if (result.reason === "NEW_USER" || result.reason === "RESENT_OTP") {
-    sendVerificationEmail(result.email, otpData.otp).catch((err) => {
-      console.error("Failed to send email:", err);
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Verification OTP for ${result.email}: ${otpData.otp})`);
+    } else {
+      sendVerificationEmail(result.email, otpData.otp).catch((err) => {
+        console.error("Failed to email:", err);
+      });
+    }
   }
 
   if (result.reason === "ALREADY_VERIFIED") {
-    sendAlreadyRegisteredEmail(result.email).catch((err) => {
-      console.error("Failed to email:", err);
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `Attempt to register already verified email ${result.email}. Sent "already registered" email.`,
+      );
+    } else {
+      sendAlreadyRegisteredEmail(result.email).catch((err) => {
+        console.error("Failed to email:", err);
+      });
+    }
   }
 
   return result;

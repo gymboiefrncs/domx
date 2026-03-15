@@ -1,4 +1,5 @@
-export const OTP_COOLDOWN_MS = 2 * 60 * 1000; // 2 minutes
+export const OTP_COOLDOWN_MS =
+  process.env.NODE_ENV === "development" ? 5000 : 2 * 60 * 1000; // 2 minutes
 // user facing messages.
 export const EMAIL_MESSAGE =
   "Verification email sent. Please check your inbox.";

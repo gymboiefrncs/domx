@@ -1,52 +1,56 @@
-import {
-  useState,
-  useRef,
-  type ChangeEvent,
-  type KeyboardEvent,
-  type ClipboardEvent,
-} from "react";
+import { useVerifyOTP } from "@/hooks/useSignup";
+import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
+import { useLocation } from "react-router-dom";
 
 const OTP_LENGTH = 6;
 
 export default function OtpPage() {
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
-
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const { handleVerifyOTP, loading, error } = useVerifyOTP();
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const { state } = useLocation();
 
-  function handleChange(value: string, index: number): void {
-    if (!/^\d?$/.test(value)) return;
-    const next = [...digits];
+  const handleChange = (value: string, index: number): void => {
+    // Rejects any non-hex charcaters early to prevent users from entering invalid OTP values
+    if (!/^[0-9a-f]$/.test(value)) return;
+
+    const next = [...otp];
     next[index] = value;
-    setDigits(next);
+    setOtp(next);
+
+    // Auto-advance focus so the user doesn't have to click each box manually
     if (value && index < OTP_LENGTH - 1) {
       inputs.current[index + 1]?.focus();
     }
-  }
+  };
 
-  function handleKeyDown(
+  const handleKeyDown = (
     e: KeyboardEvent<HTMLInputElement>,
     index: number,
-  ): void {
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
+  ): void => {
+    /**
+     * Backspace on empty input should move focus to the previous input and clear it
+     * Backspace on non-empty input should just clear the current input
+     *
+     * This allows users to easily correct mistakes without having to manually click each input
+     */
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
+      const prev = [...otp];
+      prev[index - 1] = "";
+      setOtp(prev);
+    } else if (e.key === "Backspace" && otp[index]) {
+      const prev = [...otp];
+      prev[index] = "";
+      setOtp(prev);
     }
-  }
+  };
 
-  function handlePaste(e: ClipboardEvent<HTMLInputElement>): void {
-    e.preventDefault();
-    const pasted = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, OTP_LENGTH);
-    const next = [...digits];
-    pasted.split("").forEach((char, i) => {
-      next[i] = char;
-    });
-    setDigits(next);
-    inputs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
-  }
-
-  const isComplete: boolean = digits.every(Boolean);
+  /**
+   * Flag to determine if the all inputs are filled
+   * Returns false if any input is empty
+   */
+  const isComplete: boolean = otp.every(Boolean);
 
   return (
     <div className="min-h-screen bgbg flex items-center p-8 font-sans">
@@ -56,43 +60,50 @@ export default function OtpPage() {
         </p>
 
         <p className="text-sm text-text-secondary font-normal leading-relaxed mb-4">
-          We sent a 6-digit code to your email
+          If this email exist we will send you an OTP.
         </p>
 
-        <div className="flex gap-2 justify-between mb-6">
-          {digits.map((digit, i) => (
-            <input
-              key={i}
-              ref={(el) => {
-                inputs.current[i] = el;
-              }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleChange(e.target.value, i)
-              }
-              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
-                handleKeyDown(e, i)
-              }
-              onPaste={handlePaste}
-              className="input"
-            />
-          ))}
-        </div>
+        {error && <p className="text-red-500">{error}</p>}
 
-        <button
-          disabled={!isComplete}
-          className="btn w-full disabled:opacity-30 disabled:cursor-not-allowed"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleVerifyOTP(state.email, otp.join(""));
+          }}
         >
-          Verify code
-        </button>
+          <div className="flex gap-2 justify-between mb-6">
+            {otp.map((char, i) => (
+              <input
+                key={i}
+                ref={(el) => {
+                  inputs.current[i] = el;
+                }}
+                type="text"
+                maxLength={1}
+                value={char}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleChange(e.target.value, i)
+                }
+                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
+                  handleKeyDown(e, i)
+                }
+                className="input"
+              />
+            ))}
+          </div>
+          <button
+            type="submit"
+            disabled={!isComplete}
+            className="btn w-full disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {loading ? "Verifying..." : "Verify"}
+          </button>
+        </form>
 
         <p className="text-text-muted text-center mt-5 leading-relaxed font-normal">
           Didn't receive anything?{" "}
           <button className="text-text-secondary border-b border-text-secondary pb-px bg-transparent cursor-pointer text-[11px]">
-            Resend code
+            Resend OTP
           </button>
         </p>
       </div>

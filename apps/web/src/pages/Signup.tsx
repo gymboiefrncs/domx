@@ -1,11 +1,9 @@
 import { useState } from "react";
+import { useSignup } from "@/hooks/useSignup";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
-
-  function handleSubmit() {
-    // TODO: auth service
-  }
+  const { handleSignup, loading, error } = useSignup();
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
@@ -15,7 +13,14 @@ export default function SignupPage() {
           Create account
         </p>
 
-        <form onSubmit={handleSubmit}>
+        {error && <p className="text-red-500">{error}</p>}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSignup(email);
+          }}
+        >
           <div className="field mb-4">
             <label htmlFor="email" className="field-label">
               Email
@@ -31,8 +36,8 @@ export default function SignupPage() {
             />
           </div>
 
-          <button type="submit" className="w-full btn">
-            Create account
+          <button type="submit" className="w-full btn" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 

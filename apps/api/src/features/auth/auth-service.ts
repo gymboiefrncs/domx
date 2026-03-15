@@ -123,14 +123,14 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
   );
 
   if (!user || !user.is_verified || !user.password) {
-    throw new UnauthorizedError("Invalid credentials or account not verified");
+    throw new UnauthorizedError("Invalid credentials");
   }
 
   if (!passwordMatch) {
     loginFailedEmail(data.email).catch((err) => {
       console.error("Failed to send email:", err);
     });
-    throw new UnauthorizedError("Invalid credentials or account not verified");
+    throw new UnauthorizedError("Invalid credentials");
   }
 
   return generateSession(user.id, user.role);

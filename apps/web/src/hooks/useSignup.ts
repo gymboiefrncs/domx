@@ -20,7 +20,7 @@ export const useSignup = () => {
       // use any for now since we don't have a defined error type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setError((err as any).message);
-      console.log("Failed to fetch groups", err);
+      console.log("Failed to signup", err);
     } finally {
       setLoading(false);
     }

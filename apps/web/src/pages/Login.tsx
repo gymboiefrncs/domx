@@ -1,0 +1,82 @@
+import { useState } from "react";
+import { useLogin } from "@/hooks/useLogin";
+
+export const LoginPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { handleLogin, loading, error } = useLogin();
+
+  return (
+    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
+      <div className="card w-full">
+        {/* Eyebrow */}
+        <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
+          Log in
+        </p>
+
+        {error && <p className="text-red-500">{error}</p>}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin(email, password);
+          }}
+        >
+          <div className="field mb-4">
+            <label htmlFor="email" className="field-label">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="input"
+            />
+          </div>
+
+          <div className="field mb-4">
+            <label htmlFor="password" className="field-label">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="input"
+            />
+          </div>
+
+          <button type="submit" className="w-full btn" disabled={loading}>
+            {loading ? "Logging in..." : "Log in"}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-2.5 my-6">
+          <div className="flex-1 h-px bg-gray-300" />
+          <span className="text-[11px] text-text-muted tracking-wide whitespace-nowrap">
+            or sign up
+          </span>
+          <div className="flex-1 h-px bg-gray-300" />
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-text-muted font-light">
+          Don't have an account?{" "}
+          <a
+            href="/signup"
+            className="text-text-secondary border-b border-text-secondary pb-px"
+          >
+            Sign up
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+};

@@ -55,7 +55,7 @@ export const fetchUserForSignup = async (
   client: PoolClient,
 ): Promise<SignupUser | undefined> => {
   const query = `
-    SELECT id, is_verified, email 
+    SELECT id, is_verified, email, username, password
     FROM users 
     WHERE email = $1 
     FOR UPDATE

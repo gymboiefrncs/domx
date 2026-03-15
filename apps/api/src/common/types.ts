@@ -24,7 +24,13 @@ export type RegistrationResult =
   | { ok: true; reason: "UNIQUE_EMAIL_VIOLATION"; message: string }
   | { ok: true; reason: "RESENT_OTP"; email: string; message: string }
   | { ok: true; reason: "ALREADY_VERIFIED"; email: string; message: string }
-  | { ok: true; reason: "COOLDOWN"; message: string };
+  | { ok: true; reason: "COOLDOWN"; message: string }
+  | {
+      ok: true;
+      reason: "INCOMPLETE_SIGNUP";
+      message: string;
+      data: { setInfoToken: string };
+    };
 
 export type SetInfoResult =
   | { ok: true; reason: "INFO_SET_SUCCESS"; message: string }

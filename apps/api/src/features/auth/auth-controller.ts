@@ -8,7 +8,7 @@ import {
 import { setInfo } from "./set-info.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "../../utils/error.js";
-
+import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "../../common/constants.js";
 export const signupHandler = async (
   req: Request,
   res: Response,
@@ -16,6 +16,15 @@ export const signupHandler = async (
 ): Promise<void> => {
   try {
     const result = await registerUser(req.body);
+    if (result.reason === "INCOMPLETE_SIGNUP") {
+      res.cookie("setInfoToken", result.data.setInfoToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
+      });
+    }
+
     res.status(201).json({
       success: result.ok,
       message: result.message,

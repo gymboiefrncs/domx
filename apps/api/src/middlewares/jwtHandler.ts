@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import * as jose from "jose";
 import type { Role } from "../common/types.js";
-import { UnauthorizedError, ForbiddenError } from "../utils/error.js";
+import { UnauthorizedError } from "../utils/error.js";
 
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
 const setInfoSecret = new TextEncoder().encode(process.env.SET_PASSWORD_TOKEN);
@@ -37,21 +37,18 @@ export const verifySetInfoToken = async (
   next: NextFunction,
 ) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer "))
+    const token: string | undefined = req.cookies.setInfoToken;
+    if (!token) {
       throw new UnauthorizedError("Invalid or expired token");
-    const token = authHeader.split(" ")[1]!;
-
+    }
     const { payload } = await jose.jwtVerify(token, setInfoSecret);
+    const userId = payload.sub;
 
-    if (payload.purpose !== "set-info")
-      throw new ForbiddenError("Invalid token purpose");
+    if (typeof userId !== "string" || payload.purpose !== "set-info") {
+      throw new UnauthorizedError("Invalid token payload");
+    }
 
-    req.setInfo = {
-      sub: payload.sub as string,
-      purpose: payload.purpose as "set-info",
-    };
-
+    req.setInfo = { sub: userId, purpose: "set-info" };
     next();
   } catch (error) {
     next(error);

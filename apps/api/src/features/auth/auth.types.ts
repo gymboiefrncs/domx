@@ -15,7 +15,10 @@ type UserRow = {
 export type NewUser = Pick<UserRow, "id" | "email">;
 
 /** Used during signup to check user state */
-export type SignupUser = Pick<UserRow, "id" | "is_verified" | "email">;
+export type SignupUser = Pick<
+  UserRow,
+  "id" | "is_verified" | "email" | "username" | "password"
+>;
 
 export type LoginUser = Pick<
   UserRow,

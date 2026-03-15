@@ -1,5 +1,7 @@
 export const OTP_COOLDOWN_MS =
   process.env.NODE_ENV === "development" ? 5000 : 2 * 60 * 1000; // 2 minutes
+export const INCOMPLETE_SIGNUP_TOKEN_MAX_AGE = 10 * 60 * 1000;
+
 // user facing messages.
 export const EMAIL_MESSAGE =
   "Verification email sent. Please check your inbox.";

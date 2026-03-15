@@ -28,6 +28,7 @@ import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 import { withTransaction } from "../../config/transaction.js";
 import { LOGOUT_MESSAGE } from "../../common/constants.js";
+import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 
 export const registerUser = async (
   data: SignupSchema,
@@ -53,8 +54,18 @@ export const registerUser = async (
   const result = await withTransaction(pool, async (client) => {
     const user = await fetchUserForSignup(data.email, client);
 
-    if (user?.is_verified) {
+    if (user?.is_verified && user?.password && user?.username) {
       return handleVerifiedUser(data.email);
+    }
+
+    if (user?.is_verified && (!user.password || !user.username)) {
+      /**
+       * This case is hit when a user completes email verification but
+       * fails to complete the rest of the signup flow (e.g. due to network issues or closing the tab).
+       *
+       * We treat this as an incomplete signup and allow them to restart the signup flow by generating a new set info token.
+       */
+      return await handleIncompleteSignup(user.id);
     }
 
     if (user && !user.is_verified) {

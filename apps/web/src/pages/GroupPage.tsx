@@ -40,6 +40,9 @@ export const GroupPage = () => {
           ))}
         </div>
       </div>
+      <button className="btn btn-primary fixed bottom-20 right-4">
+        Create Group
+      </button>
     </div>
   );
 };

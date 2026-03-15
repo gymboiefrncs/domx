@@ -14,7 +14,6 @@ const GroupsIcon: React.FC<{ active: boolean }> = ({ active }) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* Three overlapping person silhouettes */}
     <circle
       cx="7"
       cy="6"
@@ -97,45 +96,19 @@ const ProfileIcon: React.FC<{ active: boolean }> = ({ active }) => (
   </svg>
 );
 
-const SettingsIcon: React.FC<{ active: boolean }> = ({ active }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle
-      cx="10"
-      cy="10"
-      r="2.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill={active ? "currentColor" : "none"}
-    />
-    <path
-      d="M10 2v1.5M10 16.5V18M18 10h-1.5M3.5 10H2M15.657 4.343l-1.06 1.06M5.404 14.596l-1.06 1.06M15.657 15.657l-1.06-1.06M5.404 5.404l-1.06-1.06"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
 const NAV_ITEMS: NavItem[] = [
   { label: "Groups", href: "/groups", icon: GroupsIcon },
   { label: "Saved", href: "/saved", icon: SavedIcon },
   { label: "Profile", href: "/profile", icon: ProfileIcon },
-  { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
 export const Nav = () => {
   const [active, setActive] = useState("/groups");
 
   return (
-    <nav className="flex bg-black/75 px-4 py-2 shrink-0">
+    <nav className="flex bg-surface border-t border-border-subtle p-4">
       {/* Nav links */}
-      <ul className="flex gap-8 w-full justify-center">
+      <ul className="flex gap-12 w-full justify-center">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
           const isActive = active === href;
           return (
@@ -147,8 +120,8 @@ export const Nav = () => {
                   transition-colors duration-150 cursor-pointer
                   ${
                     isActive
-                      ? "bg-zinc-800 text-white"
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900"
+                      ? "bg-primary-subtle text-primary"
+                      : "text-text-muted hover:text-text"
                   }
                 `}
               >

@@ -100,7 +100,8 @@ export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
     g.name, 
     gm.role,
     gm.last_seen_at,
-    COUNT(p.id) FILTER (WHERE p.created_at > gm.last_seen_at) AS unread_count
+    COUNT(p.id) FILTER (WHERE p.created_at > gm.last_seen_at)::int AS unread_count,
+    (SELECT COUNT(*) FROM group_members WHERE group_id = g.group_id)::int AS member_count
     FROM group_members gm
     JOIN groups g ON g.group_id = gm.group_id
     LEFT JOIN posts p ON p.group_id = g.group_id

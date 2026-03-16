@@ -96,10 +96,30 @@ const ProfileIcon: React.FC<{ active: boolean }> = ({ active }) => (
   </svg>
 );
 
+const ChatIcon: React.FC<{ active: boolean }> = ({ active }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 3C7.03 3 3 6.58 3 11c0 2.13.93 4.06 2.45 5.48L4 21l4.72-1.5C9.73 19.83 10.84 20 12 20c4.97 0 9-3.58 9-9s-4.03-8-9-8z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill={active ? "currentColor" : "none"}
+    />
+  </svg>
+);
+
 const NAV_ITEMS: NavItem[] = [
   { label: "Groups", href: "/groups", icon: GroupsIcon },
   { label: "Saved", href: "/saved", icon: SavedIcon },
   { label: "Profile", href: "/profile", icon: ProfileIcon },
+  { label: "Chat", href: "/groups/:id", icon: ChatIcon },
 ];
 
 export const Nav = () => {

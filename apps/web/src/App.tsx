@@ -6,6 +6,7 @@ import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { LoginPage } from "./pages/Login";
 import { AppLayout } from "./layout/AppLayout";
 import { GroupProvider } from "./context/GroupContext";
+import { GroupChatPage } from "./pages/GroupChat";
 
 export function App() {
   return (
@@ -25,6 +26,7 @@ export function App() {
           }
         >
           <Route path="/groups" element={<GroupPage />} />
+          <Route path="/groups/:id" element={<GroupChatPage />} />
         </Route>
       </Route>
     </Routes>

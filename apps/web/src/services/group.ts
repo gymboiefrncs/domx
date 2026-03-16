@@ -17,10 +17,6 @@ export const createGroup = async (name: string) => {
 export const fetchMyGroups = async () => {
   const res = await fetchWithAuth("http://localhost:8080/api/v1/groups", {
     method: "GET",
-    headers: {
-      "Content-type": "application/json",
-    },
-
     credentials: "include",
   });
 

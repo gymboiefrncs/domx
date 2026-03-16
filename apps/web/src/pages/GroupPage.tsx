@@ -3,10 +3,13 @@ import type { Group } from "../components/GroupCard";
 import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
 import { useGroups } from "@/context/GroupContext";
+import { useNavigate } from "react-router-dom";
 
 export const GroupPage = () => {
   const { groups, loading, error } = useGroups();
   const [modal, setModal] = useState(false);
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
@@ -38,7 +41,11 @@ export const GroupPage = () => {
         </div>
         <div className="flex flex-col gap-2.5">
           {groups.map((group: Group) => (
-            <GroupCard key={group.group_id} group={group} onClick={() => {}} />
+            <GroupCard
+              key={group.group_id}
+              group={group}
+              onClick={(id) => navigate(`/groups/${id}`)}
+            />
           ))}
         </div>
       </div>

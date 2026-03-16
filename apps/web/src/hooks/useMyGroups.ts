@@ -27,5 +27,9 @@ export const useMyGroups = () => {
     fetchGroup();
   }, []);
 
-  return { groups, loading, error };
+  const addGroup = (newGroup: Group) => {
+    setGroups((prev) => [...prev, newGroup]);
+  };
+
+  return { groups, loading, error, addGroup };
 };

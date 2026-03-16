@@ -1,10 +1,12 @@
 import { GroupCard } from "../components/GroupCard";
-import { useMyGroups } from "../hooks/useMyGroups";
 import type { Group } from "../components/GroupCard";
+import { useState } from "react";
+import { CreateGroupModal } from "@/components/CreateGroupModal";
+import { useGroups } from "@/context/GroupContext";
 
 export const GroupPage = () => {
-  const { groups, loading, error } = useMyGroups();
-
+  const { groups, loading, error } = useGroups();
+  const [modal, setModal] = useState(false);
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
@@ -40,9 +42,13 @@ export const GroupPage = () => {
           ))}
         </div>
       </div>
-      <button className="btn btn-primary fixed bottom-20 right-4">
+      <button
+        className="btn btn-primary fixed bottom-20 right-4"
+        onClick={() => setModal(true)}
+      >
         Create Group
       </button>
+      {modal && <CreateGroupModal onClose={() => setModal(false)} />}
     </div>
   );
 };

@@ -2,9 +2,10 @@ import OtpPage from "./pages/Otp";
 import SetupProfilePage from "./pages/SetupProfile";
 import SignupPage from "./pages/Signup";
 import { GroupPage } from "./pages/GroupPage";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { LoginPage } from "./pages/Login";
 import { AppLayout } from "./layout/AppLayout";
+import { GroupProvider } from "./context/GroupContext";
 
 export function App() {
   return (
@@ -16,7 +17,15 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<AppLayout />}>
-        <Route path="/groups" element={<GroupPage />} />
+        <Route
+          element={
+            <GroupProvider>
+              <Outlet />
+            </GroupProvider>
+          }
+        >
+          <Route path="/groups" element={<GroupPage />} />
+        </Route>
       </Route>
     </Routes>
   );

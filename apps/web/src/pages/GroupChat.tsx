@@ -25,6 +25,7 @@ export const GroupChatPage = () => {
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState("");
   const [title, setTitle] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { handleCreatePost, loadingPost, errorPost } = useCreatePost(
     (newPost) => {
@@ -38,7 +39,7 @@ export const GroupChatPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPost(e.target.value);
-
+    setIsFocused(true);
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
@@ -59,9 +60,9 @@ export const GroupChatPage = () => {
     handleCreatePost(id!, post.trim(), title.trim());
     setPost("");
     setTitle("");
+    setIsFocused(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.blur();
     }
   };
 
@@ -132,49 +133,70 @@ export const GroupChatPage = () => {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-neutral-200 bg-neutral-50 px-4 py-3">
+      <div
+        className="border-t border-neutral-200 bg-neutral-50 px-4 py-3"
+        onBlur={(e) => {
+          /**
+           * If click happens outside of the current target(input area) and , then set isFocused to false
+           * but if the user has typed something in either title or body, then keep the focus
+           */
+
+          if (
+            !e.currentTarget.contains(e.relatedTarget) &&
+            !post.trim() &&
+            !title.trim()
+          )
+            setIsFocused(false);
+        }}
+      >
         <div className="max-w-md mx-auto">
           <div className="card flex flex-col px-3 py-2 gap-1 focus-within:border-border focus-within:shadow-md focus-within:shadow-black/50 transition-shadow duration-200">
             {/* Title */}
-            <textarea
-              placeholder="Title"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              rows={1}
-              className="w-full text-sm font-medium text-text bg-transparent placeholder:text-text-muted resize-none outline-none"
-            />
-            <div className="h-px bg-border" /> {/* divider */}
+            {isFocused && (
+              <textarea
+                placeholder="Title"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                rows={1}
+                className="w-full text-sm font-medium text-text bg-transparent placeholder:text-text-muted resize-none outline-none"
+              />
+            )}
+
+            <div className="h-px bg-border" />
+
             {/* Body */}
             <textarea
               placeholder="Start with ```(language)"
               value={post}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsFocused(true)}
               ref={textareaRef}
               rows={1}
               className="w-full min-h-10 max-h-40 overflow-y-auto text-sm text-text bg-transparent placeholder:text-text-muted placeholder:text-xs resize-none outline-none"
             />
-            {/* Actions row */}
-            <div className="flex justify-end pt-1">
-              <button className="btn btn-primary p-2" onClick={handleSend}>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
+            {isFocused && (
+              <div className="flex justify-end pt-1">
+                <button className="btn btn-primary p-2" onClick={handleSend}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -41,6 +41,7 @@ export const handleCreatePost = async (
     res.status(201).json({
       success: result.ok,
       message: result.message,
+      data: result.ok ? result.data : null,
     });
   } catch (error) {
     next(error);

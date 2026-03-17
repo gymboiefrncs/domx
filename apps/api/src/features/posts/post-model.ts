@@ -21,10 +21,11 @@ export const insertPost = async (
   body: string,
   userId: string,
   groupId: string,
-): Promise<void> => {
-  const query = `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4)`;
+) => {
+  const query = `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4) returning *`;
   const values = [title, body, userId, groupId];
-  await pool.query(query, values);
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
 
 export const fetchPostById = async (

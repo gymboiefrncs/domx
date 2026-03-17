@@ -45,11 +45,12 @@ export const createPost = async (
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   await performChecks(groupId, requesterId);
 
-  await insertPost(title, body, requesterId, groupId);
+  const data = await insertPost(title, body, requesterId, groupId);
 
   return {
     ok: true,
     message: POST_CREATED,
+    data,
   };
 };
 

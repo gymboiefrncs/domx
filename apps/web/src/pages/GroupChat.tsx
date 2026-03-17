@@ -2,8 +2,10 @@ import { useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
 import { useGroups } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
+import { useCreatePost } from "@/hooks/useCreatePost";
+import { useAuth } from "@/context/AuthContext";
 
-type Posts = {
+export type Posts = {
   id: string;
   user_id: string;
   group_id: string;
@@ -17,19 +19,26 @@ type Posts = {
 
 export const GroupChatPage = () => {
   const { id } = useParams();
-  const { posts, loading, error } = usePosts(id!);
+  const { user } = useAuth();
+  const { posts, loading, error, addPost } = usePosts(id!);
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { handleCreatePost, loadingPost, errorPost } = useCreatePost(
+    (newPost) => {
+      addPost({
+        ...newPost,
+        username: user?.username,
+        display_id: user?.display_id,
+      } as Posts);
+    },
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPost(e.target.value);
-    console.log("event", e);
-    console.log("target", e.target);
 
     const textarea = textareaRef.current;
-    console.log("textarea", textarea);
     if (textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${textarea.scrollHeight}px`;
@@ -46,13 +55,14 @@ export const GroupChatPage = () => {
 
   const handleSend = () => {
     if (!post.trim()) return;
-    postMessage("");
+    handleCreatePost(id!, post, "New Post");
+    setPost("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
   };
 
-  if (loading) {
+  if (loading || loadingPost) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
         Loading...
@@ -60,7 +70,7 @@ export const GroupChatPage = () => {
     );
   }
 
-  if (error) {
+  if (error || errorPost) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-red-400">
         Failed to load messages.
@@ -89,9 +99,12 @@ export const GroupChatPage = () => {
             No posts yet. Be the first to post!
           </p>
         ) : (
-          <ul className="space-y-4 max-w-md mx-auto">
+          <ul className="max-w-md mx-auto">
             {posts.map((post: Posts) => (
-              <li key={post.id} className="card px-4 py-3 flex flex-col gap-1">
+              <li
+                key={post.id}
+                className="card px-4 py-3 flex flex-col gap-1 mb-4"
+              >
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-neutral-900">
                     {post.username}
@@ -100,7 +113,15 @@ export const GroupChatPage = () => {
                     @{post.display_id}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-700">{post.body}</p>
+
+                <div className="flex flex-col gap-3">
+                  <h2 className="text-sm font-medium text-text">
+                    {post.title}
+                  </h2>
+                  <div className="p-4 border-border-strong border-2 rounded-md">
+                    <p className="text-sm text-text-muted">{post.body}</p>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>

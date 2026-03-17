@@ -1,8 +1,9 @@
+import type { Posts } from "@/pages/GroupChat";
 import { fetchMessages } from "@/services/posts";
 import { useEffect, useState } from "react";
 
 export const usePosts = (groupId: string) => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Posts[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,5 +24,9 @@ export const usePosts = (groupId: string) => {
     load();
   }, [groupId]);
 
-  return { posts, loading, error };
+  const addPost = (post: Posts) => {
+    setPosts((prevPosts) => [...prevPosts, post]);
+  };
+
+  return { posts, loading, error, addPost };
 };

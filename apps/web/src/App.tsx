@@ -7,6 +7,7 @@ import { LoginPage } from "./pages/Login";
 import { AppLayout } from "./layout/AppLayout";
 import { GroupProvider } from "./context/GroupContext";
 import { GroupChatPage } from "./pages/GroupChat";
+import { AuthLayout } from "./layout/AuthLayout";
 
 export function App() {
   return (
@@ -17,16 +18,18 @@ export function App() {
       <Route path="/setup-profile" element={<SetupProfilePage />} />
       <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<AppLayout />}>
-        <Route
-          element={
-            <GroupProvider>
-              <Outlet />
-            </GroupProvider>
-          }
-        >
-          <Route path="/groups" element={<GroupPage />} />
-          <Route path="/groups/:id" element={<GroupChatPage />} />
+      <Route element={<AuthLayout />}>
+        <Route element={<AppLayout />}>
+          <Route
+            element={
+              <GroupProvider>
+                <Outlet />
+              </GroupProvider>
+            }
+          >
+            <Route path="/groups" element={<GroupPage />} />
+            <Route path="/groups/:id" element={<GroupChatPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

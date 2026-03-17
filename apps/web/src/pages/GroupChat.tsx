@@ -24,6 +24,7 @@ export const GroupChatPage = () => {
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState("");
+  const [title, setTitle] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { handleCreatePost, loadingPost, errorPost } = useCreatePost(
     (newPost) => {
@@ -55,10 +56,12 @@ export const GroupChatPage = () => {
 
   const handleSend = () => {
     if (!post.trim()) return;
-    handleCreatePost(id!, post, "New Post");
+    handleCreatePost(id!, post.trim(), title.trim());
     setPost("");
+    setTitle("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
+      textareaRef.current.blur();
     }
   };
 
@@ -130,36 +133,49 @@ export const GroupChatPage = () => {
 
       {/* Input area */}
       <div className="border-t border-neutral-200 bg-neutral-50 px-4 py-3">
-        <div className="flex items-end gap-2 max-w-md mx-auto">
-          <textarea
-            placeholder="Start with ```(language)"
-            value={post}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            ref={textareaRef}
-            rows={1}
-            className="input flex-1 min-h-10 max-h-40 overflow-y-auto text-sm placeholder:text-neutral-400 placeholder:text-xs resize-none"
-          />
-          <button
-            className="btn btn-primary p-2.5 shrink-0"
-            onClick={handleSend}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+        <div className="max-w-md mx-auto">
+          <div className="card flex flex-col px-3 py-2 gap-1 focus-within:border-border focus-within:shadow-md focus-within:shadow-black/50 transition-shadow duration-200">
+            {/* Title */}
+            <textarea
+              placeholder="Title"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              rows={1}
+              className="w-full text-sm font-medium text-text bg-transparent placeholder:text-text-muted resize-none outline-none"
+            />
+            <div className="h-px bg-border" /> {/* divider */}
+            {/* Body */}
+            <textarea
+              placeholder="Start with ```(language)"
+              value={post}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              ref={textareaRef}
+              rows={1}
+              className="w-full min-h-10 max-h-40 overflow-y-auto text-sm text-text bg-transparent placeholder:text-text-muted placeholder:text-xs resize-none outline-none"
+            />
+            {/* Actions row */}
+            <div className="flex justify-end pt-1">
+              <button className="btn btn-primary p-2" onClick={handleSend}>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

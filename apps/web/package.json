@@ -14,7 +14,8 @@
     "@domx/shared": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.1"
+    "react-router-dom": "^7.6.1",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@domx/eslint-config": "workspace:*",
@@ -22,11 +23,11 @@
     "@tailwindcss/vite": "^4.1.8",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.21",
     "eslint": "^10.0.0",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.9.3",
-    "vite": "^6.3.5",
-    "@vitejs/plugin-react": "^4.5.2"
+    "vite": "^6.3.5"
   }
 }

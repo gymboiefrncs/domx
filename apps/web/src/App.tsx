@@ -8,8 +8,10 @@ import { AppLayout } from "./layout/AppLayout";
 import { GroupProvider } from "./context/GroupContext";
 import { GroupChatPage } from "./pages/GroupChat";
 import { AuthLayout } from "./layout/AuthLayout";
+import { Toaster } from "sonner";
 
 export function App() {
+  <Toaster position="top-right" />;
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/signup" replace />} />

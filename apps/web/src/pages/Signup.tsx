@@ -1,19 +1,18 @@
 import { useState } from "react";
 import { useSignup } from "@/hooks/useSignup";
+import { SpinnerIcon } from "@/assets/icons";
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
-  const { handleSignup, loading, error } = useSignup();
+  const [email, setEmail] = useState<string>("");
+  const { handleSignup, loading } = useSignup();
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
       <div className="card w-full">
         {/* Eyebrow */}
-        <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
+        <h5 className=" uppercase tracking-wide text-text mb-4 font-medium">
           Create account
-        </p>
-
-        {error && <p className="text-red-500">{error}</p>}
+        </h5>
 
         <form
           onSubmit={(e) => {
@@ -31,24 +30,32 @@ export default function SignupPage() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
               required
               className="input"
             />
           </div>
 
           <button type="submit" className="w-full btn" disabled={loading}>
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <SpinnerIcon className="h-4 w-4 animate-spin" />
+                Creating account...
+              </span>
+            ) : (
+              "Create account"
+            )}
           </button>
         </form>
 
         {/* Terms */}
         <p className=" text-text-secondary text-center mt-4 leading-relaxed font-light">
           By signing up you agree to our{" "}
-          <a href="#" className="underline text-text-secondary">
+          <a href="#" className="underline text-text-link">
             Terms
           </a>{" "}
           and{" "}
-          <a href="#" className="underline text-text-secondary">
+          <a href="#" className="underline text-text-link">
             Privacy Policy
           </a>
           .
@@ -68,7 +75,7 @@ export default function SignupPage() {
           Already have an account?{" "}
           <a
             href="/login"
-            className="text-text-secondary border-b border-text-secondary pb-px"
+            className="text-text-link border-b border-text-link pb-px"
           >
             Log in
           </a>

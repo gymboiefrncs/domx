@@ -1,57 +1,64 @@
 import { setInfo, signup, verifyOTP } from "@/services/signup";
+import type { SetInfoState, SignupState, VerifyOTPState } from "@/shared";
+import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-export const useSignup = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useSignup = (): SignupState => {
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  async function handleSignup(email: string) {
+  async function handleSignup(email: string): Promise<void> {
     setLoading(true);
     try {
-      const result = await signup(email);
+      const result = (await signup(email)) as {
+        success: boolean;
+        message: string;
+      };
       if (result.success && result.message === "INCOMPLETE_SIGNUP") {
         navigate("/setup-profile", { replace: true });
         return;
       }
-      navigate("/otp", { state: { email }, replace: true });
+      /**
+       * Used sessionStorage instead of state for the email to survive in otp page refreshed
+       * This prevents users having to restart the signup flow if they accidentally
+       * refresh the page during OTP verification step
+       */
+      sessionStorage.setItem("OTP_EMAIL", email);
+      navigate("/otp", { replace: true });
+      sessionStorage.setItem("OTP_EMAIL", email);
     } catch (err) {
-      // use any for now since we don't have a defined error type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setError((err as any).message);
-      console.log("Failed to signup", err);
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   }
-  return { handleSignup, loading, error };
+  return { handleSignup, loading };
 };
 
-export const useVerifyOTP = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useVerifyOTP = (): VerifyOTPState => {
+  const [loading, setLoading] = useState<boolean>(false);
+
   const navigate = useNavigate();
+
   const handleVerifyOTP = async (email: string, otp: string) => {
     setLoading(true);
+
     try {
       await verifyOTP(email, otp);
       navigate("/setup-profile", { replace: true });
     } catch (err) {
-      // use any for now since we don't have a defined error type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setError((err as any).message);
-      console.log("Failed to verify OTP", err);
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
-  return { handleVerifyOTP, loading, error };
+  return { handleVerifyOTP, loading };
 };
 
-export const useSetInfo = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useSetInfo = (): SetInfoState => {
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleSetInfo = async (username: string, password: string) => {
@@ -59,14 +66,12 @@ export const useSetInfo = () => {
     try {
       await setInfo(username, password);
       navigate("/groups", { replace: true });
+      sessionStorage.removeItem("OTP_EMAIL");
     } catch (err) {
-      // use any for now since we don't have a defined error type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setError((err as any).message);
-      console.log("Failed to set info", err);
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
-  return { handleSetInfo, loading, error };
+  return { handleSetInfo, loading };
 };

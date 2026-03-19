@@ -1,22 +1,39 @@
+import { EyeOffIcon, SpinnerIcon, EyeIcon } from "@/assets/icons";
 import { useSetInfo } from "@/hooks/useSignup";
 import { useState, type ChangeEvent } from "react";
 
 export default function SetupProfilePage() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { handleSetInfo, loading, error } = useSetInfo();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const { handleSetInfo, loading } = useSetInfo();
 
-  const passwordTooShort: boolean = password.length > 0 && password.length < 8;
-  const canSubmit: boolean = username.length > 0 && password.length >= 8;
+  const passwordTouched = password.length > 0;
+
+  const tooShort = passwordTouched && password.length < 12;
+  const missingUppercase = passwordTouched && !/[A-Z]/.test(password);
+  const missingLowercase = passwordTouched && !/[a-z]/.test(password);
+  const missingNumber = passwordTouched && !/[0-9]/.test(password);
+  const missingSpecial = passwordTouched && !/[^A-Za-z0-9]/.test(password);
+
+  const passwordErrors: string[] = [
+    tooShort && "at least 12 characters",
+    missingUppercase && "an uppercase letter",
+    missingLowercase && "a lowercase letter",
+    missingNumber && "a number",
+    missingSpecial && "a special character",
+  ].filter(Boolean) as string[];
+
+  const canSubmit: boolean =
+    username.length > 0 && password.length > 0 && passwordErrors.length === 0;
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
       <div className="card w-full">
-        <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
+        <h5 className=" uppercase tracking-wide text-text mb-4 font-medium">
           One last step
-        </p>
+        </h5>
 
-        {error && <p className="text-error mb-4 font-light">{error}</p>}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -37,7 +54,7 @@ export default function SetupProfilePage() {
               }
               className="input"
             />
-            <p className="text-text-secondary mt-1.5 font-normal">
+            <p className="text-text-secondary mt-1.5 font-normal leading-relaxed">
               This is how others will see you on the platform.
             </p>
           </div>
@@ -46,19 +63,32 @@ export default function SetupProfilePage() {
             <label htmlFor="password" className="field-label">
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Min. 8 characters"
-              value={password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.target.value)
-              }
-              className="input"
-            />
-            {passwordTooShort && (
-              <p className=" text-error mt-1.5 font-light">
-                Password must be at least 8 characters.
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Min. 8 characters"
+                value={password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)
+                }
+                className="input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors cursor-pointer"
+              >
+                {showPassword ? (
+                  <EyeOffIcon className="h-4 w-4" />
+                ) : (
+                  <EyeIcon className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {passwordErrors.length > 0 && (
+              <p className="text-error mt-1.5 font-normal">
+                Password must contain {passwordErrors.join(", ")}.
               </p>
             )}
           </div>
@@ -68,7 +98,14 @@ export default function SetupProfilePage() {
             disabled={!canSubmit}
             className="w-full btn disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {loading ? "Finishing..." : "Finish Signup"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <SpinnerIcon className="h-4 w-4 animate-spin" />
+                Saving...
+              </span>
+            ) : (
+              "Save"
+            )}
           </button>
         </form>
       </div>

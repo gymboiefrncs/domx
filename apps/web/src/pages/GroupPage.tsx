@@ -6,7 +6,7 @@ import { useGroups } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 
 export const GroupPage = () => {
-  const { groups, loading, error } = useGroups();
+  const { groups, loading } = useGroups();
   const [modal, setModal] = useState(false);
   const navigate = useNavigate();
 
@@ -14,14 +14,6 @@ export const GroupPage = () => {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
         Loading...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen text-sm text-red-400">
-        Failed to load groups.
       </div>
     );
   }

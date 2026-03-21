@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { fetchMyGroups } from "@/services/group";
 import type { Group } from "@/components/GroupCard";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/utils/error";
 
 type GroupContextType = {
   groups: Group[];
   loading: boolean;
-  error: string | null;
   addGroup: (group: Group) => void;
 };
 
@@ -14,15 +15,15 @@ const GroupContext = createContext<GroupContextType | null>(null);
 export function GroupProvider({ children }: { children: React.ReactNode }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
         const data = await fetchMyGroups();
         setGroups(data ?? []);
       } catch (err) {
-        setError((err as any).message);
+        toast.error(getErrorMessage(err), { duration: 2000 });
       } finally {
         setLoading(false);
       }
@@ -35,7 +36,7 @@ export function GroupProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <GroupContext.Provider value={{ groups, loading, error, addGroup }}>
+    <GroupContext.Provider value={{ groups, loading, addGroup }}>
       {children}
     </GroupContext.Provider>
   );

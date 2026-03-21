@@ -9,7 +9,7 @@ type Props = {
 export const CreateGroupModal = ({ onClose }: Props) => {
   const [name, setName] = useState("");
   const { addGroup } = useGroups();
-  const { handleCreate, loading, error } = useCreateGroup((newGroup) => {
+  const { handleCreate, loading } = useCreateGroup((newGroup) => {
     addGroup(newGroup);
     onClose();
   });
@@ -28,13 +28,12 @@ export const CreateGroupModal = ({ onClose }: Props) => {
         <div className="field">
           <label className="field-label">Group name</label>
           <input
-            className={`input ${error ? "input--error" : ""}`}
+            className={"input"}
             placeholder="e.g. Study Group"
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
           />
-          {error && <p className="text-error text-xs">{error}</p>}
         </div>
 
         <div className="flex gap-2 justify-end">

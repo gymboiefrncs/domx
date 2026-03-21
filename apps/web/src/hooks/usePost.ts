@@ -1,22 +1,22 @@
 import type { Posts } from "@/pages/GroupChat";
 import { fetchMessages } from "@/services/posts";
+import { getErrorMessage } from "@/utils/error";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const usePosts = (groupId: string) => {
   const [posts, setPosts] = useState<Posts[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
         const data = await fetchMessages(groupId);
         console.log("Fetched posts:", data);
         setPosts(data);
       } catch (error) {
-        // use any for now since we don't have a defined error type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setError((error as any).message);
+        toast.error(getErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -28,5 +28,5 @@ export const usePosts = (groupId: string) => {
     setPosts((prevPosts) => [...prevPosts, post]);
   };
 
-  return { posts, loading, error, addPost };
+  return { posts, loading, addPost };
 };

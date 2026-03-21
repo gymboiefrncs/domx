@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
 import { useGroups } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
+import { SpinnerIcon } from "@/assets/icons";
 
 export const GroupPage = () => {
   const { groups, loading } = useGroups();
@@ -13,7 +14,7 @@ export const GroupPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
-        Loading...
+        <SpinnerIcon className="h-4 w-4 spinner" />
       </div>
     );
   }

@@ -39,3 +39,20 @@ export const EyeOffIcon = ({ className }: { className?: string }) => (
     <line x1="2" y1="2" x2="22" y2="22" />
   </svg>
 );
+
+export const SendIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+  >
+    <path
+      d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

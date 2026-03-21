@@ -70,7 +70,7 @@ export const createGroup = async (
   const result = await withTransaction(pool, async (client) => {
     const group = await insertGroup(groupName, client);
     await insertMember(group.group_id, userId, "admin", client);
-    return group.group_id;
+    return group;
   });
 
   return {

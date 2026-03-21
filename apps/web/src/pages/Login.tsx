@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useLogin } from "@/hooks/useLogin";
+import { EyeIcon, EyeOffIcon } from "@/assets/icons";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, loading, error } = useLogin();
+  const { handleLogin, loading } = useLogin();
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
@@ -13,8 +15,6 @@ export const LoginPage = () => {
         <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
           Log in
         </p>
-
-        {error && <p className="text-red-500">{error}</p>}
 
         <form
           onSubmit={(e) => {
@@ -37,19 +37,32 @@ export const LoginPage = () => {
             />
           </div>
 
-          <div className="field mb-4">
-            <label htmlFor="password" className="field-label">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="input"
-            />
+          <div className="relative">
+            <div className="field mb-4">
+              <label htmlFor="password" className="field-label">
+                Password
+              </label>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="input"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-9 text-text-muted hover:text-text transition-colors cursor-pointer"
+            >
+              {showPassword ? (
+                <EyeOffIcon className="h-4 w-4" />
+              ) : (
+                <EyeIcon className="h-4 w-4" />
+              )}
+            </button>
           </div>
 
           <button type="submit" className="w-full btn" disabled={loading}>

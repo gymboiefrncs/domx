@@ -4,6 +4,7 @@ import { useGroups } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useAuth } from "@/context/AuthContext";
+import { SpinnerIcon, SendIcon } from "@/assets/icons";
 
 export type Posts = {
   id: string;
@@ -20,22 +21,20 @@ export type Posts = {
 export const GroupChatPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
-  const { posts, loading, error, addPost } = usePosts(id!);
+  const { posts, loading, addPost } = usePosts(id!);
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState("");
   const [title, setTitle] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { handleCreatePost, loadingPost, errorPost } = useCreatePost(
-    (newPost) => {
-      addPost({
-        ...newPost,
-        username: user?.username,
-        display_id: user?.display_id,
-      } as Posts);
-    },
-  );
+  const { handleCreatePost, loadingPost } = useCreatePost((newPost) => {
+    addPost({
+      ...newPost,
+      username: user?.username,
+      display_id: user?.display_id,
+    } as Posts);
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPost(e.target.value);
@@ -66,18 +65,10 @@ export const GroupChatPage = () => {
     }
   };
 
-  if (loading || loadingPost) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
-        Loading...
-      </div>
-    );
-  }
-
-  if (error || errorPost) {
-    return (
-      <div className="flex items-center justify-center h-screen text-sm text-red-400">
-        Failed to load messages.
+        <SpinnerIcon className="h-4 w-4 spinner" />
       </div>
     );
   }
@@ -178,22 +169,12 @@ export const GroupChatPage = () => {
             />
             {isFocused && (
               <div className="flex justify-end pt-1">
-                <button className="btn btn-primary p-2" onClick={handleSend}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <button
+                  className="btn btn-primary p-2"
+                  onClick={handleSend}
+                  disabled={loadingPost}
+                >
+                  <SendIcon className="w-4 h-4" />
                 </button>
               </div>
             )}

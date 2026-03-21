@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { createPost } from "@/services/posts";
 import type { Posts } from "@/pages/GroupChat";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/utils/error";
 
 export const useCreatePost = (onSuccess: (newPost: Posts) => void) => {
   const [loadingPost, setLoadingPost] = useState(false);
-  const [errorPost, setErrorPost] = useState<string | null>(null);
 
   async function handleCreatePost(
     groupId: string,
@@ -12,18 +13,16 @@ export const useCreatePost = (onSuccess: (newPost: Posts) => void) => {
     title: string,
   ) {
     setLoadingPost(true);
-    setErrorPost(null);
     try {
       const newPost = await createPost(groupId, body, title);
       onSuccess(newPost);
+      toast.success("Message sent!", { duration: 2000 });
     } catch (err) {
-      // use any for now since we don't have a defined error type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setErrorPost((err as any).message);
+      toast.error(getErrorMessage(err), { duration: 2000 });
     } finally {
       setLoadingPost(false);
     }
   }
 
-  return { handleCreatePost, loadingPost, errorPost };
+  return { handleCreatePost, loadingPost };
 };

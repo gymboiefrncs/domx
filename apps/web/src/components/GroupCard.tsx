@@ -19,7 +19,7 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
       className="flex items-center gap-3 card px-4 py-3.5 cursor-pointer hover:bg-neutral-100 transition-colors"
     >
       <div className="w-11 h-11 rounded-xl bg-neutral-100 flex items-center justify-center text-lg shrink-0">
-        group
+        #
       </div>
 
       <div className="flex-1">

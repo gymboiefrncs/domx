@@ -11,30 +11,32 @@ import { AuthLayout } from "./layout/AuthLayout";
 import { Toaster } from "sonner";
 
 export function App() {
-  <Toaster position="top-right" />;
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/signup" replace />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/otp" element={<OtpPage />} />
-      <Route path="/setup-profile" element={<SetupProfilePage />} />
-      <Route path="/login" element={<LoginPage />} />
+    <>
+      <Toaster position="top-right" />
+      <Routes>
+        <Route path="/" element={<Navigate to="/signup" replace />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/otp" element={<OtpPage />} />
+        <Route path="/setup-profile" element={<SetupProfilePage />} />
+        <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<AuthLayout />}>
-        <Route element={<AppLayout />}>
-          <Route
-            element={
-              <GroupProvider>
-                <Outlet />
-              </GroupProvider>
-            }
-          >
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/groups/:id" element={<GroupChatPage />} />
+        <Route element={<AuthLayout />}>
+          <Route element={<AppLayout />}>
+            <Route
+              element={
+                <GroupProvider>
+                  <Outlet />
+                </GroupProvider>
+              }
+            >
+              <Route path="/groups" element={<GroupPage />} />
+              <Route path="/groups/:id" element={<GroupChatPage />} />
+            </Route>
           </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }
 

@@ -39,17 +39,18 @@ export const useSignup = (): SignupState => {
 
 export const useVerifyOTP = (): VerifyOTPState => {
   const [loading, setLoading] = useState<boolean>(false);
-
   const navigate = useNavigate();
 
   const handleVerifyOTP = async (email: string, otp: string) => {
+    const toastId = toast.loading("Verifying OTP...");
     setLoading(true);
 
     try {
       await verifyOTP(email, otp);
+      toast.success("OTP verified successfully!", { id: toastId });
       navigate("/setup-profile", { replace: true });
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err), { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -62,13 +63,15 @@ export const useSetInfo = (): SetInfoState => {
   const navigate = useNavigate();
 
   const handleSetInfo = async (username: string, password: string) => {
+    const toastId = toast.loading("Setting up your profile...");
     setLoading(true);
     try {
       await setInfo(username, password);
+      toast.success("Welcome!", { id: toastId });
       navigate("/groups", { replace: true });
       sessionStorage.removeItem("OTP_EMAIL");
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err), { id: toastId });
     } finally {
       setLoading(false);
     }

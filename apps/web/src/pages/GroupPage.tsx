@@ -27,7 +27,7 @@ export const GroupPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-4 py-8">
+    <div className="h-full bg-neutral-50 px-4 py-8">
       <div className="max-w-md mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>

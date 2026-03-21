@@ -40,4 +40,5 @@ export function App() {
   );
 }
 
-// TODO: add routing
+// TODO: fix nav
+// TODO: fix types

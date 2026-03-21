@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLogin } from "@/hooks/useLogin";
 import { EyeIcon, EyeOffIcon } from "@/assets/icons";
+import { Link } from "react-router-dom";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -12,9 +13,9 @@ export const LoginPage = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
       <div className="card w-full">
         {/* Eyebrow */}
-        <p className=" uppercase tracking-widest text-text-muted mb-4 font-normal">
+        <h5 className=" uppercase tracking-wide text-text mb-4 font-weight">
           Log in
-        </p>
+        </h5>
 
         <form
           onSubmit={(e) => {
@@ -82,12 +83,12 @@ export const LoginPage = () => {
         {/* Footer */}
         <p className="text-center text-xs text-text-muted font-light">
           Don't have an account?{" "}
-          <a
-            href="/signup"
-            className="text-text-secondary border-b border-text-secondary pb-px"
+          <Link
+            to="/signup"
+            className="text-text-link border-b border-text-link pb-px"
           >
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSignup } from "@/hooks/useSignup";
 import { SpinnerIcon } from "@/assets/icons";
+import { Link } from "react-router-dom";
 
 export default function SignupPage() {
   const [email, setEmail] = useState<string>("");
@@ -73,12 +74,12 @@ export default function SignupPage() {
         {/* Footer */}
         <p className="text-center text-xs text-text-muted font-light">
           Already have an account?{" "}
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="text-text-link border-b border-text-link pb-px"
           >
             Log in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

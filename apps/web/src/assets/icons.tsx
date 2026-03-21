@@ -56,3 +56,93 @@ export const SendIcon = ({ className }: { className?: string }) => (
     />
   </svg>
 );
+
+export const GroupsIcon: React.FC<{ active: boolean }> = ({ active }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="7"
+      cy="6"
+      r="2.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill={active ? "currentColor" : "none"}
+      strokeLinecap="round"
+    />
+    <path
+      d="M2 15c0-2.761 2.239-5 5-5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M12 15c0-2.761-2.239-5-5-5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <circle
+      cx="13"
+      cy="6"
+      r="2.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill={active ? "currentColor" : "none"}
+      strokeLinecap="round"
+    />
+    <path
+      d="M13 10c2.761 0 5 2.239 5 5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const SavedIcon: React.FC<{ active: boolean }> = ({ active }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M5 3h10a1 1 0 0 1 1 1v12.382a.5.5 0 0 1-.724.447L10 14.118l-5.276 2.711A.5.5 0 0 1 4 16.382V4a1 1 0 0 1 1-1z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      fill={active ? "currentColor" : "none"}
+    />
+  </svg>
+);
+
+export const ProfileIcon: React.FC<{ active: boolean }> = ({ active }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="10"
+      cy="7"
+      r="3"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill={active ? "currentColor" : "none"}
+    />
+    <path
+      d="M3 17c0-3.866 3.134-7 7-7s7 3.134 7 7"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+);

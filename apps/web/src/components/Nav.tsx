@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { GroupsIcon, SavedIcon, ProfileIcon } from "@/assets/icons";
 
 type NavItem = {
   label: string;
@@ -6,135 +7,26 @@ type NavItem = {
   icon: React.FC<{ active: boolean }>;
 };
 
-const GroupsIcon: React.FC<{ active: boolean }> = ({ active }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle
-      cx="7"
-      cy="6"
-      r="2.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill={active ? "currentColor" : "none"}
-      strokeLinecap="round"
-    />
-    <path
-      d="M2 15c0-2.761 2.239-5 5-5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <path
-      d="M12 15c0-2.761-2.239-5-5-5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <circle
-      cx="13"
-      cy="6"
-      r="2.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill={active ? "currentColor" : "none"}
-      strokeLinecap="round"
-    />
-    <path
-      d="M13 10c2.761 0 5 2.239 5 5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const SavedIcon: React.FC<{ active: boolean }> = ({ active }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M5 3h10a1 1 0 0 1 1 1v12.382a.5.5 0 0 1-.724.447L10 14.118l-5.276 2.711A.5.5 0 0 1 4 16.382V4a1 1 0 0 1 1-1z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      fill={active ? "currentColor" : "none"}
-    />
-  </svg>
-);
-
-const ProfileIcon: React.FC<{ active: boolean }> = ({ active }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle
-      cx="10"
-      cy="7"
-      r="3"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill={active ? "currentColor" : "none"}
-    />
-    <path
-      d="M3 17c0-3.866 3.134-7 7-7s7 3.134 7 7"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-);
-
-const ChatIcon: React.FC<{ active: boolean }> = ({ active }) => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 3C7.03 3 3 6.58 3 11c0 2.13.93 4.06 2.45 5.48L4 21l4.72-1.5C9.73 19.83 10.84 20 12 20c4.97 0 9-3.58 9-9s-4.03-8-9-8z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill={active ? "currentColor" : "none"}
-    />
-  </svg>
-);
-
 const NAV_ITEMS: NavItem[] = [
   { label: "Groups", href: "/groups", icon: GroupsIcon },
   { label: "Saved", href: "/saved", icon: SavedIcon },
   { label: "Profile", href: "/profile", icon: ProfileIcon },
-  { label: "Chat", href: "/groups/:id", icon: ChatIcon },
 ];
 
 export const Nav = () => {
-  const [active, setActive] = useState("/groups");
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   return (
     <nav className="flex bg-surface border-t border-border-subtle p-4">
       {/* Nav links */}
       <ul className="flex gap-12 w-full justify-center">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const isActive = active === href;
+          const isActive = pathname.startsWith(href);
           return (
             <li key={href}>
               <button
-                onClick={() => setActive(href)}
+                onClick={() => navigate(href)}
                 className={`
                   w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm
                   transition-colors duration-150 cursor-pointer

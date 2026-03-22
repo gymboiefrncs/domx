@@ -1,26 +1,31 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type JSX,
+} from "react";
 import { fetchMyGroups } from "@/services/group";
-import type { Group } from "@/components/GroupCard";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
-
-type GroupContextType = {
-  groups: Group[];
-  loading: boolean;
-  loadGroups: () => Promise<void>;
-};
+import type { GroupDetail } from "@domx/shared";
+import type { GroupContextType } from "@/shared";
 
 const GroupContext = createContext<GroupContextType | null>(null);
 
-export function GroupProvider({ children }: { children: React.ReactNode }) {
-  const [groups, setGroups] = useState<Group[]>([]);
+export function GroupProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}): JSX.Element {
+  const [groups, setGroups] = useState<GroupDetail[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadGroups = async () => {
+  const loadGroups = async (): Promise<void> => {
     setLoading(true);
     try {
       const data = await fetchMyGroups();
-      setGroups(data ?? []);
+      setGroups(data);
     } catch (err) {
       toast.error(getErrorMessage(err), { duration: 2000 });
     } finally {
@@ -28,7 +33,7 @@ export function GroupProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => {
+  useEffect((): void => {
     loadGroups();
   }, []);
 
@@ -40,8 +45,8 @@ export function GroupProvider({ children }: { children: React.ReactNode }) {
 }
 
 // Custom hook so components don't import useContext and GroupContext separately
-export function useGroups() {
+export const useGroups = (): GroupContextType => {
   const ctx = useContext(GroupContext);
   if (!ctx) throw new Error("useGroups must be used within a GroupProvider");
   return ctx;
-}
+};

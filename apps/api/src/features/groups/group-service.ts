@@ -38,13 +38,17 @@ import {
   NotFoundError,
 } from "../../utils/error.js";
 import { resolveGroupAction } from "./group-helper.js";
+import type { CreateGroup } from "@domx/shared";
 
 export const getUserGroups = async (userId: string): Promise<Result> => {
   const groups = await fetchUserGroups(userId);
   return { ok: true, message: "Groups fetched successfully.", data: groups };
 };
 
-export const updateLastSeen = async (groupId: string, requesterId: string) => {
+export const updateLastSeen = async (
+  groupId: string,
+  requesterId: string,
+): Promise<Result> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
 
@@ -67,11 +71,14 @@ export const createGroup = async (
    * The group creator is assigned as the initial admin to ensure
    * the group always has an owner with management privileges.
    */
-  const result = await withTransaction(pool, async (client) => {
-    const group = await insertGroup(groupName, client);
-    await insertMember(group.group_id, userId, "admin", client);
-    return group;
-  });
+  const result = await withTransaction(
+    pool,
+    async (client): Promise<CreateGroup> => {
+      const group = await insertGroup(groupName, client);
+      await insertMember(group.group_id, userId, "admin", client);
+      return group;
+    },
+  );
 
   return {
     ok: true,

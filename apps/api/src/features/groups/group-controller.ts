@@ -15,7 +15,7 @@ export const handleGetGroups = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const result = await getUserGroups(userId);
@@ -33,7 +33,7 @@ export const handleUpdateSeen = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const { groupId } = req.params;
@@ -51,7 +51,7 @@ export const handleCreateGroup = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const userId = req.user!.userId;
     const result = await createGroup(req.body.groupName, userId);
@@ -69,7 +69,7 @@ export const handleAddMember = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -88,7 +88,7 @@ export const handleKickMember = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -106,7 +106,7 @@ export const handlePromoteMember = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -124,7 +124,7 @@ export const handleDemoteMember = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -142,7 +142,7 @@ export const handleLeaveGroup = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;

@@ -1,14 +1,14 @@
 import { GroupCard } from "../components/GroupCard";
-import type { Group } from "../components/GroupCard";
 import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
 import { useGroups } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
+import type { GroupDetail } from "@domx/shared";
 
 export const GroupPage = () => {
   const { groups, loading, loadGroups } = useGroups();
-  const [modal, setModal] = useState(false);
+  const [modal, setModal] = useState<boolean>(false);
   const navigate = useNavigate();
 
   if (loading) {
@@ -33,7 +33,7 @@ export const GroupPage = () => {
           </div>
         </div>
         <div className="flex flex-col gap-2.5">
-          {groups.map((group: Group) => (
+          {groups.map((group: GroupDetail) => (
             <GroupCard
               key={group.group_id}
               group={group}
@@ -50,8 +50,8 @@ export const GroupPage = () => {
       </button>
       {modal && (
         <CreateGroupModal
-          onClose={() => setModal(false)}
-          onSuccess={() => {
+          onClose={(): void => setModal(false)}
+          onSuccess={(): void => {
             loadGroups();
             setModal(false);
           }}

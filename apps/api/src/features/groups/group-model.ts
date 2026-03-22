@@ -1,11 +1,12 @@
 import type { Pool, PoolClient } from "pg";
-import type { Group, GroupRoles } from "./group-types.js";
+import type { CreateGroup } from "@domx/shared";
+import type { GroupDetail, GroupRole } from "@domx/shared";
 import { pool } from "../../config/db.js";
 
 export const insertGroup = async (
   groupName: string,
   client: PoolClient,
-): Promise<{ group_id: string }> => {
+): Promise<CreateGroup> => {
   const query = `INSERT INTO groups (name) VALUES ($1) returning group_id`;
   const values = [groupName];
   const result = await client.query(query, values);
@@ -15,7 +16,7 @@ export const insertGroup = async (
 export const insertMember = async (
   groupId: string,
   userId: string,
-  role: GroupRoles = "member",
+  role: GroupRole = "member",
   con: Pool | PoolClient = pool,
 ): Promise<void> => {
   const query = `INSERT INTO group_members (group_id, user_id, role) VALUES ($1, $2, $3)`;
@@ -44,7 +45,7 @@ export const deleteMember = async (
 };
 
 export const updateRole = async (
-  role: GroupRoles,
+  role: GroupRole,
   userId: string,
   groupId: string,
   con: Pool | PoolClient = pool,
@@ -93,7 +94,9 @@ export const deleteGroup = async (
   return (result.rowCount ?? 0) > 0;
 };
 
-export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
+export const fetchUserGroups = async (
+  userId: string,
+): Promise<GroupDetail[]> => {
   const query = `
     SELECT 
     g.group_id, 

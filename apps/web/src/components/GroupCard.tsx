@@ -1,16 +1,4 @@
-export interface Group {
-  group_id: string;
-  name: string;
-  role: string;
-  unread_count: number;
-  member_count: number;
-  last_seen_at: Date;
-}
-
-interface GroupCardProps {
-  group: Group;
-  onClick: (groupId: string) => void;
-}
+import type { GroupCardProps } from "@/shared";
 
 export function GroupCard({ group, onClick }: GroupCardProps) {
   return (

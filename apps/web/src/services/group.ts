@@ -1,6 +1,7 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import type { CreateGroup, GroupDetail } from "@domx/shared";
 
-export const createGroup = async (name: string) => {
+export const createGroup = async (name: string): Promise<CreateGroup> => {
   const res = await fetchWithAuth("http://localhost:8080/api/v1/groups", {
     method: "POST",
     headers: {
@@ -11,11 +12,10 @@ export const createGroup = async (name: string) => {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.errors[0].message);
-
   return data.data;
 };
 
-export const fetchMyGroups = async () => {
+export const fetchMyGroups = async (): Promise<GroupDetail[]> => {
   const res = await fetchWithAuth("http://localhost:8080/api/v1/groups", {
     method: "GET",
     credentials: "include",
@@ -23,6 +23,5 @@ export const fetchMyGroups = async () => {
 
   const data = await res.json();
   if (!res.ok) throw new Error(data.errors[0].message);
-  console.log("Get group:", data.data);
   return data.data;
 };

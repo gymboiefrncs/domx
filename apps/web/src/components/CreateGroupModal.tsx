@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useCreateGroup } from "@/hooks/useCreateGroup";
-import type { Group } from "./GroupCard";
 
 type Props = {
   onClose: () => void;
-  onSuccess: (newGroup: Group) => void;
+  onSuccess: () => void;
 };
 
 export const CreateGroupModal = ({ onClose, onSuccess }: Props) => {

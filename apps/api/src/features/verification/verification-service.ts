@@ -9,22 +9,23 @@ import {
   getLatestOTP,
   createSignupOtp,
   fetchUserForSignup,
-} from "../../common/models.js";
+} from "@api/common/models.js";
 import {
   OTP_MESSAGE_FAIL,
   OTP_MESSAGE_SUCCESS,
   RESEND_OTP_MESSAGE,
-} from "../../common/constants.js";
+} from "@api/common/constants.js";
 import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "../../utils/sendEmail.js";
-import { generateOTP } from "../../utils/generateOTP.js";
+} from "@api/utils/sendEmail.js";
+import { generateOTP } from "@api/utils/generateOTP.js";
 import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
-import { COOLDOWN_MESSAGE, OTP_COOLDOWN_MS } from "../../common/constants.js";
-import { withTransaction } from "../../config/transaction.js";
+import { COOLDOWN_MESSAGE, OTP_COOLDOWN_MS } from "@api/common/constants.js";
+import { withTransaction } from "@api/config/transaction.js";
 import type {
+  OtpPayload,
   ResendOtpResult,
   TransactionResult,
   ValidateOtpResult,
@@ -33,10 +34,7 @@ import type {
 export const validateOtp = async ({
   email,
   otp,
-}: {
-  email: string;
-  otp: string;
-}): Promise<ValidateOtpResult> => {
+}: OtpPayload): Promise<ValidateOtpResult> => {
   const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
   /**

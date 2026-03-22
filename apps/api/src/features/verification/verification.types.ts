@@ -1,3 +1,7 @@
+export type OtpPayload = {
+  otp: string;
+  email: string;
+};
 export type ValidateOtpResult =
   | { ok: true; message: string; data: string }
   | { ok: false; errMessage: string };

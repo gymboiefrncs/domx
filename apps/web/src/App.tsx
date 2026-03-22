@@ -40,5 +40,4 @@ export function App() {
   );
 }
 
-// TODO: fix nav
-// TODO: fix types
+// TODO: fix types (problem with group and post types)

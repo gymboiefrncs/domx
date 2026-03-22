@@ -6,7 +6,7 @@ export const insertGroup = async (
   groupName: string,
   client: PoolClient,
 ): Promise<{ group_id: string }> => {
-  const query = `INSERT INTO groups (name) VALUES ($1) returning *`;
+  const query = `INSERT INTO groups (name) VALUES ($1) returning group_id`;
   const values = [groupName];
   const result = await client.query(query, values);
   return result.rows[0];

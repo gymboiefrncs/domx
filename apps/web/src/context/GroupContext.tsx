@@ -7,7 +7,7 @@ import { getErrorMessage } from "@/utils/error";
 type GroupContextType = {
   groups: Group[];
   loading: boolean;
-  addGroup: (group: Group) => void;
+  loadGroups: () => Promise<void>;
 };
 
 const GroupContext = createContext<GroupContextType | null>(null);
@@ -16,27 +16,24 @@ export function GroupProvider({ children }: { children: React.ReactNode }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const data = await fetchMyGroups();
-        setGroups(data ?? []);
-      } catch (err) {
-        toast.error(getErrorMessage(err), { duration: 2000 });
-      } finally {
-        setLoading(false);
-      }
+  const loadGroups = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchMyGroups();
+      setGroups(data ?? []);
+    } catch (err) {
+      toast.error(getErrorMessage(err), { duration: 2000 });
+    } finally {
+      setLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    loadGroups();
   }, []);
 
-  function addGroup(newGroup: Group) {
-    setGroups((prev) => [...prev, newGroup]);
-  }
-
   return (
-    <GroupContext.Provider value={{ groups, loading, addGroup }}>
+    <GroupContext.Provider value={{ groups, loading, loadGroups }}>
       {children}
     </GroupContext.Provider>
   );

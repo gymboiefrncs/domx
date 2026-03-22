@@ -11,6 +11,7 @@ export const createGroup = async (name: string) => {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.errors[0].message);
+
   return data.data;
 };
 
@@ -22,5 +23,6 @@ export const fetchMyGroups = async () => {
 
   const data = await res.json();
   if (!res.ok) throw new Error(data.errors[0].message);
+  console.log("Get group:", data.data);
   return data.data;
 };

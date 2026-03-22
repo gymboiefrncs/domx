@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
 
 export const GroupPage = () => {
-  const { groups, loading, addGroup } = useGroups();
+  const { groups, loading, loadGroups } = useGroups();
   const [modal, setModal] = useState(false);
   const navigate = useNavigate();
 
@@ -51,8 +51,8 @@ export const GroupPage = () => {
       {modal && (
         <CreateGroupModal
           onClose={() => setModal(false)}
-          onSuccess={(newGroup: Group) => {
-            addGroup(newGroup);
+          onSuccess={() => {
+            loadGroups();
             setModal(false);
           }}
         />

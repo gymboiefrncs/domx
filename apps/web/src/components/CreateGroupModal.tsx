@@ -1,13 +1,9 @@
 import { useState } from "react";
 import { useCreateGroup } from "@/hooks/useCreateGroup";
-
-type Props = {
-  onClose: () => void;
-  onSuccess: () => void;
-};
+import type { Props } from "@/shared";
 
 export const CreateGroupModal = ({ onClose, onSuccess }: Props) => {
-  const [name, setName] = useState("");
+  const [name, setName] = useState<string>("");
   const { handleCreate, loading } = useCreateGroup(onSuccess);
 
   return (
@@ -38,7 +34,7 @@ export const CreateGroupModal = ({ onClose, onSuccess }: Props) => {
           </button>
           <button
             className="btn btn-primary"
-            onClick={() => handleCreate(name)}
+            onClick={(): Promise<void> => handleCreate(name)}
             disabled={!name.trim() || loading}
           >
             {loading ? "Creating..." : "Create"}

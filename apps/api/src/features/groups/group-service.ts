@@ -38,9 +38,11 @@ import {
   NotFoundError,
 } from "../../utils/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup } from "@domx/shared";
+import type { CreateGroup, GroupDetail } from "@domx/shared";
 
-export const getUserGroups = async (userId: string): Promise<Result> => {
+export const getUserGroups = async (
+  userId: string,
+): Promise<Result<GroupDetail[]>> => {
   const groups = await fetchUserGroups(userId);
   return { ok: true, message: "Groups fetched successfully.", data: groups };
 };
@@ -63,7 +65,7 @@ export const updateLastSeen = async (
 export const createGroup = async (
   groupName: string,
   userId: string,
-): Promise<Result> => {
+): Promise<Result<CreateGroup>> => {
   /**
    * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
    * Inside: return to commit, throw to rollback.

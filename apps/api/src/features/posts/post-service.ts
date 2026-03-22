@@ -16,6 +16,7 @@ import {
   updatePost,
 } from "./post-model.js";
 import { performChecks } from "./post-helpers.js";
+import type { Post, PostDetails } from "@domx/shared";
 
 /**
  * Fetches all posts in a group.
@@ -24,7 +25,7 @@ import { performChecks } from "./post-helpers.js";
 export const getGroupPosts = async (
   groupId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<Result<PostDetails[]>> => {
   await performChecks(groupId, requesterId);
 
   const posts = await fetchAllPostsByGroupId(groupId);
@@ -41,7 +42,7 @@ export const createPost = async (
   body: string,
   requesterId: string,
   groupId: string,
-): Promise<Result> => {
+): Promise<Result<Post>> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   await performChecks(groupId, requesterId);
 

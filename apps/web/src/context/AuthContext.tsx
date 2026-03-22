@@ -1,11 +1,6 @@
 import { fetchProfile } from "@/services/profile";
 import { createContext, useState, useEffect, useContext } from "react";
-
-type User = {
-  id: string;
-  username: string;
-  display_id: string;
-};
+import type { User } from "@domx/shared";
 
 type AuthContextType = {
   user: User | null;

@@ -12,10 +12,7 @@ export const useSignup = (): SignupState => {
   async function handleSignup(email: string): Promise<void> {
     setLoading(true);
     try {
-      const result = (await signup(email)) as {
-        success: boolean;
-        message: string;
-      };
+      const result = await signup(email);
       if (result.success && result.message === "INCOMPLETE_SIGNUP") {
         navigate("/setup-profile", { replace: true });
         return;
@@ -41,7 +38,7 @@ export const useVerifyOTP = (): VerifyOTPState => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const handleVerifyOTP = async (email: string, otp: string) => {
+  const handleVerifyOTP = async (email: string, otp: string): Promise<void> => {
     const toastId = toast.loading("Verifying OTP...");
     setLoading(true);
 
@@ -62,7 +59,10 @@ export const useSetInfo = (): SetInfoState => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const handleSetInfo = async (username: string, password: string) => {
+  const handleSetInfo = async (
+    username: string,
+    password: string,
+  ): Promise<void> => {
     const toastId = toast.loading("Setting up your profile...");
     setLoading(true);
     try {

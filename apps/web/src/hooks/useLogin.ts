@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { login } from "@/services/login";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
+import type { LoginState } from "@/shared";
 
-export const useLogin = () => {
-  const [loading, setLoading] = useState(false);
+export const useLogin = (): LoginState => {
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  async function handleLogin(email: string, password: string) {
+  async function handleLogin(email: string, password: string): Promise<void> {
     setLoading(true);
     try {
       await login(email, password);

@@ -5,29 +5,29 @@ import {
   fetchUserById,
   createToken,
 } from "./auth-model.js";
-import { fetchUserForSignup } from "../../common/models.js";
+import { fetchUserForSignup } from "@api/common/models.js";
 import type { SignupSchema, LoginSchema } from "./auth-schema.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { UnauthorizedError } from "../../utils/error.js";
-import type { RegistrationResult, Tokens, Result } from "../../common/types.js";
+import { UnauthorizedError } from "@api/utils/error.js";
+import type { RegistrationResult, Tokens, Result } from "@api/common/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "../../utils/sendEmail.js";
-import { pool } from "../../config/db.js";
-import { generateOTP } from "../../utils/generateOTP.js";
+} from "@api/utils/sendEmail.js";
+import { pool } from "@api/config/db.js";
+import { generateOTP } from "@api/utils/generateOTP.js";
 import * as jose from "jose";
 import {
   generateTokens,
   getRefreshTokenExpiry,
-} from "../../utils/generateToken.js";
+} from "@api/utils/generateToken.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
-import { withTransaction } from "../../config/transaction.js";
-import { LOGOUT_MESSAGE } from "../../common/constants.js";
+import { withTransaction } from "@api/config/transaction.js";
+import { LOGOUT_MESSAGE } from "@api/common/constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 

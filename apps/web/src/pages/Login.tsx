@@ -4,10 +4,10 @@ import { EyeIcon, EyeOffIcon } from "@/assets/icons";
 import { Link } from "react-router-dom";
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const { handleLogin, loading } = useLogin();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">

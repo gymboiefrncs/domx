@@ -1,16 +1,35 @@
-export type UserVerificationStatus = {
+import type { Role } from "@domx/shared";
+
+export type Result<T = unknown> =
+  | { ok: true; message: string; data?: T }
+  | { ok: false; message: string };
+
+type VerificationBase = {
   id: string;
   user_id: string;
   expires_at: Date;
   otp_hash: string;
   used_at: Date | null;
-  is_verified: boolean;
   retries: number;
 };
 
-export type Result =
-  | { ok: true; message: string; data?: unknown }
-  | { ok: false; message: string };
+export type UserVerificationStatus = VerificationBase & {
+  is_verified: boolean;
+};
+
+export type CustomErrorContent = {
+  message: string;
+  context?: Record<string, unknown>;
+};
+
+export type EmailVerification = VerificationBase & {
+  created_at: Date;
+};
+
+export type Tokens = {
+  accessToken: string;
+  refreshToken: string;
+};
 
 /**
  * `reason` is a machine-readable discriminant used for control flow (e.g. determining which email to send).
@@ -40,22 +59,3 @@ export type SetInfoResult =
       data: { role: Role };
     }
   | { ok: false; reason: "INFO_SET_FAILED"; message: string };
-
-export type Tokens = { accessToken: string; refreshToken: string };
-
-export type Role = "user" | "moderator" | "admin";
-
-export type CustomErrorContent = {
-  message: string;
-  context?: Record<string, unknown>;
-};
-
-export type EmailVerification = {
-  id: string;
-  user_id: string;
-  expires_at: Date;
-  otp_hash: string;
-  used_at: Date | null;
-  created_at: Date;
-  retries: number;
-};

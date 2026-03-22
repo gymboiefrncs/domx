@@ -7,10 +7,10 @@ import {
 } from "./auth-service.js";
 import { setInfo } from "./set-info.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
-import { UnauthorizedError } from "../../utils/error.js";
-import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "../../common/constants.js";
+import { UnauthorizedError } from "@api/utils/error.js";
+import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/common/constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
-import type { Role } from "@api/common/types.js";
+import type { Role } from "@domx/shared";
 
 export const signupHandler = async (
   req: Request,
@@ -113,7 +113,6 @@ export const setInfoHandler = async (
       userId,
       result.data as Role,
     );
-    console.log(result.data);
     setCookies(refreshToken, accessToken, res);
 
     res.clearCookie("setInfoToken");

@@ -1,10 +1,10 @@
 import { API_BASE_URL } from "@/config";
-import type { serviceResponse } from "@/shared";
+import type { ApiResponse } from "@/shared";
 
 export const postJSON = async (
   path: string,
   data: object,
-): Promise<serviceResponse> => {
+): Promise<ApiResponse> => {
   const result = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
@@ -15,6 +15,6 @@ export const postJSON = async (
   });
   const resultData = await result.json();
   if (!result.ok) throw new Error(resultData.message);
-
+  console.log(resultData);
   return resultData;
 };

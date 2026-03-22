@@ -2,7 +2,7 @@ import type { SignupSchema } from "./auth-schema.js";
 import { pool } from "../../config/db.js";
 import type { UserRole, LoginUser, NewUser } from "./auth.types.js";
 import type { Pool, PoolClient } from "pg";
-import type { Role } from "@api/common/types.js";
+import type { Role } from "@domx/shared";
 
 export const createUser = async (
   data: SignupSchema,

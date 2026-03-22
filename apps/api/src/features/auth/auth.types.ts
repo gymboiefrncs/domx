@@ -1,4 +1,4 @@
-import type { Role } from "../../common/types.js";
+import type { Role } from "@domx/shared";
 
 /** Raw `users` table row. */
 type UserRow = {

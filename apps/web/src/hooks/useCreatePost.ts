@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { createPost } from "@/services/posts";
-import type { Posts } from "@/pages/GroupChat";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
+import type { Post } from "@domx/shared";
+import type { CreatePostState } from "@/shared";
 
-export const useCreatePost = (onSuccess: (newPost: Posts) => void) => {
+export const useCreatePost = (
+  onSuccess: (newPost: Post) => void,
+): CreatePostState => {
   const [loadingPost, setLoadingPost] = useState(false);
 
   async function handleCreatePost(

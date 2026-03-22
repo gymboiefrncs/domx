@@ -1,4 +1,4 @@
-import type { GroupDetail } from "@domx/shared";
+import type { GroupDetail, PostDetails } from "@domx/shared";
 
 type HookState = {
   loading: boolean;
@@ -36,6 +36,11 @@ export type GroupContextType = {
   loadGroups: () => Promise<void>;
 };
 
+export type Props = {
+  onClose: () => void;
+  onSuccess: () => void;
+};
+
 export type GroupCardProps = {
   group: GroupDetail;
   onClick: (groupId: string) => void;
@@ -44,4 +49,19 @@ export type GroupCardProps = {
 // -------- GROUP HOOK TYPES
 export type CreateGroupState = HookState & {
   handleCreate: (name: string) => Promise<void>;
+};
+
+// -------- POST HOOK TYPES
+export type CreatePostState = {
+  loadingPost: boolean;
+  handleCreatePost: (
+    groupId: string,
+    body: string,
+    title: string,
+  ) => Promise<void>;
+};
+
+export type GetPostsState = HookState & {
+  posts: PostDetails[];
+  addPost: (post: PostDetails) => void;
 };

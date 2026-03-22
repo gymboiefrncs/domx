@@ -1,11 +1,12 @@
-import type { Posts } from "@/pages/GroupChat";
 import { fetchMessages } from "@/services/posts";
+import type { GetPostsState } from "@/shared";
 import { getErrorMessage } from "@/utils/error";
+import type { PostDetails } from "@domx/shared";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export const usePosts = (groupId: string) => {
-  const [posts, setPosts] = useState<Posts[]>([]);
+export const usePosts = (groupId: string): GetPostsState => {
+  const [posts, setPosts] = useState<PostDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,7 +14,6 @@ export const usePosts = (groupId: string) => {
       setLoading(true);
       try {
         const data = await fetchMessages(groupId);
-        console.log("Fetched posts:", data);
         setPosts(data);
       } catch (error) {
         toast.error(getErrorMessage(error));
@@ -24,7 +24,7 @@ export const usePosts = (groupId: string) => {
     load();
   }, [groupId]);
 
-  const addPost = (post: Posts) => {
+  const addPost = (post: PostDetails) => {
     setPosts((prevPosts) => [...prevPosts, post]);
   };
 

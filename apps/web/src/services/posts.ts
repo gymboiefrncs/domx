@@ -1,6 +1,9 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import type { Post, PostDetails } from "@domx/shared";
 
-export const fetchMessages = async (groupId: string) => {
+export const fetchMessages = async (
+  groupId: string,
+): Promise<PostDetails[]> => {
   const res = await fetchWithAuth(
     `http://localhost:8080/api/v1/groups/${groupId}/posts`,
     {
@@ -9,8 +12,8 @@ export const fetchMessages = async (groupId: string) => {
     },
   );
   const data = await res.json();
-  console.log("Response from fetchMessages:", data);
   if (!res.ok) throw new Error(data.errors[0].message);
+
   return data.data;
 };
 
@@ -18,7 +21,7 @@ export const createPost = async (
   groupId: string,
   body: string,
   title: string,
-) => {
+): Promise<Post> => {
   const res = await fetchWithAuth(
     `http://localhost:8080/api/v1/groups/${groupId}/posts`,
     {
@@ -31,7 +34,7 @@ export const createPost = async (
     },
   );
   const data = await res.json();
-  console.log("Response from createPost:", data);
+
   if (!res.ok) throw new Error(data.errors[0].message);
   return data.data;
 };

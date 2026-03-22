@@ -11,7 +11,7 @@ export const handleGetPosts = async (
   req: Request<{ groupId: string }>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -31,7 +31,7 @@ export const handleCreatePost = async (
   req: Request<{ groupId: string }>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId } = req.params;
     const requesterId = req.user!.userId;
@@ -52,7 +52,7 @@ export const handleEditPost = async (
   req: Request<PostParams>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId, postId } = req.params;
     const requesterId = req.user!.userId;
@@ -72,7 +72,7 @@ export const handleDeletePost = async (
   req: Request<PostParams>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId, postId } = req.params;
     const requesterId = req.user!.userId;

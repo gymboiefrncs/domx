@@ -1,9 +1,10 @@
 import { pool } from "../../config/db.js";
-import type { Post } from "./post-types.js";
+import type { Post, PostDetails } from "@domx/shared";
+import type { EditPost } from "./post-types.js";
 
 export const fetchAllPostsByGroupId = async (
   groupId: string,
-): Promise<Post[]> => {
+): Promise<PostDetails[]> => {
   const query = `
   SELECT p.*, u.username, u.display_id 
   FROM posts p 
@@ -21,7 +22,7 @@ export const insertPost = async (
   body: string,
   userId: string,
   groupId: string,
-) => {
+): Promise<Post> => {
   const query = `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4) returning *`;
   const values = [title, body, userId, groupId];
   const result = await pool.query(query, values);
@@ -31,7 +32,7 @@ export const insertPost = async (
 export const fetchPostById = async (
   postId: string,
   groupId: string,
-): Promise<{ id: string; user_id: string } | undefined> => {
+): Promise<EditPost | undefined> => {
   const query = `SELECT id, user_id FROM posts WHERE id = $1 AND group_id = $2`;
   const values = [postId, groupId];
   const result = await pool.query(query, values);
@@ -54,7 +55,10 @@ export const updatePost = async (
   await pool.query(query, values);
 };
 
-export const deletePost = async (postId: string, groupId: string) => {
+export const deletePost = async (
+  postId: string,
+  groupId: string,
+): Promise<void> => {
   const query = `DELETE FROM posts WHERE id = $1 AND group_id = $2`;
 
   const values = [postId, groupId];

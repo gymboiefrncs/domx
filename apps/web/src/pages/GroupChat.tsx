@@ -5,18 +5,7 @@ import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useAuth } from "@/context/AuthContext";
 import { SpinnerIcon, SendIcon } from "@/assets/icons";
-
-export type Posts = {
-  id: string;
-  user_id: string;
-  group_id: string;
-  body: string;
-  created_at: string;
-  updated_at: string;
-  title: string;
-  username: string;
-  display_id: string;
-};
+import type { PostDetails } from "@domx/shared";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
@@ -24,19 +13,19 @@ export const GroupChatPage = () => {
   const { posts, loading, addPost } = usePosts(id!);
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
-  const [post, setPost] = useState("");
-  const [title, setTitle] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
+  const [post, setPost] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { handleCreatePost, loadingPost } = useCreatePost((newPost) => {
     addPost({
       ...newPost,
       username: user?.username,
       display_id: user?.display_id,
-    } as Posts);
+    } as PostDetails);
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setPost(e.target.value);
     setIsFocused(true);
     const textarea = textareaRef.current;
@@ -46,7 +35,7 @@ export const GroupChatPage = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     //shift + enter for new line
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -54,7 +43,7 @@ export const GroupChatPage = () => {
     }
   };
 
-  const handleSend = () => {
+  const handleSend = (): void => {
     if (!post.trim()) return;
     handleCreatePost(id!, post.trim(), title.trim());
     setPost("");
@@ -95,7 +84,7 @@ export const GroupChatPage = () => {
           </p>
         ) : (
           <ul className="max-w-md mx-auto">
-            {posts.map((post: Posts) => (
+            {posts.map((post: PostDetails) => (
               <li
                 key={post.id}
                 className="card px-4 py-3 flex flex-col gap-1 mb-4"

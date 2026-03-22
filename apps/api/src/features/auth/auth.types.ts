@@ -27,3 +27,9 @@ export type LoginUser = Pick<
 
 /** Used for JWT payload construction */
 export type UserRole = Pick<UserRow, "role">;
+
+export type UserInfo = {
+  userId: string;
+  username: string;
+  password: string;
+};

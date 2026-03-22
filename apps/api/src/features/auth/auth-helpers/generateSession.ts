@@ -1,5 +1,6 @@
-import type { Tokens, Role } from "@api/common/types.js";
+import type { Tokens } from "@api/common/types.js";
 import { createToken } from "../auth-model.js";
+import type { Role } from "@domx/shared";
 import {
   generateTokens,
   getRefreshTokenExpiry,

@@ -1,9 +1,9 @@
 import type { PoolClient } from "pg";
 import type { SignupSchema } from "../auth-schema.js";
 import { createUser } from "../auth-model.js";
-import { createSignupOtp } from "../../../common/models.js";
-import { EMAIL_MESSAGE } from "../../../common/constants.js";
-import type { RegistrationResult } from "../../../common/types.js";
+import { createSignupOtp } from "@api/common/models.js";
+import { EMAIL_MESSAGE } from "@api/common/constants.js";
+import type { RegistrationResult } from "@api/common/types.js";
 
 /**
  * Handles new user registration

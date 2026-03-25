@@ -54,6 +54,9 @@ export type CreateGroupState = HookState & {
 export type UpdateGroupNameState = HookState & {
   handleUpdateName: (groupId: string, newName: string) => Promise<void>;
 };
+export type AddMemberState = HookState & {
+  handleAddMember: (groupId: string, displayId: string) => Promise<void>;
+};
 
 // -------- POST HOOK TYPES
 export type CreatePostState = {

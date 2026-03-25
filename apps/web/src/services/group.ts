@@ -42,3 +42,20 @@ export const fetchMyGroups = async (): Promise<GroupDetail[]> => {
   if (!res.ok) throw new Error(data.errors[0].message);
   return data.data;
 };
+
+export const addMemberToGroup = async (groupId: string, displayId: string) => {
+  const res = await fetchWithAuth(
+    `http://localhost:8080/api/v1/groups/${groupId}/add/${displayId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ displayId }),
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.errors[0].message);
+  return data;
+};

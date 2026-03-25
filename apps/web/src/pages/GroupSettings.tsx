@@ -2,6 +2,7 @@ import { useGroups } from "@/context/GroupContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef } from "react";
 import { useUpdateNameGroup } from "@/hooks/useUpdateNameGroup";
+import { AddMemberModal } from "@/components/AddMemberModal";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export const GroupSettingsPage = () => {
   const [nameValue, setNameValue] = useState(group?.name ?? "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [modal, setModal] = useState<boolean>(false);
 
   if (loading) return;
 
@@ -101,12 +103,22 @@ export const GroupSettingsPage = () => {
             <p className="text-xs text-text-muted uppercase tracking-widest">
               Members · {group.member_count}
             </p>
-            <button className="text-xs text-primary font-medium hover:opacity-70 transition-opacity">
+            <button
+              className="text-xs text-primary font-medium hover:opacity-70 transition-opacity"
+              onClick={() => setModal(true)}
+            >
               + Add
             </button>
+            {modal && (
+              <AddMemberModal
+                onClose={() => setModal(false)}
+                onSuccess={() => {
+                  setModal(false);
+                }}
+              />
+            )}
           </div>
         </section>
-
         {/* Danger Zone */}
         <section className="px-4 py-5">
           <p className="text-xs text-error font-semibold uppercase tracking-widest mb-3">

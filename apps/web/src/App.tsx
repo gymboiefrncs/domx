@@ -9,6 +9,7 @@ import { GroupProvider } from "./context/GroupContext";
 import { GroupChatPage } from "./pages/GroupChat";
 import { AuthLayout } from "./layout/AuthLayout";
 import { Toaster } from "sonner";
+import { GroupSettingsPage } from "./pages/GroupSettings";
 
 export function App() {
   return (
@@ -32,6 +33,10 @@ export function App() {
             >
               <Route path="/groups" element={<GroupPage />} />
               <Route path="/groups/:id" element={<GroupChatPage />} />
+              <Route
+                path="/groups/:id/settings"
+                element={<GroupSettingsPage />}
+              />
             </Route>
           </Route>
         </Route>

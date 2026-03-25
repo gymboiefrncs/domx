@@ -1,10 +1,10 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
 import { useGroups } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useAuth } from "@/context/AuthContext";
-import { SpinnerIcon, SendIcon } from "@/assets/icons";
+import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 
 export const GroupChatPage = () => {
@@ -65,15 +65,22 @@ export const GroupChatPage = () => {
   return (
     <div className="flex flex-col h-full bg-neutral-50">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-neutral-200 bg-neutral-50">
-        <h1 className="text-base font-medium text-neutral-900">
-          {group?.name ?? "Group Chat"}
-        </h1>
-        <p className="text-xs text-neutral-400 mt-0.5">
-          {(group?.member_count ?? 0) === 1
-            ? `${group?.member_count} member`
-            : `${group?.member_count ?? 0} members`}
-        </p>
+      <div className="flex items-center px-4 py-4 border-b border-neutral-200 bg-neutral-50">
+        <div>
+          <h1 className="text-base font-medium text-neutral-900">
+            {group?.name ?? "Group Chat"}
+          </h1>
+          <p className="text-xs text-neutral-400 mt-0.5">
+            {(group?.member_count ?? 0) === 1
+              ? `${group?.member_count} member`
+              : `${group?.member_count ?? 0} members`}
+          </p>
+        </div>
+        <div className="ml-auto">
+          <Link to={`/groups/${id}/settings`}>
+            <SettingsIcon className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       {/* Posts area */}

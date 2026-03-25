@@ -33,12 +33,20 @@ export function GroupProvider({
     }
   };
 
+  const updateGroupName = (groupId: string, newName: string) => {
+    setGroups((prev) =>
+      prev.map((g) => (g.group_id === groupId ? { ...g, name: newName } : g)),
+    );
+  };
+
   useEffect((): void => {
     loadGroups();
   }, []);
 
   return (
-    <GroupContext.Provider value={{ groups, loading, loadGroups }}>
+    <GroupContext.Provider
+      value={{ groups, loading, loadGroups, updateGroupName }}
+    >
       {children}
     </GroupContext.Provider>
   );

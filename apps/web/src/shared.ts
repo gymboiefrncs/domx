@@ -34,6 +34,7 @@ export type GroupContextType = {
   groups: GroupDetail[];
   loading: boolean;
   loadGroups: () => Promise<void>;
+  updateGroupName: (groupId: string, newName: string) => void;
 };
 
 export type Props = {
@@ -49,6 +50,9 @@ export type GroupCardProps = {
 // -------- GROUP HOOK TYPES
 export type CreateGroupState = HookState & {
   handleCreate: (name: string) => Promise<void>;
+};
+export type UpdateGroupNameState = HookState & {
+  handleUpdateName: (groupId: string, newName: string) => Promise<void>;
 };
 
 // -------- POST HOOK TYPES

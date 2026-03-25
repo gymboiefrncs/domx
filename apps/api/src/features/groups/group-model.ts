@@ -13,6 +13,16 @@ export const insertGroup = async (
   return result.rows[0];
 };
 
+export const updateGroupName = async (
+  groupId: string,
+  groupName: string,
+): Promise<void> => {
+  const query = `UPDATE groups SET name = $1 WHERE group_id = $2`;
+  const values = [groupName, groupId];
+
+  await pool.query(query, values);
+};
+
 export const insertMember = async (
   groupId: string,
   userId: string,

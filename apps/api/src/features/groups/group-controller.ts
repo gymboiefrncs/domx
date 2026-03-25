@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import {
   addMember,
+  changeGroupName,
   createGroup,
   demoteMember,
   getUserGroups,
@@ -59,6 +60,26 @@ export const handleCreateGroup = async (
       success: result.ok,
       message: result.message,
       data: result.ok ? result.data : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleChangeGroupName = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { groupId } = req.params;
+    const { groupName } = req.body;
+    const requesterId = req.user!.userId;
+
+    const result = await changeGroupName(groupId, groupName, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
     });
   } catch (error) {
     next(error);

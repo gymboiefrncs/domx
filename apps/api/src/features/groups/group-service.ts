@@ -10,6 +10,7 @@ import {
   insertMember,
   updateRole,
   updateSeen,
+  updateGroupName,
 } from "./group-model.js";
 
 import { fetchMemberRole, fetchGroupById } from "../../common/models.js";
@@ -30,6 +31,7 @@ import {
   SOLE_ADMIN_CANNOT_LEAVE,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
   USER_NOT_FOUND,
+  GROUP_NAME_CHANGED,
 } from "../../common/constants.js";
 import type { Result } from "../../common/types.js";
 import {
@@ -87,6 +89,24 @@ export const createGroup = async (
     data: result,
     message: SUCCESSFULLY_CREATED_GROUP_MESSAGE,
   };
+};
+
+export const changeGroupName = async (
+  groupId: string,
+  groupName: string,
+  requester: string,
+) => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+
+  const requesterRole = await fetchMemberRole(groupId, requester);
+  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  if (requesterRole !== "admin")
+    throw new ForbiddenError("Only admins can change the group name");
+
+  await updateGroupName(groupId, groupName);
+
+  return { ok: true, message: GROUP_NAME_CHANGED };
 };
 
 /**

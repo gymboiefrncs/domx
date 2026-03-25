@@ -17,6 +17,7 @@ export const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
 export const INFO_SET_FAILED_MESSAGE = "Failed to set information";
 export const SUCCESSFULLY_CREATED_GROUP_MESSAGE = "Group created successfully.";
 export const MEMBER_ADDED = "Member added to the group.";
+export const GROUP_NAME_CHANGED = "Group name updated successfully.";
 export const MEMBER_KICKED = "Member has been removed from the group.";
 export const MEMBER_PROMOTED = "Member has been promoted to admin.";
 export const MEMBER_DEMOTED = "Member has been demoted to regular member.";

@@ -19,6 +19,8 @@ export const groupRouter: Router = express.Router();
 
 groupRouter.get("/groups", jwtHandler, handleGetGroups);
 
+groupRouter.patch("/groups/:groupId/name", jwtHandler, groupValidator);
+
 groupRouter.patch(
   "/groups/:groupId/seen",
   jwtHandler,

@@ -19,5 +19,10 @@ export const ManageMemberSchema = z.object({
     ),
 });
 
+export const GroupParamsSchema = z.object({
+  groupId: z.string().uuid("Invalid group ID"),
+});
+
 export type GroupInput = z.infer<typeof GroupSchema>;
 export type AddMemberInput = z.infer<typeof ManageMemberSchema>;
+export type GroupParams = z.infer<typeof GroupParamsSchema>;

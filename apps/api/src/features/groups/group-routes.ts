@@ -3,6 +3,7 @@ import { jwtHandler } from "../../middlewares/jwtHandler.js";
 import {
   ManageMemberValidator,
   groupValidator,
+  groupParamsValidator,
 } from "../../middlewares/validate.js";
 import {
   handleAddMember,
@@ -24,7 +25,7 @@ groupRouter.get("/groups", jwtHandler, handleGetGroups);
 groupRouter.get(
   "/groups/:groupId/members",
   jwtHandler,
-  groupValidator,
+  groupParamsValidator,
   handleGetMembers,
 );
 

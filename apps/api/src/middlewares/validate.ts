@@ -13,6 +13,7 @@ import {
 import {
   ManageMemberSchema,
   GroupSchema,
+  GroupParamsSchema,
 } from "../features/groups/group-schema.js";
 import type { ParamsDictionary } from "express-serve-static-core";
 import {
@@ -76,3 +77,4 @@ export const ManageMemberValidator = validateParams(ManageMemberSchema);
 export const postParamsValidator = validateParams(PostParamsSchema);
 export const editPostParamsValidator = validateParams(EditPostParamsSchema);
 export const deletePostParamsValidator = validateParams(DeletePostParamsSchema);
+export const groupParamsValidator = validateParams(GroupParamsSchema);

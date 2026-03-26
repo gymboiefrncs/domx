@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import * as jose from "jose";
-import type { Role } from "../common/types.js";
+import type { Role } from "@domx/shared";
 import { UnauthorizedError } from "../utils/error.js";
 
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);

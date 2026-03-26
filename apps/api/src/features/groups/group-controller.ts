@@ -27,6 +27,7 @@ export const handleGetMembers = async (
       data: result.ok ? result.data : null,
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

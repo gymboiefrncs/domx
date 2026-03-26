@@ -61,11 +61,11 @@ export const GroupSettingsPage = () => {
       <div className="flex flex-col divide-y divide-border overflow-y-auto">
         {/* Group Name */}
         <section className="px-4 py-5">
-          <p className="text-xs text-text-muted uppercase tracking-widest mb-3">
+          <p className="text-[12px] text-text-muted uppercase font-bold mb-3">
             Group Name
           </p>
           {isEditingName ? (
-            <div className="flex items-center gap-2">
+            <div className="flex px-3 items-center gap-2">
               <input
                 ref={inputRef}
                 autoFocus
@@ -96,7 +96,7 @@ export const GroupSettingsPage = () => {
               onClick={handleStartEditing}
               className="flex items-center justify-between w-full group"
             >
-              <span className="text-text text-base">{group.name}</span>
+              <span className="text-text px-3 text-base">{group.name}</span>
               <span className="text-xs text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
                 Edit
               </span>
@@ -107,14 +107,14 @@ export const GroupSettingsPage = () => {
         {/* Members */}
         <section className="px-4 py-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-text-muted uppercase tracking-widest">
-              Members · {members.length}
+            <p className="text-[12px] text-text-muted uppercase font-bold">
+              Members / {members.length}
             </p>
             <button
-              className="text-xs text-primary font-medium hover:opacity-70 transition-opacity"
+              className="text-xs text-primary bg-primary/10 p-2 rounded-lg font-medium hover:opacity-70 transition-opacity"
               onClick={() => setModal(true)}
             >
-              + Add
+              + Add Member
             </button>
           </div>
 
@@ -124,20 +124,21 @@ export const GroupSettingsPage = () => {
                 key={member.display_id}
                 className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-bg-subtle transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className=" flex gap-2 items-center justify-center shrink-0">
-                    <span className="text-xs font-semibold text-primary">
-                      {member.username}
-                    </span>
-                    •
+                <div className="flex gap-3 justify-start items-center w-full">
+                  <div className="w-8 h-8 rounded-full bg-primary/70 flex items-center justify-center text-text text-md font-bold">
+                    {member.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-text">{member.username}</span>
                     <span className="text-xs text-text-muted">
                       {member.display_id}
                     </span>
                   </div>
+                  <span className="text-text-muted">•</span>
+                  <span className="text-xs text-text-muted capitalize">
+                    {member.role}
+                  </span>
                 </div>
-                <span className="text-xs text-text-muted capitalize">
-                  {member.role}
-                </span>
               </li>
             ))}
           </ul>

@@ -1,8 +1,10 @@
 import { useGroups } from "@/context/GroupContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUpdateNameGroup } from "@/hooks/useUpdateNameGroup";
 import { AddMemberModal } from "@/components/AddMemberModal";
+import type { NewMember } from "@domx/shared";
+import { fetchGroupMembers } from "@/services/group";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
@@ -15,6 +17,11 @@ export const GroupSettingsPage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [modal, setModal] = useState<boolean>(false);
+  const [members, setMembers] = useState<NewMember[]>([]);
+
+  useEffect(() => {
+    fetchGroupMembers(id!).then(setMembers);
+  }, [id]);
 
   if (loading) return;
 
@@ -99,9 +106,9 @@ export const GroupSettingsPage = () => {
 
         {/* Members */}
         <section className="px-4 py-5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-xs text-text-muted uppercase tracking-widest">
-              Members · {group.member_count}
+              Members · {members.length}
             </p>
             <button
               className="text-xs text-primary font-medium hover:opacity-70 transition-opacity"
@@ -109,15 +116,41 @@ export const GroupSettingsPage = () => {
             >
               + Add
             </button>
-            {modal && (
-              <AddMemberModal
-                onClose={() => setModal(false)}
-                onSuccess={() => {
-                  setModal(false);
-                }}
-              />
-            )}
           </div>
+
+          <ul className="flex flex-col gap-1">
+            {members.map((member) => (
+              <li
+                key={member.display_id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-bg-subtle transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className=" flex gap-2 items-center justify-center shrink-0">
+                    <span className="text-xs font-semibold text-primary">
+                      {member.username}
+                    </span>
+                    •
+                    <span className="text-xs text-text-muted">
+                      {member.display_id}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-xs text-text-muted capitalize">
+                  {member.role}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {modal && (
+            <AddMemberModal
+              onClose={() => setModal(false)}
+              onSuccess={(newMember: NewMember) => {
+                setModal(false);
+                setMembers((prev) => [...prev, newMember]);
+              }}
+            />
+          )}
         </section>
         {/* Danger Zone */}
         <section className="px-4 py-5">

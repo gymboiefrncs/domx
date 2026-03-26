@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { Props } from "@/shared";
+import type { AddMemberProps } from "@/shared";
 import { useAddMember } from "@/hooks/useAddMember";
 import { useParams } from "react-router-dom";
 
-export const AddMemberModal = ({ onClose, onSuccess }: Props) => {
+export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   const { id } = useParams();
   const [displayId, setDisplayId] = useState<string>("");
   const { handleAddMember, loading } = useAddMember(onSuccess);

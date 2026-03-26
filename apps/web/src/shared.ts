@@ -1,4 +1,4 @@
-import type { GroupDetail, PostDetails } from "@domx/shared";
+import type { GroupDetail, NewMember, PostDetails } from "@domx/shared";
 
 type HookState = {
   loading: boolean;
@@ -40,6 +40,11 @@ export type GroupContextType = {
 export type Props = {
   onClose: () => void;
   onSuccess: () => void;
+};
+
+export type AddMemberProps = {
+  onClose: () => void;
+  onSuccess: (newMember: NewMember) => void;
 };
 
 export type GroupCardProps = {

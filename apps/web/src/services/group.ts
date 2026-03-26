@@ -57,5 +57,20 @@ export const addMemberToGroup = async (groupId: string, displayId: string) => {
   );
   const data = await res.json();
   if (!res.ok) throw new Error(data.errors[0].message);
-  return data;
+  console.log(data);
+  return data.data;
+};
+
+export const fetchGroupMembers = async (groupId: string) => {
+  const res = await fetchWithAuth(
+    `http://localhost:8080/api/v1/groups/${groupId}/members`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.errors[0].message);
+  console.log(groupId);
+  return data.data;
 };

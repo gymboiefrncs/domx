@@ -28,9 +28,18 @@ export const GroupPage = () => {
               My Groups
             </h1>
             <p className="text-xs text-neutral-400 mt-1">
-              {groups.length > 0 ? groups.length : "No"} groups
+              {groups.length > 0 ? groups.length : "No"} group
+              {groups.length !== 1 && "s"}
             </p>
           </div>
+          <button
+            className="bg-error py-2 px-4 rounded-md text-xs text-white"
+            onClick={() => {
+              // TODO: add logout
+            }}
+          >
+            Log out
+          </button>
         </div>
         <div className="flex flex-col gap-2.5">
           {groups.map((group: GroupDetail) => (

@@ -44,5 +44,3 @@ export function App() {
     </>
   );
 }
-
-// TODO: fix types (problem with group and post types)

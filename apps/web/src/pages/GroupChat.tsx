@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
 import { useGroups } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
@@ -17,6 +17,8 @@ export const GroupChatPage = () => {
   const [title, setTitle] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const navigate = useNavigate();
+
   const { handleCreatePost, loadingPost } = useCreatePost((newPost) => {
     addPost({
       ...newPost,
@@ -66,6 +68,9 @@ export const GroupChatPage = () => {
     <div className="flex flex-col h-full bg-neutral-50">
       {/* Header */}
       <div className="flex items-center px-4 py-4 border-b border-neutral-200 bg-neutral-50">
+        <button onClick={() => navigate(-1)} className="text-text mr-4">
+          <span>{"<-"}</span>
+        </button>
         <div>
           <h1 className="text-base font-medium text-neutral-900">
             {group?.name ?? "Group Chat"}
@@ -96,11 +101,18 @@ export const GroupChatPage = () => {
                 key={post.id}
                 className="card px-4 py-3 flex flex-col gap-1 mb-4"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-neutral-900">
-                    {post.username}
-                  </span>
-                  <span className="text-[11px] text-neutral-400">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-primary">
+                        {post.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-text">
+                      {post.username}
+                    </span>
+                  </div>
+                  <span className="text-xs text-text-muted">
                     @{post.display_id}
                   </span>
                 </div>

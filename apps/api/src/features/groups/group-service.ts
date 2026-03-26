@@ -11,6 +11,7 @@ import {
   updateRole,
   updateSeen,
   updateGroupName,
+  fetchGroupMembers,
 } from "./group-model.js";
 
 import { fetchMemberRole, fetchGroupById } from "../../common/models.js";
@@ -40,7 +41,21 @@ import {
   NotFoundError,
 } from "../../utils/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup, GroupDetail } from "@domx/shared";
+import type { CreateGroup, GroupDetail, NewMember } from "@domx/shared";
+
+export const getGroupMembers = async (
+  groupId: string,
+): Promise<Result<NewMember[]>> => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+
+  const members = await fetchGroupMembers(groupId);
+  return {
+    ok: true,
+    message: "Group members fetched successfully.",
+    data: members,
+  };
+};
 
 export const getUserGroups = async (
   userId: string,
@@ -119,7 +134,7 @@ export const addMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<Result<NewMember>> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
 
@@ -128,6 +143,7 @@ export const addMember = async (
 
   const targetUserId = await fetchUserByDisplayId(displayId);
   if (!targetUserId) throw new NotFoundError(USER_NOT_FOUND);
+  let data: NewMember;
   try {
     /**
      * insertMember may throw a unique constraint violation if the user
@@ -136,7 +152,7 @@ export const addMember = async (
      * the global error handler. Any other error is re-thrown as-is.
      */
 
-    await insertMember(groupId, targetUserId);
+    data = await insertMember(groupId, targetUserId);
   } catch (error: unknown) {
     if (
       typeof error === "object" &&
@@ -151,7 +167,7 @@ export const addMember = async (
     throw error;
   }
 
-  return { ok: true, message: MEMBER_ADDED };
+  return { ok: true, data, message: MEMBER_ADDED };
 };
 
 /**

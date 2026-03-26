@@ -4,6 +4,7 @@ import {
   changeGroupName,
   createGroup,
   demoteMember,
+  getGroupMembers,
   getUserGroups,
   kickMember,
   leaveMember,
@@ -11,6 +12,24 @@ import {
   updateLastSeen,
 } from "./group-service.js";
 import type { Params } from "./group-types.js";
+
+export const handleGetMembers = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { groupId } = req.params;
+    const result = await getGroupMembers(groupId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+      data: result.ok ? result.data : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const handleGetGroups = async (
   req: Request,
@@ -99,6 +118,7 @@ export const handleAddMember = async (
     res.status(200).json({
       success: result.ok,
       message: result.message,
+      data: result.ok ? result.data : null,
     });
   } catch (error) {
     next(error);

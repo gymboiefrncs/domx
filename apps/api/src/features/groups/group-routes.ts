@@ -10,6 +10,7 @@ import {
   handleCreateGroup,
   handleDemoteMember,
   handleGetGroups,
+  handleGetMembers,
   handleKickMember,
   handleLeaveGroup,
   handlePromoteMember,
@@ -19,6 +20,13 @@ import {
 export const groupRouter: Router = express.Router();
 
 groupRouter.get("/groups", jwtHandler, handleGetGroups);
+
+groupRouter.get(
+  "/groups/:groupId/members",
+  jwtHandler,
+  groupValidator,
+  handleGetMembers,
+);
 
 groupRouter.patch(
   "/groups/:groupId/name",

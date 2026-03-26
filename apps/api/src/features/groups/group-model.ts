@@ -1,5 +1,5 @@
 import type { Pool, PoolClient } from "pg";
-import type { CreateGroup } from "@domx/shared";
+import type { CreateGroup, NewMember } from "@domx/shared";
 import type { GroupDetail, GroupRole } from "@domx/shared";
 import { pool } from "../../config/db.js";
 
@@ -28,10 +28,20 @@ export const insertMember = async (
   userId: string,
   role: GroupRole = "member",
   con: Pool | PoolClient = pool,
-): Promise<void> => {
-  const query = `INSERT INTO group_members (group_id, user_id, role) VALUES ($1, $2, $3)`;
+): Promise<NewMember> => {
+  const query = `
+    WITH inserted AS (
+      INSERT INTO group_members (group_id, user_id, role)
+      VALUES ($1, $2, $3)
+      RETURNING user_id, role
+    )
+    SELECT i.role, u.display_id, u.username
+    FROM inserted i
+    JOIN users u ON u.id = i.user_id
+  `;
   const values = [groupId, userId, role];
-  await con.query(query, values);
+  const result = await con.query(query, values);
+  return result.rows[0];
 };
 
 export const fetchUserByDisplayId = async (
@@ -124,6 +134,18 @@ export const fetchUserGroups = async (
   `;
 
   const values = [userId];
+  const result = await pool.query(query, values);
+  return result.rows;
+};
+
+export const fetchGroupMembers = async (
+  groupId: string,
+): Promise<NewMember[]> => {
+  const query = `SELECT gm.role, u.display_id, u.username
+  FROM group_members gm
+  JOIN users u on u.id = gm.user_id
+  WHERE gm.group_id = $1`;
+  const values = [groupId];
   const result = await pool.query(query, values);
   return result.rows;
 };

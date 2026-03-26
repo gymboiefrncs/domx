@@ -15,3 +15,9 @@ export type GroupDetail = Group & {
   unread_count: number;
   member_count: number;
 };
+
+export type NewMember = {
+  role: GroupRole;
+  display_id: string;
+  username: string;
+};

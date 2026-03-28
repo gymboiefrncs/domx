@@ -136,7 +136,7 @@ export const GroupChatPage = () => {
         className="border-t border-neutral-200 bg-neutral-50 px-4 py-3"
         onBlur={(e) => {
           /**
-           * If click happens outside of the current target(input area) and , then set isFocused to false
+           * If click happens outside of the current target(input area) and post/title is empty, then set isFocused to false
            * but if the user has typed something in either title or body, then keep the focus
            */
 

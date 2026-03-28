@@ -5,13 +5,23 @@ import { useGroups } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
 import type { GroupDetail } from "@domx/shared";
+import { useLogout } from "@/hooks/useLogout";
 
 export const GroupPage = () => {
   const { groups, loading, loadGroups } = useGroups();
+  const { loadingLogout, handleLogout } = useLogout();
   const [modal, setModal] = useState<boolean>(false);
   const navigate = useNavigate();
 
   if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
+        <SpinnerIcon className="h-4 w-4 spinner" />
+      </div>
+    );
+  }
+
+  if (loadingLogout) {
     return (
       <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
         <SpinnerIcon className="h-4 w-4 spinner" />
@@ -34,8 +44,9 @@ export const GroupPage = () => {
           </div>
           <button
             className="bg-error py-2 px-4 rounded-md text-xs text-white"
-            onClick={() => {
-              // TODO: add logout
+            onClick={async () => {
+              await handleLogout();
+              navigate("/login");
             }}
           >
             Log out

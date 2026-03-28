@@ -57,7 +57,7 @@ export function GroupProvider({
 }
 
 // Custom hook so components don't import useContext and GroupContext separately
-export const useGroups = (): GroupContextType => {
+export const useGroupContext = (): GroupContextType => {
   const ctx = useContext(GroupContext);
   if (!ctx) throw new Error("useGroups must be used within a GroupProvider");
   return ctx;

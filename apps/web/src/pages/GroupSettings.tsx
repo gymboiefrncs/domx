@@ -1,4 +1,4 @@
-import { useGroups } from "@/context/GroupContext";
+import { useGroupContext } from "@/context/GroupContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useUpdateNameGroup } from "@/hooks/useUpdateNameGroup";
@@ -10,7 +10,7 @@ import { useDeleteGroup } from "@/hooks/useDeleteGroup";
 export const GroupSettingsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { groups, loading, updateGroupName, deleteGroup } = useGroups();
+  const { groups, loading, updateGroupName, deleteGroup } = useGroupContext();
   const { handleUpdateName } = useUpdateNameGroup();
   const { loadingDelete, handleDeleteGroup } = useDeleteGroup();
   const group = groups.find((g) => g.group_id === id);

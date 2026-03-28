@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
-import { useGroups } from "@/context/GroupContext";
+import { useGroupContext } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useAuthContext } from "@/context/AuthContext";
@@ -11,7 +11,7 @@ export const GroupChatPage = () => {
   const { id } = useParams();
   const { user } = useAuthContext();
   const { posts, loading, addPost } = usePosts(id!);
-  const { groups } = useGroups();
+  const { groups } = useGroupContext();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");
   const [title, setTitle] = useState<string>("");

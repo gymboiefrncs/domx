@@ -1,14 +1,14 @@
 import { GroupCard } from "../components/GroupCard";
 import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
-import { useGroups } from "@/context/GroupContext";
+import { useGroupContext } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
 import type { GroupDetail } from "@domx/shared";
 import { useLogout } from "@/hooks/useAuth";
 
 export const GroupPage = () => {
-  const { groups, loading, loadGroups } = useGroups();
+  const { groups, loading, loadGroups } = useGroupContext();
   const { loadingLogout, handleLogout } = useLogout();
   const [modal, setModal] = useState<boolean>(false);
   const navigate = useNavigate();

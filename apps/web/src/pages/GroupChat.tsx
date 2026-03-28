@@ -3,13 +3,13 @@ import { usePosts } from "@/hooks/usePost";
 import { useGroups } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { posts, loading, addPost } = usePosts(id!);
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);

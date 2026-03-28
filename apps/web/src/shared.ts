@@ -77,5 +77,9 @@ export type CreatePostState = {
 
 export type GetPostsState = HookState & {
   posts: PostDetails[];
-  addPost: (post: PostDetails) => void;
+  handleCreatePost: (
+    groupId: string,
+    body: string,
+    title: string,
+  ) => Promise<void>;
 };

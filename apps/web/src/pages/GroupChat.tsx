@@ -1,16 +1,13 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
 import React, { useRef, useState } from "react";
-import { useCreatePost } from "@/hooks/useCreatePost";
-import { useAuthContext } from "@/context/AuthContext";
 import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/hooks/useGroups";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
-  const { user } = useAuthContext();
-  const { posts, loading, addPost } = usePosts(id!);
+  const { posts, loading, handleCreatePost } = usePosts(id!);
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");
@@ -18,14 +15,6 @@ export const GroupChatPage = () => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
-
-  const { handleCreatePost, loadingPost } = useCreatePost((newPost) => {
-    addPost({
-      ...newPost,
-      username: user?.username,
-      display_id: user?.display_id,
-    } as PostDetails);
-  });
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setPost(e.target.value);
@@ -180,7 +169,7 @@ export const GroupChatPage = () => {
                 <button
                   className="btn btn-primary p-2"
                   onClick={handleSend}
-                  disabled={loadingPost}
+                  disabled={loading}
                 >
                   <SendIcon className="w-4 h-4" />
                 </button>

@@ -1,4 +1,5 @@
-import { fetchMessages } from "@/services/posts";
+import { useAuthContext } from "@/context/AuthContext";
+import { createPost, fetchMessages } from "@/services/posts";
 import type { GetPostsState } from "@/shared";
 import { getErrorMessage } from "@/utils/error";
 import type { PostDetails } from "@domx/shared";
@@ -6,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const usePosts = (groupId: string): GetPostsState => {
+  const { user } = useAuthContext();
   const [posts, setPosts] = useState<PostDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,9 +26,31 @@ export const usePosts = (groupId: string): GetPostsState => {
     load();
   }, [groupId]);
 
-  const addPost = (post: PostDetails) => {
-    setPosts((prevPosts) => [...prevPosts, post]);
+  const handleCreatePost = async (
+    groupId: string,
+    post: string,
+    title: string,
+  ) => {
+    {
+      setLoading(true);
+      try {
+        const newPost = await createPost(groupId, post, title);
+        setPosts((prevPosts) => [
+          ...prevPosts,
+          {
+            ...newPost,
+            username: user?.username,
+            display_id: user?.display_id,
+          } as PostDetails,
+        ]);
+        toast.success("Message sent!", { duration: 2000 });
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  return { posts, loading, addPost };
+  return { posts, loading, handleCreatePost };
 };

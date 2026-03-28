@@ -35,6 +35,7 @@ export type GroupContextType = {
   loading: boolean;
   loadGroups: () => Promise<void>;
   updateGroupName: (groupId: string, newName: string) => void;
+  deleteGroup: (groupId: string) => void;
 };
 
 export type Props = {
@@ -61,6 +62,9 @@ export type UpdateGroupNameState = HookState & {
 };
 export type AddMemberState = HookState & {
   handleAddMember: (groupId: string, displayId: string) => Promise<void>;
+};
+export type DeleteGroupState = HookState & {
+  handleDeleteGroup: (groupId: string) => Promise<void>;
 };
 
 // -------- POST HOOK TYPES

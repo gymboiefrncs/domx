@@ -74,3 +74,16 @@ export const fetchGroupMembers = async (groupId: string) => {
   console.log(groupId);
   return data.data;
 };
+
+export const deleteGroup = async (groupId: string) => {
+  const res = await fetchWithAuth(
+    `http://localhost:8080/api/v1/groups/${groupId}/delete`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.errors[0].message);
+  return data;
+};

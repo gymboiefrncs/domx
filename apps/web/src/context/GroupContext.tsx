@@ -39,13 +39,17 @@ export function GroupProvider({
     );
   };
 
+  const deleteGroup = (groupId: string) => {
+    setGroups((prev) => prev.filter((g) => g.group_id !== groupId));
+  };
+
   useEffect((): void => {
     loadGroups();
   }, []);
 
   return (
     <GroupContext.Provider
-      value={{ groups, loading, loadGroups, updateGroupName }}
+      value={{ groups, loading, loadGroups, updateGroupName, deleteGroup }}
     >
       {children}
     </GroupContext.Provider>

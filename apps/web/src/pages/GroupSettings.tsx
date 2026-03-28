@@ -5,12 +5,14 @@ import { useUpdateNameGroup } from "@/hooks/useUpdateNameGroup";
 import { AddMemberModal } from "@/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
 import { fetchGroupMembers } from "@/services/group";
+import { useDeleteGroup } from "@/hooks/useDeleteGroup";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { groups, loading, updateGroupName } = useGroups();
+  const { groups, loading, updateGroupName, deleteGroup } = useGroups();
   const { handleUpdateName } = useUpdateNameGroup();
+  const { loadingDelete, handleDeleteGroup } = useDeleteGroup();
   const group = groups.find((g) => g.group_id === id);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
@@ -24,6 +26,7 @@ export const GroupSettingsPage = () => {
   }, [id]);
 
   if (loading) return;
+  if (loadingDelete) return <div>Deleting group...</div>;
 
   // TODO: add 404 page
   if (!group) return <div>Group not found</div>;
@@ -41,6 +44,11 @@ export const GroupSettingsPage = () => {
 
   const handleNameCancel = () => {
     setIsEditingName(false);
+  };
+
+  const handleDeleteGroupCB = async (groupId: string) => {
+    await handleDeleteGroup(groupId);
+    deleteGroup(groupId);
   };
 
   return (
@@ -168,7 +176,7 @@ export const GroupSettingsPage = () => {
                 <button
                   className="flex-1 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
                   onClick={() => {
-                    // TODO: delete group
+                    handleDeleteGroupCB(group.group_id);
                   }}
                 >
                   Yes, delete

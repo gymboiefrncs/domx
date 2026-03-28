@@ -32,15 +32,13 @@ export type serviceResponse = { success: boolean; message: string };
 // --------GROUP TYPES
 export type GroupContextType = {
   groups: GroupDetail[];
-  loading: boolean;
-  loadGroups: () => Promise<void>;
-  updateGroupName: (groupId: string, newName: string) => void;
-  deleteGroup: (groupId: string) => void;
+  setGroupList: (data: GroupDetail[]) => void;
+  renameGroupInList: (groupId: string, newName: string) => void;
+  deleteGroupInList: (groupId: string) => void;
 };
 
 export type Props = {
   onClose: () => void;
-  onSuccess: () => void;
 };
 
 export type AddMemberProps = {

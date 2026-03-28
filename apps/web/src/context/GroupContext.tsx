@@ -1,15 +1,15 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   type JSX,
 } from "react";
+import type { GroupDetail } from "@domx/shared";
+import type { GroupContextType } from "@/shared";
 import { fetchMyGroups } from "@/services/group";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
-import type { GroupDetail } from "@domx/shared";
-import type { GroupContextType } from "@/shared";
 
 const GroupContext = createContext<GroupContextType | null>(null);
 
@@ -19,37 +19,36 @@ export function GroupProvider({
   children: React.ReactNode;
 }): JSX.Element {
   const [groups, setGroups] = useState<GroupDetail[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const loadGroups = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const data = await fetchMyGroups();
-      setGroups(data);
-    } catch (err) {
-      toast.error(getErrorMessage(err), { duration: 2000 });
-    } finally {
-      setLoading(false);
-    }
+  const setGroupList = (data: GroupDetail[]) => {
+    setGroups(data);
   };
-
-  const updateGroupName = (groupId: string, newName: string) => {
+  const renameGroupInList = (groupId: string, newName: string) => {
     setGroups((prev) =>
       prev.map((g) => (g.group_id === groupId ? { ...g, name: newName } : g)),
     );
   };
-
-  const deleteGroup = (groupId: string) => {
+  const deleteGroupInList = (groupId: string) => {
     setGroups((prev) => prev.filter((g) => g.group_id !== groupId));
   };
 
-  useEffect((): void => {
-    loadGroups();
+  // fetch groups on mount
+  useEffect(() => {
+    fetchMyGroups()
+      .then((data) => setGroupList(data))
+      .catch((err) => {
+        toast.error(getErrorMessage(err), { duration: 2000 });
+      });
   }, []);
 
   return (
     <GroupContext.Provider
-      value={{ groups, loading, loadGroups, updateGroupName, deleteGroup }}
+      value={{
+        groups,
+        setGroupList,
+        renameGroupInList,
+        deleteGroupInList,
+      }}
     >
       {children}
     </GroupContext.Provider>

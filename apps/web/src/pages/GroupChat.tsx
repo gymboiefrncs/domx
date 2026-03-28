@@ -1,17 +1,17 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
-import { useGroupContext } from "@/context/GroupContext";
 import React, { useRef, useState } from "react";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useAuthContext } from "@/context/AuthContext";
 import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
+import { useGroups } from "@/hooks/useGroups";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
   const { user } = useAuthContext();
   const { posts, loading, addPost } = usePosts(id!);
-  const { groups } = useGroupContext();
+  const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");
   const [title, setTitle] = useState<string>("");

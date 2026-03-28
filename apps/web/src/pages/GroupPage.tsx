@@ -1,14 +1,14 @@
 import { GroupCard } from "../components/GroupCard";
 import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
-import { useGroupContext } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
 import type { GroupDetail } from "@domx/shared";
 import { useLogout } from "@/hooks/useAuth";
+import { useGroups } from "@/hooks/useGroups";
 
 export const GroupPage = () => {
-  const { groups, loading, loadGroups } = useGroupContext();
+  const { groups, loading } = useGroups();
   const { loadingLogout, handleLogout } = useLogout();
   const [modal, setModal] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -68,15 +68,7 @@ export const GroupPage = () => {
       >
         Create Group
       </button>
-      {modal && (
-        <CreateGroupModal
-          onClose={(): void => setModal(false)}
-          onSuccess={(): void => {
-            loadGroups();
-            setModal(false);
-          }}
-        />
-      )}
+      {modal && <CreateGroupModal onClose={(): void => setModal(false)} />}
     </div>
   );
 };

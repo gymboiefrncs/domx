@@ -1,18 +1,14 @@
-import { useGroupContext } from "@/context/GroupContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { useUpdateNameGroup } from "@/hooks/useUpdateNameGroup";
 import { AddMemberModal } from "@/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
 import { fetchGroupMembers } from "@/services/group";
-import { useDeleteGroup } from "@/hooks/useDeleteGroup";
+import { useGroups } from "@/hooks/useGroups";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { groups, loading, updateGroupName, deleteGroup } = useGroupContext();
-  const { handleUpdateName } = useUpdateNameGroup();
-  const { loadingDelete, handleDeleteGroup } = useDeleteGroup();
+  const { groups, loading, renameGroup, removeGroup } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
@@ -26,7 +22,6 @@ export const GroupSettingsPage = () => {
   }, [id]);
 
   if (loading) return;
-  if (loadingDelete) return <div>Deleting group...</div>;
 
   // TODO: add 404 page
   if (!group) return <div>Group not found</div>;
@@ -37,8 +32,7 @@ export const GroupSettingsPage = () => {
   };
 
   const handleNameConfirm = async () => {
-    await handleUpdateName(group.group_id, nameValue);
-    updateGroupName(group.group_id, nameValue);
+    await renameGroup(group.group_id, nameValue);
     setIsEditingName(false);
   };
 
@@ -47,8 +41,8 @@ export const GroupSettingsPage = () => {
   };
 
   const handleDeleteGroupCB = async (groupId: string) => {
-    await handleDeleteGroup(groupId);
-    deleteGroup(groupId);
+    await removeGroup(groupId);
+    navigate("/groups");
   };
 
   return (

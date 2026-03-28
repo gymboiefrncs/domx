@@ -106,11 +106,11 @@ export const countMembers = async (
 
 export const deleteGroup = async (
   groupId: string,
-  client: PoolClient,
+  con: PoolClient | Pool = pool,
 ): Promise<boolean> => {
   const query = `DELETE FROM groups WHERE group_id = $1`;
   const values = [groupId];
-  const result = await client.query(query, values);
+  const result = await con.query(query, values);
   return (result.rowCount ?? 0) > 0;
 };
 

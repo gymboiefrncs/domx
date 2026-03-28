@@ -16,6 +16,7 @@ import {
   handleLeaveGroup,
   handlePromoteMember,
   handleUpdateSeen,
+  handleDeleteGroup,
 } from "./group-controller.js";
 
 export const groupRouter: Router = express.Router();
@@ -74,4 +75,11 @@ groupRouter.delete(
   jwtHandler,
   ManageMemberValidator,
   handleLeaveGroup,
+);
+
+groupRouter.delete(
+  "/groups/:groupId/delete",
+  jwtHandler,
+  groupParamsValidator,
+  handleDeleteGroup,
 );

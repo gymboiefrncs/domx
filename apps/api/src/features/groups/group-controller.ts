@@ -10,6 +10,7 @@ import {
   leaveMember,
   promoteMember,
   updateLastSeen,
+  deleteGroupById,
 } from "./group-service.js";
 import type { Params } from "./group-types.js";
 
@@ -189,6 +190,23 @@ export const handleLeaveGroup = async (
     const { displayId, groupId } = req.params;
     const requesterId = req.user!.userId;
     const result = await leaveMember(groupId, displayId, requesterId);
+    res.status(200).json({
+      success: result.ok,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleDeleteGroup = async (
+  req: Request<Params>,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { groupId } = req.params;
+    const result = await deleteGroupById(groupId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

@@ -329,3 +329,10 @@ export const demoteMember = async (
 
   return { ok: true, message: MEMBER_DEMOTED };
 };
+
+export const deleteGroupById = async (groupId: string): Promise<Result> => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+  await deleteGroup(groupId);
+  return { ok: true, message: "Group deleted successfully." };
+};

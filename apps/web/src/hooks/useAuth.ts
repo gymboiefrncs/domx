@@ -1,9 +1,50 @@
-import { setInfo, signup, verifyOTP } from "@/services/signup";
-import type { SetInfoState, SignupState, VerifyOTPState } from "@/shared";
-import { getErrorMessage } from "@/utils/error";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login, logout, setInfo, signup, verifyOTP } from "@/services/auth";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/utils/error";
+import type {
+  LoginState,
+  SetInfoState,
+  SignupState,
+  VerifyOTPState,
+} from "@/shared";
+
+export const useLogin = (): LoginState => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  async function handleLogin(email: string, password: string): Promise<void> {
+    setLoading(true);
+    try {
+      await login(email, password);
+      toast.success("Logged in successfully!", { duration: 2000 });
+      navigate("/groups", { replace: true });
+    } catch (err) {
+      toast.error(getErrorMessage(err), { duration: 2000 });
+    } finally {
+      setLoading(false);
+    }
+  }
+  return { handleLogin, loading };
+};
+
+export const useLogout = () => {
+  const [loadingLogout, setLoading] = useState(false);
+
+  async function handleLogout() {
+    setLoading(true);
+    try {
+      await logout();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return { loadingLogout, handleLogout };
+};
 
 export const useSignup = (): SignupState => {
   const [loading, setLoading] = useState<boolean>(false);

@@ -5,7 +5,7 @@ import { useGroups } from "@/context/GroupContext";
 import { useNavigate } from "react-router-dom";
 import { SpinnerIcon } from "@/assets/icons";
 import type { GroupDetail } from "@domx/shared";
-import { useLogout } from "@/hooks/useLogout";
+import { useLogout } from "@/hooks/useAuth";
 
 export const GroupPage = () => {
   const { groups, loading, loadGroups } = useGroups();

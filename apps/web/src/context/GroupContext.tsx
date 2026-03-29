@@ -19,10 +19,12 @@ export function GroupProvider({
   children: React.ReactNode;
 }): JSX.Element {
   const [groups, setGroups] = useState<GroupDetail[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const setGroupList = (data: GroupDetail[]) => {
-    setGroups(data);
+  const addGroup = (data: GroupDetail) => {
+    setGroups((prev) => [data, ...prev]);
   };
+
   const renameGroupInList = (groupId: string, newName: string) => {
     setGroups((prev) =>
       prev.map((g) => (g.group_id === groupId ? { ...g, name: newName } : g)),
@@ -35,17 +37,19 @@ export function GroupProvider({
   // fetch groups on mount
   useEffect(() => {
     fetchMyGroups()
-      .then((data) => setGroupList(data))
+      .then((data) => setGroups(data))
       .catch((err) => {
         toast.error(getErrorMessage(err), { duration: 2000 });
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <GroupContext.Provider
       value={{
         groups,
-        setGroupList,
+        loading,
+        addGroup,
         renameGroupInList,
         deleteGroupInList,
       }}

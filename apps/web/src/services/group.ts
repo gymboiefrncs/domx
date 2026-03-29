@@ -1,7 +1,7 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import type { CreateGroup, GroupDetail } from "@domx/shared";
+import type { GroupDetail } from "@domx/shared";
 
-export const createGroup = async (name: string): Promise<CreateGroup> => {
+export const createGroup = async (name: string): Promise<GroupDetail> => {
   const res = await fetchWithAuth("http://localhost:8080/api/v1/groups", {
     method: "POST",
     headers: {

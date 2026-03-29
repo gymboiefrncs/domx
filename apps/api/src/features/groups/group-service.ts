@@ -82,7 +82,7 @@ export const updateLastSeen = async (
 export const createGroup = async (
   groupName: string,
   userId: string,
-): Promise<Result<CreateGroup>> => {
+): Promise<Result<GroupDetail>> => {
   /**
    * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
    * Inside: return to commit, throw to rollback.

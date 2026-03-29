@@ -32,7 +32,8 @@ export type serviceResponse = { success: boolean; message: string };
 // --------GROUP TYPES
 export type GroupContextType = {
   groups: GroupDetail[];
-  setGroupList: (data: GroupDetail[]) => void;
+  loading: boolean;
+  addGroup: (data: GroupDetail) => void;
   renameGroupInList: (groupId: string, newName: string) => void;
   deleteGroupInList: (groupId: string) => void;
 };

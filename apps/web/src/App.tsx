@@ -10,6 +10,7 @@ import { GroupChatPage } from "./pages/GroupChat";
 import { AuthLayout } from "./layout/AuthLayout";
 import { Toaster } from "sonner";
 import { GroupSettingsPage } from "./pages/GroupSettings";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 export function App() {
   return (
@@ -40,6 +41,7 @@ export function App() {
             </Route>
           </Route>
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

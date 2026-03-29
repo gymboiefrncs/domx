@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { AddMemberModal } from "@/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
@@ -23,8 +23,22 @@ export const GroupSettingsPage = () => {
 
   if (loading) return;
 
-  // TODO: add 404 page
-  if (!group) return <div>Group not found</div>;
+  if (!group)
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-bg rounded-2xl border border-dashed border-slate-200">
+        <h3 className="text-xl font-bold text-text">Group Not Found</h3>
+        <p className="text-text-muted mb-6 max-w-sm text-center">
+          This group may have been deleted, or you might not have permission to
+          view it.
+        </p>
+        <Link
+          to="/groups"
+          className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Browse other groups
+        </Link>
+      </div>
+    );
 
   const handleStartEditing = () => {
     setNameValue(group.name);

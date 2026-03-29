@@ -6,6 +6,13 @@ export const CreateGroupModal = ({ onClose }: Props) => {
   const [name, setName] = useState<string>("");
   const { loading, buildGroup } = useGroups();
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === "Enter" && name.trim() && !loading) {
+      e.preventDefault();
+      buildGroup(name, onClose);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-modal"
@@ -24,6 +31,7 @@ export const CreateGroupModal = ({ onClose }: Props) => {
             placeholder="e.g. Study Group"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyDown}
             autoFocus
           />
         </div>

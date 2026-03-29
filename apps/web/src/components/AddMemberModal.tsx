@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import type { AddMemberProps } from "@/shared";
 import { useParams } from "react-router-dom";
 import { useGroups } from "@/hooks/useGroups";
@@ -9,6 +9,12 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   const { addMember, loading } = useGroups();
 
   if (!id) return;
+  
+  const handleKeyDownn = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && displayId.trim() && !loading) {
+      addMember(onSuccess, id, displayId);
+    }
+  }
 
   return (
     <div

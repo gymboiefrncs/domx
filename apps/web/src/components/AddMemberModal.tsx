@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { AddMemberProps } from "@/shared";
-import { useAddMember } from "@/hooks/useAddMember";
 import { useParams } from "react-router-dom";
+import { useGroups } from "@/hooks/useGroups";
 
 export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   const { id } = useParams();
   const [displayId, setDisplayId] = useState<string>("");
-  const { handleAddMember, loading } = useAddMember(onSuccess);
+  const { addMember, loading } = useGroups();
 
   if (!id) return;
 
@@ -38,7 +38,7 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
           </button>
           <button
             className="btn btn-primary"
-            onClick={(): Promise<void> => handleAddMember(id, displayId)}
+            onClick={(): Promise<void> => addMember(onSuccess, id, displayId)}
             disabled={!displayId.trim() || loading}
           >
             {loading ? "Adding..." : "Add Member"}

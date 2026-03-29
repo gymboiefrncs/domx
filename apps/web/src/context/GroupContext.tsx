@@ -30,8 +30,17 @@ export function GroupProvider({
       prev.map((g) => (g.group_id === groupId ? { ...g, name: newName } : g)),
     );
   };
+
   const deleteGroupInList = (groupId: string) => {
     setGroups((prev) => prev.filter((g) => g.group_id !== groupId));
+  };
+
+  const incrementMemberCount = (groupId: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.group_id === groupId ? { ...g, member_count: g.member_count + 1 } : g,
+      ),
+    );
   };
 
   // fetch groups on mount
@@ -52,6 +61,7 @@ export function GroupProvider({
         addGroup,
         renameGroupInList,
         deleteGroupInList,
+        incrementMemberCount,
       }}
     >
       {children}

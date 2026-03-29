@@ -33,9 +33,9 @@ export const insertMember = async (
     WITH inserted AS (
       INSERT INTO group_members (group_id, user_id, role)
       VALUES ($1, $2, $3)
-      RETURNING user_id, role
+      RETURNING user_id, role, group_id
     )
-    SELECT i.role, u.display_id, u.username
+    SELECT i.role, i.group_id, u.display_id, u.username
     FROM inserted i
     JOIN users u ON u.id = i.user_id
   `;

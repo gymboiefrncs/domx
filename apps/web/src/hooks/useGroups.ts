@@ -1,11 +1,23 @@
-import { changeGroupName, deleteGroup, createGroup } from "@/services/group";
+import {
+  changeGroupName,
+  deleteGroup,
+  createGroup,
+  addMemberToGroup,
+} from "@/services/group";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
 import { useGroupContext } from "@/context/GroupContext";
+import type { NewMember } from "@domx/shared";
 
 export const useGroups = () => {
-  const { groups, addGroup, renameGroupInList, deleteGroupInList, loading } =
-    useGroupContext();
+  const {
+    groups,
+    addGroup,
+    renameGroupInList,
+    deleteGroupInList,
+    loading,
+    incrementMemberCount,
+  } = useGroupContext();
 
   const renameGroup = async (groupId: string, newName: string) => {
     try {
@@ -35,11 +47,27 @@ export const useGroups = () => {
     }
   };
 
+  const addMember = async (
+    onSuccess: (newMember: NewMember) => void,
+    groupId: string,
+    displayId: string,
+  ): Promise<void> => {
+    try {
+      const newMember = await addMemberToGroup(groupId, displayId);
+      incrementMemberCount(groupId);
+
+      onSuccess(newMember);
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+    }
+  };
+
   return {
     groups,
     loading,
     renameGroup,
     removeGroup,
     buildGroup,
+    addMember,
   };
 };

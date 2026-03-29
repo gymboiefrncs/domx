@@ -20,4 +20,5 @@ export type NewMember = {
   role: GroupRole;
   display_id: string;
   username: string;
+  group_id: string;
 };

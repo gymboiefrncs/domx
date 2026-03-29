@@ -31,24 +31,40 @@ export const usePosts = (groupId: string): GetPostsState => {
     post: string,
     title: string,
   ) => {
-    {
-      setLoading(true);
-      try {
-        const newPost = await createPost(groupId, post, title);
-        setPosts((prevPosts) => [
-          ...prevPosts,
-          {
-            ...newPost,
-            username: user?.username,
-            display_id: user?.display_id,
-          } as PostDetails,
-        ]);
-        toast.success("Message sent!", { duration: 2000 });
-      } catch (error) {
-        toast.error(getErrorMessage(error));
-      } finally {
-        setLoading(false);
-      }
+    const optimisticPost: PostDetails = {
+      id: crypto.randomUUID(),
+      body: post,
+      title: title,
+      user_id: crypto.randomUUID(),
+      group_id: groupId,
+      username: user?.username ?? "",
+      display_id: user?.display_id ?? "",
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    // add the optimistic post to the ui immediately. this gives user instant feeback
+    setPosts((prev) => [...prev, optimisticPost]);
+
+    try {
+      const newPost = await createPost(groupId, post, title);
+      setPosts((prevPosts) =>
+        // replace the optimistic post with the actual post from the server
+        prevPosts.map((p) =>
+          p.id === optimisticPost.id
+            ? {
+                ...newPost,
+                username: user?.username ?? "",
+                display_id: user?.display_id ?? "",
+              }
+            : p,
+        ),
+      );
+      toast.success("Message sent!", { duration: 2000 });
+    } catch (error) {
+      // remove the optimistic post if the API call fails
+      setPosts((prev) => prev.filter((p) => p.id !== optimisticPost.id));
+      toast.error(getErrorMessage(error));
     }
   };
 

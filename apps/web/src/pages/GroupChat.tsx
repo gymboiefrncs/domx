@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePosts } from "@/hooks/usePost";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/hooks/useGroups";
@@ -15,6 +15,11 @@ export const GroupChatPage = () => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [posts]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     setPost(e.target.value);
@@ -76,7 +81,6 @@ export const GroupChatPage = () => {
           </Link>
         </div>
       </div>
-
       {/* Posts area */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {posts.length === 0 ? (
@@ -118,8 +122,8 @@ export const GroupChatPage = () => {
             ))}
           </ul>
         )}
+        <div ref={bottomRef} />
       </div>
-
       {/* Input area */}
       <div
         className="border-t border-neutral-200 bg-neutral-50 px-4 py-3"

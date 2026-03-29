@@ -149,6 +149,7 @@ export const GroupChatPage = () => {
                 placeholder="Title"
                 required
                 value={title}
+                onKeyDown={handleKeyDown}
                 onChange={(e) => setTitle(e.target.value)}
                 rows={1}
                 className="w-full text-sm font-medium text-text bg-transparent placeholder:text-text-muted resize-none outline-none"

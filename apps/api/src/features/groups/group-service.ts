@@ -99,9 +99,18 @@ export const createGroup = async (
     },
   );
 
+  const groupDetail: GroupDetail = {
+    group_id: result.group_id,
+    name: groupName,
+    member_count: 1,
+    unread_count: 0,
+    role: "admin",
+    last_seen_at: new Date(),
+  };
+
   return {
     ok: true,
-    data: result,
+    data: groupDetail,
     message: SUCCESSFULLY_CREATED_GROUP_MESSAGE,
   };
 };

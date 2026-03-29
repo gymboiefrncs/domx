@@ -9,12 +9,12 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   const { addMember, loading } = useGroups();
 
   if (!id) return;
-  
-  const handleKeyDownn = (e: React.KeyboardEvent<HTMLInputElement>) => {
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && displayId.trim() && !loading) {
       addMember(onSuccess, id, displayId);
     }
-  }
+  };
 
   return (
     <div
@@ -34,6 +34,7 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
             placeholder="e.g. 1d24a3"
             value={displayId}
             onChange={(e) => setDisplayId(e.target.value)}
+            onKeyDown={handleKeyDown}
             autoFocus
           />
         </div>

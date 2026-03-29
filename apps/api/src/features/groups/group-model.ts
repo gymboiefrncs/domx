@@ -130,7 +130,7 @@ export const fetchUserGroups = async (
     LEFT JOIN posts p ON p.group_id = g.group_id
     WHERE gm.user_id = $1
     GROUP BY g.group_id, g.name, gm.role, gm.last_seen_at
-    ORDER BY g.name
+    ORDER BY g.created_at DESC
   `;
 
   const values = [userId];

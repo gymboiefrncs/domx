@@ -4,13 +4,14 @@ import {
   fetchUserByEmail,
   fetchUserById,
   createToken,
-} from "./auth-model.js";
-import { fetchUserForSignup } from "@api/common/models.js";
-import type { SignupSchema, LoginSchema } from "./auth-schema.js";
+  fetchUserForSignup,
+} from "./auth.repositories.js";
+import type { SignupSchema, LoginSchema } from "./auth.schemas.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "@api/utils/error.js";
-import type { RegistrationResult, Tokens, Result } from "@api/common/types.js";
+import type { RegistrationResult, Tokens } from "./auth.types.js";
+import type { Result } from "@api/common/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
@@ -27,7 +28,7 @@ import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 import { withTransaction } from "@api/config/transaction.js";
-import { LOGOUT_MESSAGE } from "@api/common/constants.js";
+import { LOGOUT_MESSAGE } from "./auth.constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 

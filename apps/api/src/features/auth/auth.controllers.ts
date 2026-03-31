@@ -4,11 +4,11 @@ import {
   loginUser,
   rotateTokens,
   logoutUser,
-} from "./auth-service.js";
-import { setInfo } from "./set-info.js";
+} from "./auth.services.js";
+import { setInfo } from "./auth.setInfo.js";
 import { setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "@api/utils/error.js";
-import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/common/constants.js";
+import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import type { Role } from "@domx/shared";
 

@@ -1,8 +1,8 @@
-import { authRouter } from "@api/features/auth/auth-routes.js";
-import { groupRouter } from "@api/features/groups/group-routes.js";
-import { postRouter } from "@api/features/posts/post-routes.js";
-import { verificationRouter } from "@api/features/verification/verification-routes.js";
-import { profileRouter } from "@api/features/profile/profile-routes.js";
+import { authRouter } from "@api/features/auth/auth.routes.js";
+import { groupRouter } from "@api/features/groups/group.routes.js";
+import { postRouter } from "@api/features/posts/post.routes.js";
+import { verificationRouter } from "@api/features/verification/verification.routes.js";
+import { profileRouter } from "@api/features/profile/profile.routes.js";
 import express, { type Router } from "express";
 
 export const routes: Router = express.Router();

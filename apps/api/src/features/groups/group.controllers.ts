@@ -11,14 +11,14 @@ import {
   promoteMember,
   updateLastSeen,
   deleteGroupById,
-} from "./group-service.js";
-import type { Params } from "./group-types.js";
+} from "./group.services.js";
+import type { Params } from "./group.types.js";
 
 export const handleGetMembers = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId } = req.params;
     const result = await getGroupMembers(groupId);
@@ -91,7 +91,7 @@ export const handleChangeGroupName = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId } = req.params;
     const { groupName } = req.body;
@@ -203,7 +203,7 @@ export const handleDeleteGroup = async (
   req: Request<Params>,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   try {
     const { groupId } = req.params;
     const result = await deleteGroupById(groupId);

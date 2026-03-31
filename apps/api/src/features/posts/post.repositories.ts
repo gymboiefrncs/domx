@@ -1,6 +1,6 @@
-import { pool } from "../../config/db.js";
+import { pool } from "@api/config/db.js";
 import type { Post, PostDetails } from "@domx/shared";
-import type { EditPost } from "./post-types.js";
+import type { EditPost } from "./post.types.js";
 
 export const fetchAllPostsByGroupId = async (
   groupId: string,

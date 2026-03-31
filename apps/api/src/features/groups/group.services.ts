@@ -1,4 +1,4 @@
-import { withTransaction } from "../../config/transaction.js";
+import { withTransaction } from "@api/config/transaction.js";
 import {
   countMembers,
   deleteGroup,
@@ -12,10 +12,10 @@ import {
   updateSeen,
   updateGroupName,
   fetchGroupMembers,
-} from "./group-model.js";
-
-import { fetchMemberRole, fetchGroupById } from "../../common/models.js";
-import { pool } from "../../config/db.js";
+  fetchMemberRole,
+  fetchGroupById,
+} from "./group.repositories.js";
+import { pool } from "@api/config/db.js";
 import {
   ALREADY_A_MEMBER,
   ALREADY_AN_ADMIN,
@@ -31,15 +31,15 @@ import {
   SOLE_ADMIN_CANNOT_DEMOTE,
   SOLE_ADMIN_CANNOT_LEAVE,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
-  USER_NOT_FOUND,
   GROUP_NAME_CHANGED,
-} from "../../common/constants.js";
-import type { Result } from "../../common/types.js";
+} from "./group.constants.js";
+import { USER_NOT_FOUND } from "@api/features/profile/index.js";
+import type { Result } from "@api/common/types.js";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
-} from "../../utils/error.js";
+} from "@api/utils/error.js";
 import { resolveGroupAction } from "./group-helper.js";
 import type { CreateGroup, GroupDetail, NewMember } from "@domx/shared";
 
@@ -119,7 +119,7 @@ export const changeGroupName = async (
   groupId: string,
   groupName: string,
   requester: string,
-) => {
+): Promise<Result> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
 

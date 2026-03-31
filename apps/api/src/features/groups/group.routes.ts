@@ -1,10 +1,10 @@
 import express, { type Router } from "express";
-import { jwtHandler } from "../../middlewares/jwtHandler.js";
+import { jwtHandler } from "@api/middlewares/jwtHandler.js";
 import {
   ManageMemberValidator,
   groupValidator,
   groupParamsValidator,
-} from "../../middlewares/validate.js";
+} from "@api/middlewares/validate.js";
 import {
   handleAddMember,
   handleChangeGroupName,
@@ -17,7 +17,7 @@ import {
   handlePromoteMember,
   handleUpdateSeen,
   handleDeleteGroup,
-} from "./group-controller.js";
+} from "./group.controllers.js";
 
 export const groupRouter: Router = express.Router();
 

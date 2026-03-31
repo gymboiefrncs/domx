@@ -1,5 +1,5 @@
-import type { RegistrationResult } from "@api/common/types.js";
-import { EMAIL_MESSAGE } from "@api/common/constants.js";
+import type { RegistrationResult } from "../auth.types.js";
+import { EMAIL_MESSAGE } from "@api/features/verification/index.js";
 
 export const handleVerifiedUser = (email: string): RegistrationResult => {
   return {

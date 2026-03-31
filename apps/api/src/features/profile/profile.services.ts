@@ -1,5 +1,5 @@
 import { NotFoundError } from "@api/utils/error.js";
-import { getProfile } from "./profile-model.js";
+import { getProfile } from "./profile.repositories.js";
 import type { Result } from "@api/common/types.js";
 import type { User } from "@domx/shared";
 

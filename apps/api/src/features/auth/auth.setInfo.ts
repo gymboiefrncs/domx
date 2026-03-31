@@ -1,8 +1,9 @@
 import {
   INFO_SET_FAILED_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
-} from "@api/common/constants.js";
-import type { Result, SetInfoResult } from "@api/common/types.js";
+} from "./auth.constants.js";
+import type { SetInfoResult } from "./auth.types.js";
+import type { Result } from "@api/common/types.js";
 import { pool } from "@api/config/db.js";
 import { withTransaction } from "@api/config/transaction.js";
 import { generateDisplayId } from "@api/utils/generateDisplayId.js";
@@ -10,15 +11,16 @@ import {
   createDisplayId,
   updateUsername,
   updateUserPassword,
-} from "./auth-model.js";
+} from "./auth.repositories.js";
 import bcrypt from "bcrypt";
 import type { UserInfo } from "./auth.types.js";
+import type { Role } from "@domx/shared";
 
 export const setInfo = async ({
   userId,
   username,
   password,
-}: UserInfo): Promise<Result> => {
+}: UserInfo): Promise<Result<Role>> => {
   const hashedPassword = await bcrypt.hash(
     password,
     process.env.NODE_ENV === "production" ? 12 : 10,

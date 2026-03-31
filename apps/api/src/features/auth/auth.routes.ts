@@ -6,7 +6,7 @@ import {
   rotateTokensHandler,
   setInfoHandler,
   signupHandler,
-} from "./auth-controller.js";
+} from "./auth.controllers.js";
 import {
   loginValidator,
   infoValidator,

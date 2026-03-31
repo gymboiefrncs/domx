@@ -4,7 +4,7 @@ import crypto from "crypto";
 import {
   resendOtp,
   validateOtp,
-} from "@api/features/verification/verification-service.js";
+} from "@api/features/verification/verification.services.js";
 import {
   COOLDOWN_MESSAGE,
   OTP_MESSAGE_FAIL,

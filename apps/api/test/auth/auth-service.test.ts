@@ -1,14 +1,14 @@
 import { describe, vi, it, expect, beforeEach } from "vitest";
-import { registerUser } from "@api/features/auth/auth-service.js";
+import { registerUser } from "@api/features/auth/auth.services.js";
 import { pool } from "@api/config/db.js";
-import { fetchUserByEmail } from "../../src/features/auth/auth-model.js";
+import { fetchUserByEmail } from "../../src/features/auth/auth.repositories.js";
 import {
   EMAIL_MESSAGE,
   COOLDOWN_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
   INFO_SET_FAILED_MESSAGE,
 } from "@api/common/constants.js";
-import { setInfo } from "../../src/features/auth/set-info.js";
+import { setInfo } from "../../src/features/auth/auth.setInfo.js";
 import bcrypt from "bcrypt";
 
 vi.mock("@api/src/utils/sendEmail.ts", () => ({

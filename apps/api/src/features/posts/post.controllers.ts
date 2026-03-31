@@ -4,8 +4,8 @@ import {
   editPost,
   getGroupPosts,
   removePost,
-} from "./post-service.js";
-import type { PostParams } from "./post-types.js";
+} from "./post.services.js";
+import type { PostParams } from "./post.types.js";
 
 export const handleGetPosts = async (
   req: Request<{ groupId: string }>,

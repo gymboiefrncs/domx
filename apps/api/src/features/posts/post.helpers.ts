@@ -1,6 +1,9 @@
-import { fetchGroupById, fetchMemberRole } from "../../common/models.js";
-import { NotFoundError, ForbiddenError } from "../../utils/error.js";
-import { GROUP_NOT_FOUND, NOT_A_GROUP_MEMBER } from "../../common/constants.js";
+import { fetchGroupById, fetchMemberRole } from "@api/features/groups/index.js";
+import { NotFoundError, ForbiddenError } from "@api/utils/error.js";
+import {
+  GROUP_NOT_FOUND,
+  NOT_A_GROUP_MEMBER,
+} from "@api/features/groups/index.js";
 import type { GroupRole } from "@domx/shared";
 
 export const performChecks = async (

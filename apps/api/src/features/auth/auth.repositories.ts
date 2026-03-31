@@ -1,6 +1,6 @@
-import type { SignupSchema } from "./auth-schema.js";
+import type { SignupSchema } from "./auth.schemas.js";
 import { pool } from "../../config/db.js";
-import type { UserRole, LoginUser, NewUser } from "./auth.types.js";
+import type { UserRole, LoginUser, NewUser, SignupUser } from "./auth.types.js";
 import type { Pool, PoolClient } from "pg";
 import type { Role } from "@domx/shared";
 
@@ -111,6 +111,22 @@ export const createDisplayId = async (
   const result = await client.query(query, values);
 
   return result.rows[0]?.role ?? null;
+};
+
+export const fetchUserForSignup = async (
+  email: string,
+  client: PoolClient,
+): Promise<SignupUser | undefined> => {
+  const query = `
+    SELECT id, is_verified, email, username, password
+    FROM users 
+    WHERE email = $1 
+    FOR UPDATE
+  `;
+  const values = [email];
+
+  const result = await client.query<SignupUser>(query, values);
+  return result.rows[0];
 };
 
 export const updateUsername = async (

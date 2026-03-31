@@ -1,20 +1,20 @@
-import { pool } from "../../config/db.js";
+import { pool } from "@api/config/db.js";
 import {
   fetchOtp,
   incrementRetries,
   markUserAsVerified,
-} from "./verification-model.js";
-import {
   deleteOtp,
   getLatestOTP,
   createSignupOtp,
-  fetchUserForSignup,
-} from "@api/common/models.js";
+} from "./verification.repositories.js";
+import { fetchUserForSignup } from "@api/features/auth/index.js";
 import {
   OTP_MESSAGE_FAIL,
   OTP_MESSAGE_SUCCESS,
   RESEND_OTP_MESSAGE,
-} from "@api/common/constants.js";
+  COOLDOWN_MESSAGE,
+  OTP_COOLDOWN_MS,
+} from "./verification.constants.js";
 import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
@@ -22,7 +22,6 @@ import {
 } from "@api/utils/sendEmail.js";
 import { generateOTP } from "@api/utils/generateOTP.js";
 import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
-import { COOLDOWN_MESSAGE, OTP_COOLDOWN_MS } from "@api/common/constants.js";
 import { withTransaction } from "@api/config/transaction.js";
 import type {
   OtpPayload,

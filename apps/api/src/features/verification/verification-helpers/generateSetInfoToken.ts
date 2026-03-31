@@ -1,8 +1,5 @@
 import * as jose from "jose";
-
-const SET_INFO_SECRET = new TextEncoder().encode(
-  process.env.SET_PASSWORD_TOKEN!,
-);
+import { SET_INFO_SECRET } from "../verification.constants.js";
 
 export const generateSetInfoToken = async (userId: string): Promise<string> => {
   const token = await new jose.SignJWT({

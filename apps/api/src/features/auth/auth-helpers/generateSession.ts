@@ -1,10 +1,10 @@
-import type { Tokens } from "@api/common/types.js";
-import { createToken } from "../auth-model.js";
+import type { Tokens } from "../auth.types.js";
+import { createToken } from "../auth.repositories.js";
 import type { Role } from "@domx/shared";
 import {
   generateTokens,
   getRefreshTokenExpiry,
-} from "../../../utils/generateToken.js";
+} from "@api/utils/generateToken.js";
 import crypto from "crypto";
 
 export const generateSession = async (

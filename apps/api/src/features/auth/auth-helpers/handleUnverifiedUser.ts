@@ -2,15 +2,13 @@ import {
   getLatestOTP,
   deleteOtp,
   createSignupOtp,
-} from "@api/common/models.js";
-import type { RegistrationResult } from "@api/common/types.js";
+  COOLDOWN_MESSAGE,
+  OTP_COOLDOWN_MS,
+  EMAIL_MESSAGE,
+} from "@api/features/verification/index.js";
+import type { RegistrationResult } from "../auth.types.js";
 import type { SignupUser } from "../auth.types.js";
 import type { PoolClient } from "pg";
-import {
-  COOLDOWN_MESSAGE,
-  EMAIL_MESSAGE,
-  OTP_COOLDOWN_MS,
-} from "@api/common/constants.js";
 
 /**
  * Handles signup attempts for an existing but unverified user.

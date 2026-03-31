@@ -1,17 +1,17 @@
 import express, { type Router } from "express";
-import { jwtHandler } from "../../middlewares/jwtHandler.js";
+import { jwtHandler } from "@api/middlewares/jwtHandler.js";
 import {
   postValidator,
   postParamsValidator,
   editPostParamsValidator,
   deletePostParamsValidator,
-} from "../../middlewares/validate.js";
+} from "@api/middlewares/validate.js";
 import {
   handleCreatePost,
   handleDeletePost,
   handleEditPost,
   handleGetPosts,
-} from "./post-controller.js";
+} from "./post.controllers.js";
 
 export const postRouter: Router = express.Router();
 

@@ -1,7 +1,8 @@
 import type { Response } from "express";
-
-const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
-const ACCESS_TOKEN_MAX_AGE = 5 * 60 * 1000;
+import {
+  REFRESH_TOKEN_MAX_AGE,
+  ACCESS_TOKEN_MAX_AGE,
+} from "../auth.constants.js";
 
 export const setCookies = (
   refreshToken: string,

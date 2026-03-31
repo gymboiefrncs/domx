@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { validateOtp, resendOtp } from "./verification-service.js";
-import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/common/constants.js";
+import { validateOtp, resendOtp } from "./verification.services.js";
+import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/features/auth/index.js";
 
 export const verificationHandler = async (
   req: Request,

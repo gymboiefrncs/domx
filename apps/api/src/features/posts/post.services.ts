@@ -5,17 +5,17 @@ import {
   POST_DELETED,
   POST_EDITED,
   POST_NOT_FOUND,
-} from "../../common/constants.js";
-import type { Result } from "../../common/types.js";
-import { ForbiddenError, NotFoundError } from "../../utils/error.js";
+} from "./post.constants.js";
+import type { Result } from "@api/common/types.js";
+import { ForbiddenError, NotFoundError } from "@api/utils/error.js";
 import {
   deletePost,
   fetchAllPostsByGroupId,
   fetchPostById,
   insertPost,
   updatePost,
-} from "./post-model.js";
-import { performChecks } from "./post-helpers.js";
+} from "./post.repositories.js";
+import { performChecks } from "./post.helpers.js";
 import type { Post, PostDetails } from "@domx/shared";
 
 /**

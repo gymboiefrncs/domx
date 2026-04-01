@@ -45,9 +45,13 @@ import type { CreateGroup, GroupDetail, NewMember } from "@domx/shared";
 
 export const getGroupMembers = async (
   groupId: string,
+  requesterId: string,
 ): Promise<Result<NewMember[]>> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+
+  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
 
   const members = await fetchGroupMembers(groupId);
   return {
@@ -224,10 +228,10 @@ export const kickMember = async (
  */
 export const leaveMember = async (
   groupId: string,
-  displayId: string,
   requesterId: string,
 ): Promise<Result> => {
-  const { userId } = await resolveGroupAction(groupId, displayId, requesterId);
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
 
   return withTransaction(pool, async (client) => {
     /**
@@ -244,14 +248,14 @@ export const leaveMember = async (
 
     /**
      * Lock the entire group_members set for this group to get an accurate member count.
-     * This revent race conditions where multiple members leave at the same time
+     * This prevents race conditions where multiple members leave at the same time
      * and the count becomes inaccurate,
      */
     const memberCount = await countMembers(groupId, client);
 
     // Last member: remove them regardless of their role and delete the group
     if (memberCount === 1) {
-      await deleteMember(userId, groupId, client);
+      await deleteMember(requesterId, groupId, client);
       await deleteGroup(groupId, client);
       return {
         ok: true,
@@ -265,12 +269,16 @@ export const leaveMember = async (
        * Prevents two admins from both seeing each other as "other admins"
        * and both leaving, which would leave the group without any admins.
        */
-      const otherAdminsExist = await hasOtherAdmins(groupId, userId, client);
+      const otherAdminsExist = await hasOtherAdmins(
+        groupId,
+        requesterId,
+        client,
+      );
       if (!otherAdminsExist) throw new ConflictError(SOLE_ADMIN_CANNOT_LEAVE);
     }
 
     // Regular members (or admins with co-admins) can leave freely
-    const deleted = await deleteMember(userId, groupId, client);
+    const deleted = await deleteMember(requesterId, groupId, client);
     if (!deleted) throw new NotFoundError(USER_NOT_FOUND);
 
     return { ok: true, message: LEFT_GROUP };
@@ -339,9 +347,20 @@ export const demoteMember = async (
   return { ok: true, message: MEMBER_DEMOTED };
 };
 
-export const deleteGroupById = async (groupId: string): Promise<Result> => {
+export const deleteGroupById = async (
+  groupId: string,
+  requesterId: string,
+): Promise<Result> => {
   const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+  if (!group) {
+    return { ok: true, message: "Group already deleted." };
+  }
+
+  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  if (requesterRole !== "admin")
+    throw new ForbiddenError("Only admins can delete the group");
+
   await deleteGroup(groupId);
   return { ok: true, message: "Group deleted successfully." };
 };

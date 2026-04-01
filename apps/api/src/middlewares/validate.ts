@@ -73,7 +73,7 @@ const validateParams =
     next();
   };
 
-export const ManageMemberValidator = validateParams(ManageMemberSchema);
+export const manageMemberValidator = validateParams(ManageMemberSchema);
 export const postParamsValidator = validateParams(PostParamsSchema);
 export const editPostParamsValidator = validateParams(EditPostParamsSchema);
 export const deletePostParamsValidator = validateParams(DeletePostParamsSchema);

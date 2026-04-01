@@ -1,4 +1,5 @@
 import express, { type Router } from "express";
+import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/middlewares/jwtHandler.js";
 import {
   postValidator,
@@ -14,6 +15,16 @@ import {
 } from "./post.controllers.js";
 
 export const postRouter: Router = express.Router();
+
+const postLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 120 : 1000,
+  message: "Too many requests, please try again in a minute",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+postRouter.use(postLimiter);
 
 postRouter.get(
   "/groups/:groupId/posts",

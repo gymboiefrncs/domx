@@ -20,15 +20,15 @@ export const handleGetMembers = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userId = req.user!.userId;
     const { groupId } = req.params;
-    const result = await getGroupMembers(groupId);
+    const result = await getGroupMembers(groupId, userId);
     res.status(200).json({
       success: result.ok,
       message: result.message,
       data: result.ok ? result.data : null,
     });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
@@ -187,9 +187,9 @@ export const handleLeaveGroup = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { displayId, groupId } = req.params;
+    const { groupId } = req.params;
     const requesterId = req.user!.userId;
-    const result = await leaveMember(groupId, displayId, requesterId);
+    const result = await leaveMember(groupId, requesterId);
     res.status(200).json({
       success: result.ok,
       message: result.message,
@@ -206,7 +206,8 @@ export const handleDeleteGroup = async (
 ): Promise<void> => {
   try {
     const { groupId } = req.params;
-    const result = await deleteGroupById(groupId);
+    const requesterId = req.user!.userId;
+    const result = await deleteGroupById(groupId, requesterId);
     res.status(200).json({
       success: result.ok,
       message: result.message,

@@ -1,11 +1,8 @@
-import type { GroupRoles } from "./group.types.js";
-import { fetchGroupById, fetchMemberRole } from "../../common/models.js";
+import type { GroupRole } from "@domx/shared";
+import { fetchGroupById, fetchMemberRole } from "./group.repositories.js";
 import { ForbiddenError, NotFoundError } from "../../utils/error.js";
-import {
-  GROUP_NOT_FOUND,
-  NOT_A_GROUP_MEMBER,
-  USER_NOT_FOUND,
-} from "../../common/constants.js";
+import { GROUP_NOT_FOUND, NOT_A_GROUP_MEMBER } from "./group.constants.js";
+import { USER_NOT_FOUND } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";
 
 /**
@@ -19,8 +16,8 @@ export const resolveGroupAction = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-  requireRole?: GroupRoles,
-): Promise<{ userId: string; requesterRole: GroupRoles }> => {
+  requireRole?: GroupRole,
+): Promise<{ userId: string; requesterRole: GroupRole }> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
 

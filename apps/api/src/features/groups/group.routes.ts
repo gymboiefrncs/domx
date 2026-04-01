@@ -1,7 +1,8 @@
 import express, { type Router } from "express";
+import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/middlewares/jwtHandler.js";
 import {
-  ManageMemberValidator,
+  manageMemberValidator,
   groupValidator,
   groupParamsValidator,
 } from "@api/middlewares/validate.js";
@@ -20,6 +21,16 @@ import {
 } from "./group.controllers.js";
 
 export const groupRouter: Router = express.Router();
+
+const groupLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 120 : 1000,
+  message: "Too many requests, please try again in a minute",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+groupRouter.use(groupLimiter);
 
 groupRouter.get("/groups", jwtHandler, handleGetGroups);
 
@@ -40,7 +51,7 @@ groupRouter.patch(
 groupRouter.patch(
   "/groups/:groupId/seen",
   jwtHandler,
-  groupValidator,
+  groupParamsValidator,
   handleUpdateSeen,
 );
 
@@ -48,37 +59,52 @@ groupRouter.post("/groups", jwtHandler, groupValidator, handleCreateGroup);
 groupRouter.post(
   "/groups/:groupId/add/:displayId",
   jwtHandler,
-  ManageMemberValidator,
+  manageMemberValidator,
+  handleAddMember,
+);
+
+groupRouter.post(
+  "/groups/:groupId/members/:displayId",
+  jwtHandler,
+  manageMemberValidator,
   handleAddMember,
 );
 groupRouter.delete(
   "/groups/:groupId/kick/:displayId",
   jwtHandler,
-  ManageMemberValidator,
+  manageMemberValidator,
+  handleKickMember,
+);
+
+// REST alias kept alongside legacy route for compatibility
+groupRouter.delete(
+  "/groups/:groupId/members/:displayId",
+  jwtHandler,
+  manageMemberValidator,
   handleKickMember,
 );
 groupRouter.patch(
   "/groups/:groupId/promote/:displayId",
   jwtHandler,
-  ManageMemberValidator,
+  manageMemberValidator,
   handlePromoteMember,
 );
 groupRouter.patch(
   "/groups/:groupId/demote/:displayId",
   jwtHandler,
-  ManageMemberValidator,
+  manageMemberValidator,
   handleDemoteMember,
 );
 
 groupRouter.delete(
-  "/groups/:groupId/leave/:displayId",
+  "/groups/:groupId/leave",
   jwtHandler,
-  ManageMemberValidator,
+  groupParamsValidator,
   handleLeaveGroup,
 );
 
 groupRouter.delete(
-  "/groups/:groupId/delete",
+  "/groups/:groupId",
   jwtHandler,
   groupParamsValidator,
   handleDeleteGroup,

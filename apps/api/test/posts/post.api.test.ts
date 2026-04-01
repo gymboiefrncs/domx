@@ -2,22 +2,24 @@ import request from "supertest";
 import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
-  CANNOT_DELETE_POST,
-  CANNOT_EDIT_POST,
   GROUP_NOT_FOUND,
   NOT_A_GROUP_MEMBER,
+} from "@api/features/groups/group.constants.js";
+import {
+  CANNOT_DELETE_POST,
+  CANNOT_EDIT_POST,
   POST_CREATED,
   POST_DELETED,
   POST_EDITED,
   POST_NOT_FOUND,
-} from "@api/common/constants.js";
+} from "@api/features/posts/post.constants.js";
 import { pool } from "@api/config/db.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
 
-vi.mock("@api/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -32,10 +34,16 @@ const setupAndLoginAs = async (email: string, username: string) => {
     .post("/api/v1/verify-email")
     .send({ email, otp: TEST_OTP });
 
-  const token = verifyRes.body?.data;
+  const verifyCookies = verifyRes.headers["set-cookie"];
+
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Authorization", `Bearer ${token}`)
+    .set(
+      "Cookie",
+      Array.isArray(verifyCookies)
+        ? verifyCookies
+        : ([verifyCookies] as string[]),
+    )
     .send({ password: TEST_PASSWORD, username });
 
   const loginRes = await request(app)
@@ -51,7 +59,7 @@ const createGroup = async (cookies: string[], name = "Test Group") => {
     .post("/api/v1/groups")
     .set("Cookie", cookies)
     .send({ groupName: name });
-  return res.body.data as string;
+  return res.body.data.group_id as string;
 };
 
 const getDisplayId = async (email: string) => {

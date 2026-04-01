@@ -16,8 +16,8 @@ import {
   SOLE_ADMIN_CANNOT_DEMOTE,
   SOLE_ADMIN_CANNOT_LEAVE,
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
-  USER_NOT_FOUND,
-} from "@api/common/constants.js";
+} from "@api/features/groups/group.constants.js";
+import { USER_NOT_FOUND } from "@api/features/profile/profile.constants.js";
 import { pool } from "@api/config/db.js";
 import crypto from "crypto";
 
@@ -26,7 +26,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "grouptest@example.com" };
 
-vi.mock("@api/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -34,26 +34,37 @@ vi.mock("@api/utils/generateOTP.ts", () => ({
   })),
 }));
 
+const requireCookies = (
+  value: string | string[] | undefined,
+  step: string,
+): string[] => {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`Expected set-cookie header from ${step}`);
+  }
+
+  return value;
+};
+
 const setupAndLogin = async () => {
   await request(app).post("/api/v1/auth/signup").send(signupData);
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
+  const verifyCookies = requireCookies(
+    verifyRes.headers["set-cookie"],
+    "verify-email",
+  );
 
-  const token = verifyRes.body?.data;
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Authorization", `Bearer ${token}`)
+    .set("Cookie", verifyCookies)
     .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 
   const loginRes = await request(app)
     .post("/api/v1/auth/login")
     .send({ email: signupData.email, password: TEST_PASSWORD });
 
-  const cookies = loginRes.headers["set-cookie"];
-  if (!Array.isArray(cookies)) return cookies;
-
-  return cookies as string[];
+  return requireCookies(loginRes.headers["set-cookie"], "auth/login");
 };
 
 const setupAndLoginAs = async (email: string, username: string) => {
@@ -61,21 +72,21 @@ const setupAndLoginAs = async (email: string, username: string) => {
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email, otp: TEST_OTP });
+  const verifyCookies = requireCookies(
+    verifyRes.headers["set-cookie"],
+    "verify-email",
+  );
 
-  const token = verifyRes.body?.data;
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Authorization", `Bearer ${token}`)
+    .set("Cookie", verifyCookies)
     .send({ password: TEST_PASSWORD, username });
 
   const loginRes = await request(app)
     .post("/api/v1/auth/login")
     .send({ email, password: TEST_PASSWORD });
 
-  const cookies = loginRes.headers["set-cookie"];
-  if (!Array.isArray(cookies)) return cookies;
-
-  return cookies as string[];
+  return requireCookies(loginRes.headers["set-cookie"], "auth/login");
 };
 
 describe("Group API", () => {
@@ -88,7 +99,6 @@ describe("Group API", () => {
   describe("Create group", () => {
     it("creates a group and adds the creator as admin", async () => {
       const cookies = await setupAndLogin();
-
       const res = await request(app)
         .post("/api/v1/groups")
         .set("Cookie", cookies as string[])
@@ -98,7 +108,14 @@ describe("Group API", () => {
       expect(res.body).toEqual({
         success: true,
         message: SUCCESSFULLY_CREATED_GROUP_MESSAGE,
-        data: expect.any(String),
+        data: expect.objectContaining({
+          group_id: expect.any(String),
+          last_seen_at: expect.any(String),
+          member_count: expect.any(Number),
+          name: expect.any(String),
+          role: "admin",
+          unread_count: expect.any(Number),
+        }),
       });
 
       const groups = await pool.query("SELECT * FROM groups WHERE name = $1", [
@@ -175,13 +192,12 @@ describe("Group API", () => {
         ["target@example.com"],
       );
       targetDisplayId = targetRow.rows[0].display_id;
-
       const groupRes = await request(app)
         .post("/api/v1/groups")
         .set("Cookie", memberCookies as string[])
         .send({ groupName: "Test Group" });
 
-      groupId = groupRes.body.data;
+      groupId = groupRes.body.data.group_id;
     });
 
     it("successfully adds a member when requester belongs to the group", async () => {
@@ -190,7 +206,16 @@ describe("Group API", () => {
         .set("Cookie", memberCookies as string[]);
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ success: true, message: MEMBER_ADDED });
+      expect(res.body).toEqual({
+        success: true,
+        data: expect.objectContaining({
+          display_id: targetDisplayId,
+          group_id: expect.any(String),
+          role: "member",
+          username: "targetuser",
+        }),
+        message: MEMBER_ADDED,
+      });
 
       const members = await pool.query(
         "SELECT * FROM group_members WHERE group_id = $1",
@@ -213,7 +238,6 @@ describe("Group API", () => {
       const res = await request(app)
         .post(`/api/v1/groups/${groupId}/add/${targetDisplayId}`)
         .set("Cookie", outsiderCookies as string[]);
-
       expect(res.status).toBe(403);
       expect(res.body.errors[0].message).toBe(NOT_A_GROUP_MEMBER);
     });
@@ -300,7 +324,7 @@ describe("Group API", () => {
         .set("Cookie", adminCookies as string[])
         .send({ groupName: "Kick Test Group" });
 
-      groupId = groupRes.body.data;
+      groupId = groupRes.body.data.group_id;
 
       // Add the member to the group
       await request(app)
@@ -441,7 +465,7 @@ describe("Group API", () => {
         .set("Cookie", adminCookies as string[])
         .send({ groupName: "Promote Test Group" });
 
-      groupId = groupRes.body.data;
+      groupId = groupRes.body.data.group_id;
 
       await request(app)
         .post(`/api/v1/groups/${groupId}/add/${memberDisplayId}`)
@@ -564,7 +588,7 @@ describe("Group API", () => {
         .set("Cookie", adminCookies as string[])
         .send({ groupName: "Demote Test Group" });
 
-      groupId = groupRes.body.data;
+      groupId = groupRes.body.data.group_id;
 
       // Add second admin and member
       await request(app)
@@ -684,9 +708,8 @@ describe("Group API", () => {
     let adminCookies: string | string[] | undefined;
     let memberCookies: string | string[] | undefined;
     let outsiderCookies: string | string[] | undefined;
-    let secondAdminDisplayId: string;
-    let memberDisplayId: string;
     let adminDisplayId: string;
+    let memberDisplayId: string;
     let groupId: string;
 
     beforeEach(async () => {
@@ -700,15 +723,9 @@ describe("Group API", () => {
 
       const adminRow = await pool.query(
         "SELECT display_id FROM users WHERE email = $1",
-        ["grouptest@example.com"],
-      );
-      adminDisplayId = adminRow.rows[0].display_id;
-
-      const secondAdminRow = await pool.query(
-        "SELECT display_id FROM users WHERE email = $1",
         ["admin2@example.com"],
       );
-      secondAdminDisplayId = secondAdminRow.rows[0].display_id;
+      adminDisplayId = adminRow.rows[0].display_id;
 
       const memberRow = await pool.query(
         "SELECT display_id FROM users WHERE email = $1",
@@ -721,14 +738,14 @@ describe("Group API", () => {
         .set("Cookie", adminCookies as string[])
         .send({ groupName: "Leave Test Group" });
 
-      groupId = groupRes.body.data;
+      groupId = groupRes.body.data.group_id;
 
       // Add second admin and member
       await request(app)
-        .post(`/api/v1/groups/${groupId}/add/${secondAdminDisplayId}`)
+        .post(`/api/v1/groups/${groupId}/add/${adminDisplayId}`)
         .set("Cookie", adminCookies as string[]);
       await request(app)
-        .patch(`/api/v1/groups/${groupId}/promote/${secondAdminDisplayId}`)
+        .patch(`/api/v1/groups/${groupId}/promote/${adminDisplayId}`)
         .set("Cookie", adminCookies as string[]);
 
       await request(app)
@@ -738,7 +755,7 @@ describe("Group API", () => {
 
     it("allows a regular member to leave", async () => {
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/${memberDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/leave`)
         .set("Cookie", memberCookies as string[]);
 
       expect(res.status).toBe(200);
@@ -756,7 +773,7 @@ describe("Group API", () => {
 
     it("allows an admin to leave when another admin exists", async () => {
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/${adminDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/leave`)
         .set("Cookie", adminCookies as string[]);
 
       expect(res.status).toBe(200);
@@ -775,11 +792,11 @@ describe("Group API", () => {
     it("rejects when sole admin tries to leave with other members", async () => {
       // Demote the second admin so only one admin remains
       await request(app)
-        .patch(`/api/v1/groups/${groupId}/demote/${secondAdminDisplayId}`)
+        .patch(`/api/v1/groups/${groupId}/demote/${adminDisplayId}`)
         .set("Cookie", adminCookies as string[]);
 
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/${adminDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/leave`)
         .set("Cookie", adminCookies as string[]);
 
       expect(res.status).toBe(409);
@@ -792,11 +809,11 @@ describe("Group API", () => {
         .delete(`/api/v1/groups/${groupId}/kick/${memberDisplayId}`)
         .set("Cookie", adminCookies as string[]);
       await request(app)
-        .delete(`/api/v1/groups/${groupId}/kick/${secondAdminDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/kick/${adminDisplayId}`)
         .set("Cookie", adminCookies as string[]);
 
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/${adminDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/leave`)
         .set("Cookie", adminCookies as string[]);
 
       expect(res.status).toBe(200);
@@ -814,22 +831,14 @@ describe("Group API", () => {
     });
 
     it("rejects unauthenticated requests", async () => {
-      const res = await request(app).delete(
-        `/api/v1/groups/${groupId}/leave/${memberDisplayId}`,
-      );
+      const res = await request(app).delete(`/api/v1/groups/${groupId}/leave`);
 
       expect(res.status).toBe(401);
     });
 
     it("rejects when requester is not a group member", async () => {
-      const outsiderRow = await pool.query(
-        "SELECT display_id FROM users WHERE email = $1",
-        ["outsider@example.com"],
-      );
-      const outsiderDisplayId = outsiderRow.rows[0].display_id;
-
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/${outsiderDisplayId}`)
+        .delete(`/api/v1/groups/${groupId}/leave`)
         .set("Cookie", outsiderCookies as string[]);
 
       expect(res.status).toBe(403);
@@ -840,20 +849,19 @@ describe("Group API", () => {
       const fakeGroupId = crypto.randomUUID();
 
       const res = await request(app)
-        .delete(`/api/v1/groups/${fakeGroupId}/leave/${memberDisplayId}`)
+        .delete(`/api/v1/groups/${fakeGroupId}/leave`)
         .set("Cookie", memberCookies as string[]);
 
       expect(res.status).toBe(404);
       expect(res.body.errors[0].message).toBe(GROUP_NOT_FOUND);
     });
 
-    it("rejects when target display ID does not exist", async () => {
+    it("rejects when groupId is not a valid UUID", async () => {
       const res = await request(app)
-        .delete(`/api/v1/groups/${groupId}/leave/XXXXXXXX`)
+        .delete(`/api/v1/groups/not-a-uuid/leave`)
         .set("Cookie", adminCookies as string[]);
 
-      expect(res.status).toBe(404);
-      expect(res.body.errors[0].message).toBe(USER_NOT_FOUND);
+      expect(res.status).toBe(422);
     });
   });
 });

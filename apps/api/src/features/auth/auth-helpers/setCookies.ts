@@ -4,22 +4,29 @@ import {
   ACCESS_TOKEN_MAX_AGE,
 } from "../auth.constants.js";
 
+const baseCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+};
+
+export const clearCookieOptions = {
+  ...baseCookieOptions,
+};
+
 export const setCookies = (
   refreshToken: string,
   accessToken: string,
   res: Response,
 ): void => {
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    ...baseCookieOptions,
     maxAge: REFRESH_TOKEN_MAX_AGE,
   });
 
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    ...baseCookieOptions,
     maxAge: ACCESS_TOKEN_MAX_AGE,
   });
 };

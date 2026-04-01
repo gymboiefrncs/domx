@@ -6,7 +6,7 @@ import {
   logoutUser,
 } from "./auth.services.js";
 import { setInfo } from "./auth.setInfo.js";
-import { setCookies } from "./auth-helpers/setCookies.js";
+import { clearCookieOptions, setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "@api/utils/error.js";
 import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
@@ -82,8 +82,8 @@ export const logoutHandler = async (
   try {
     const refreshToken = req.cookies.refreshToken;
     const result = await logoutUser(refreshToken);
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken", clearCookieOptions);
+    res.clearCookie("accessToken", clearCookieOptions);
     res.status(200).json({
       success: result.ok,
       message: result.ok ? result.message : "Logout failed",
@@ -115,7 +115,7 @@ export const setInfoHandler = async (
     );
     setCookies(refreshToken, accessToken, res);
 
-    res.clearCookie("setInfoToken");
+    res.clearCookie("setInfoToken", clearCookieOptions);
 
     res.status(result.ok ? 200 : 400).json({
       success: result.ok,

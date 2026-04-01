@@ -2,10 +2,13 @@ import request from "supertest";
 import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
-  EMAIL_MESSAGE,
   INFO_SET_FAILED_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
-} from "@api/common/constants.js";
+} from "@api/features/auth/auth.constants.js";
+import {
+  EMAIL_MESSAGE,
+  OTP_MESSAGE_SUCCESS,
+} from "@api/features/verification/verification.constants.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
@@ -13,7 +16,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
 
-vi.mock("@api/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -27,10 +30,10 @@ const setupVerifiedUser = async () => {
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
-  const token = verifyRes.body?.data;
+  const verifyCookies = verifyRes.headers["set-cookie"];
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Authorization", `Bearer ${token}`)
+    .set("Cookie", verifyCookies as string[])
     .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 };
 
@@ -40,10 +43,10 @@ const setupAndLogin = async () => {
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
 
-  const token = verifyRes.body?.data;
+  const verifyCookies = verifyRes.headers["set-cookie"];
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Authorization", `Bearer ${token}`)
+    .set("Cookie", verifyCookies as string[])
     .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 
   const loginRes = await request(app)
@@ -81,7 +84,8 @@ describe("Auth API", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(typeof res.body?.data).toBe("string");
+      expect(res.body.message).toBe(OTP_MESSAGE_SUCCESS);
+      expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     });
 
     it("sets info after verification", async () => {
@@ -91,11 +95,11 @@ describe("Auth API", () => {
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
 
-      const token = verifyRes.body?.data;
+      const verifyCookies = verifyRes.headers["set-cookie"];
 
       const res = await request(app)
         .post("/api/v1/auth/set-info")
-        .set("Authorization", `Bearer ${token}`)
+        .set("Cookie", verifyCookies as string[])
         .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -175,16 +179,16 @@ describe("Auth API", () => {
       const verifyRes = await request(app)
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
-      const token = verifyRes.body?.data;
+      const verifyCookies = verifyRes.headers["set-cookie"];
 
       const [res1, res2] = await Promise.all([
         request(app)
           .post("/api/v1/auth/set-info")
-          .set("Authorization", `Bearer ${token}`)
+          .set("Cookie", verifyCookies as string[])
           .send({ username: TEST_USERNAME, password: TEST_PASSWORD }),
         request(app)
           .post("/api/v1/auth/set-info")
-          .set("Authorization", `Bearer ${token}`)
+          .set("Cookie", verifyCookies as string[])
           .send({ username: TEST_USERNAME, password: "test_W2322422" }),
       ]);
 
@@ -216,7 +220,7 @@ describe("Auth API", () => {
   });
 
   describe("Login edge cases", () => {
-    const EXPECTED_ERROR = "Invalid credentials or account not verified";
+    const EXPECTED_ERROR = "Invalid credentials";
 
     it("rejects wrong password", async () => {
       await setupVerifiedUser();

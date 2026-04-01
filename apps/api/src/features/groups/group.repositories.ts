@@ -165,7 +165,8 @@ export const fetchGroupMembers = async (
   const query = `SELECT gm.role, u.display_id, u.username
   FROM group_members gm
   JOIN users u on u.id = gm.user_id
-  WHERE gm.group_id = $1`;
+  WHERE gm.group_id = $1
+  `;
   const values = [groupId];
   const result = await pool.query(query, values);
   return result.rows;

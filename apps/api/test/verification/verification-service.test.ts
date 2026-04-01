@@ -10,14 +10,14 @@ import {
   OTP_MESSAGE_FAIL,
   OTP_MESSAGE_SUCCESS,
   RESEND_OTP_MESSAGE,
-} from "@api/common/constants.js";
+} from "@api/features/verification/verification.constants.js";
 
 const TEST_OTP = "123456";
 
 const hashOTP = () => {
   return crypto.createHash("sha256").update(TEST_OTP).digest("hex");
 };
-vi.mock("@api/utils/generateOTP.ts", () => ({
+vi.mock("@api/utils/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -25,7 +25,7 @@ vi.mock("@api/utils/generateOTP.ts", () => ({
   })),
 }));
 vi.mock(
-  "@api/features/verification/verification-helpers/generateSetInfoToken.ts",
+  "@api/features/verification/verification-helpers/generateSetInfoToken.js",
   () => ({
     generateSetInfoToken: vi.fn().mockResolvedValue("mocked_token"),
   }),

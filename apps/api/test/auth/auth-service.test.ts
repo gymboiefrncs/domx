@@ -3,15 +3,17 @@ import { registerUser } from "@api/features/auth/auth.services.js";
 import { pool } from "@api/config/db.js";
 import { fetchUserByEmail } from "../../src/features/auth/auth.repositories.js";
 import {
-  EMAIL_MESSAGE,
-  COOLDOWN_MESSAGE,
   INFO_SET_SUCCESS_MESSAGE,
   INFO_SET_FAILED_MESSAGE,
-} from "@api/common/constants.js";
+} from "@api/features/auth/auth.constants.js";
+import {
+  EMAIL_MESSAGE,
+  COOLDOWN_MESSAGE,
+} from "@api/features/verification/verification.constants.js";
 import { setInfo } from "../../src/features/auth/auth.setInfo.js";
 import bcrypt from "bcrypt";
 
-vi.mock("@api/src/utils/sendEmail.ts", () => ({
+vi.mock("@api/utils/sendEmail.js", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
   sendAlreadyRegisteredEmail: vi.fn().mockResolvedValue(undefined),
 }));
@@ -52,10 +54,10 @@ describe("Auth integration - Signup", () => {
   it("should not create a new user if email is already verified", async () => {
     const signupData = { email: "verified@example.com" };
 
-    await pool.query(
-      "INSERT INTO users (email, password, is_verified) VALUES ($1, $2, $3)",
-      [signupData.email, "hashed_pw", true],
-    );
+    await pool.query("INSERT INTO users (email, is_verified) VALUES ($1, $2)", [
+      signupData.email,
+      true,
+    ]);
 
     const result = await registerUser(signupData);
     const user = await fetchUserByEmail(signupData.email);
@@ -64,9 +66,12 @@ describe("Auth integration - Signup", () => {
     expect(user?.email).toBe(signupData.email);
     expect(result).toEqual({
       ok: true,
-      reason: "ALREADY_VERIFIED",
-      email: signupData.email,
-      message: EMAIL_MESSAGE,
+      reason: "INCOMPLETE_SIGNUP",
+      message:
+        "Incomplete signup. Please set your username and password to complete the registration.",
+      data: {
+        setInfoToken: expect.any(String),
+      },
     });
   });
 
@@ -225,6 +230,7 @@ describe("Auth integration - Set Info", () => {
     expect(result).toEqual({
       ok: true,
       message: INFO_SET_SUCCESS_MESSAGE,
+      data: "user",
     });
 
     const user = await pool.query(

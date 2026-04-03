@@ -103,6 +103,7 @@ export const createGroup = async (
     },
   );
 
+  // for optimistic update on client side
   const groupDetail: GroupDetail = {
     group_id: result.group_id,
     name: groupName,

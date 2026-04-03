@@ -1,9 +1,8 @@
 import type { Response } from "express";
-import {
-  REFRESH_TOKEN_MAX_AGE,
-  ACCESS_TOKEN_MAX_AGE,
-} from "../auth.constants.js";
 import { config } from "@api/shared/config.js";
+
+const REFRESH_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_TOKEN_MAX_AGE_MS = 5 * 60 * 1000;
 
 const baseCookieOptions = {
   httpOnly: true,
@@ -23,11 +22,11 @@ export const setCookies = (
 ): void => {
   res.cookie("refreshToken", refreshToken, {
     ...baseCookieOptions,
-    maxAge: REFRESH_TOKEN_MAX_AGE,
+    maxAge: REFRESH_TOKEN_MAX_AGE_MS,
   });
 
   res.cookie("accessToken", accessToken, {
     ...baseCookieOptions,
-    maxAge: ACCESS_TOKEN_MAX_AGE,
+    maxAge: ACCESS_TOKEN_MAX_AGE_MS,
   });
 };

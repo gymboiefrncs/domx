@@ -1,14 +1,17 @@
 import { config } from "@api/shared/config.js";
 
-export const OTP_COOLDOWN_MS =
-  process.env.NODE_ENV === "development" ? 5000 : 2 * 60 * 1000;
-export const EMAIL_MESSAGE =
-  "Verification email sent. Please check your inbox.";
-export const COOLDOWN_MESSAGE = "Please wait before requesting another code.";
-export const OTP_MESSAGE_FAIL = "OTP is invalid or expired";
-export const OTP_MESSAGE_SUCCESS = "Email verified successfully";
-export const RESEND_OTP_MESSAGE =
-  "If an account exists, a new code has been sent.";
-export const SET_INFO_SECRET = new TextEncoder().encode(
-  config.jwt.setInfoTokenSecret,
-);
+export const VERIFICATION_POLICY = {
+  OTP_COOLDOWN_MS:
+    config.server.nodeEnv === "development" ? 5000 : 2 * 60 * 1000,
+} as const;
+
+export const VERIFICATION_SUCCESS = {
+  EMAIL_SENT: "Verification email sent. Please check your inbox.",
+  OTP_VERIFIED: "Email verified successfully",
+  RESEND_ACKNOWLEDGED: "If an account exists, a new code has been sent.",
+} as const;
+
+export const VERIFICATION_ERROR = {
+  OTP_INVALID_OR_EXPIRED: "OTP is invalid or expired",
+  COOLDOWN_ACTIVE: "Please wait before requesting another code.",
+} as const;

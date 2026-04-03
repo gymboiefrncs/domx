@@ -3,7 +3,7 @@ import type { SignupSchema } from "../auth.schemas.js";
 import { createUser } from "../auth.repositories.js";
 import {
   createSignupOtp,
-  EMAIL_MESSAGE,
+  VERIFICATION_SUCCESS,
 } from "@api/features/verification/index.js";
 import type { RegistrationResult } from "../auth.types.js";
 
@@ -27,7 +27,7 @@ export const handleNewUser = async (
     return {
       ok: true as const,
       reason: "UNIQUE_EMAIL_VIOLATION" as const,
-      message: EMAIL_MESSAGE,
+      message: VERIFICATION_SUCCESS.EMAIL_SENT,
     };
   }
 
@@ -42,6 +42,6 @@ export const handleNewUser = async (
     ok: true as const,
     reason: "NEW_USER" as const,
     email: newUser.email,
-    message: EMAIL_MESSAGE,
+    message: VERIFICATION_SUCCESS.EMAIL_SENT,
   };
 };

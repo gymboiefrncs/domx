@@ -1,20 +1,17 @@
 import request from "supertest";
 import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
-import {
-  INFO_SET_FAILED_MESSAGE,
-  INFO_SET_SUCCESS_MESSAGE,
-} from "@api/features/auth/auth.constants.js";
-import {
-  EMAIL_MESSAGE,
-  OTP_MESSAGE_SUCCESS,
-} from "@api/features/verification/verification.constants.js";
+import { VERIFICATION_SUCCESS } from "@api/features/verification/verification.constants.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
+const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
+const INFO_SET_FAILED_MESSAGE = "Failed to set information";
+const EMAIL_MESSAGE = VERIFICATION_SUCCESS.EMAIL_SENT;
+const OTP_MESSAGE_SUCCESS = VERIFICATION_SUCCESS.OTP_VERIFIED;
 
 vi.mock("@api/features/auth/auth-helpers/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({

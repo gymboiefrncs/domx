@@ -3,15 +3,16 @@ import { registerUser } from "@api/features/auth/auth.services.js";
 import { pool } from "@api/shared/db/db.js";
 import { fetchUserByEmail } from "@api/features/auth/auth.repositories.js";
 import {
-  INFO_SET_SUCCESS_MESSAGE,
-  INFO_SET_FAILED_MESSAGE,
-} from "@api/features/auth/auth.constants.js";
-import {
-  EMAIL_MESSAGE,
-  COOLDOWN_MESSAGE,
+  VERIFICATION_ERROR,
+  VERIFICATION_SUCCESS,
 } from "@api/features/verification/verification.constants.js";
 import { setInfo } from "@api/features/auth/auth.setInfo.js";
 import bcrypt from "bcrypt";
+
+const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
+const INFO_SET_FAILED_MESSAGE = "Failed to set information";
+const EMAIL_MESSAGE = VERIFICATION_SUCCESS.EMAIL_SENT;
+const COOLDOWN_MESSAGE = VERIFICATION_ERROR.COOLDOWN_ACTIVE;
 
 vi.mock("@api/shared/mailer/sendEmail.js", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),

@@ -1,8 +1,8 @@
 import type { GroupRole } from "@domx/shared";
 import { fetchGroupById, fetchMemberRole } from "./group.repositories.js";
 import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
-import { GROUP_NOT_FOUND, NOT_A_GROUP_MEMBER } from "./group.constants.js";
-import { USER_NOT_FOUND } from "@api/features/profile/index.js";
+import { GROUP_ERROR } from "./group.constants.js";
+import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";
 
 /**
@@ -19,17 +19,17 @@ export const resolveGroupAction = async (
   requireRole?: GroupRole,
 ): Promise<{ userId: string; requesterRole: GroupRole }> => {
   const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
   const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
   if (requireRole && requesterRole !== requireRole)
     throw new ForbiddenError(
       `Only group ${requireRole}s can perform this action.`,
     );
 
   const userId = await fetchUserByDisplayId(displayId);
-  if (!userId) throw new NotFoundError(USER_NOT_FOUND);
+  if (!userId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
   return { userId, requesterRole };
 };

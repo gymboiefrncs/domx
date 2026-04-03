@@ -2,9 +2,9 @@ import {
   getLatestOTP,
   deleteOtp,
   createSignupOtp,
-  COOLDOWN_MESSAGE,
-  OTP_COOLDOWN_MS,
-  EMAIL_MESSAGE,
+  VERIFICATION_ERROR,
+  VERIFICATION_POLICY,
+  VERIFICATION_SUCCESS,
 } from "@api/features/verification/index.js";
 import type { RegistrationResult } from "../auth.types.js";
 import type { SignupUser } from "../auth.types.js";
@@ -41,13 +41,15 @@ export const handleUnverifiedUser = async (
    * This also prevents double otp to be created or valid at the same time caused by a concurrent request.
    */
   const isTooSoon =
-    latestOTP && Date.now() - latestOTP.created_at.getTime() <= OTP_COOLDOWN_MS;
+    latestOTP &&
+    Date.now() - latestOTP.created_at.getTime() <=
+      VERIFICATION_POLICY.OTP_COOLDOWN_MS;
 
   if (isTooSoon) {
     return {
       ok: true as const,
       reason: "COOLDOWN" as const,
-      message: COOLDOWN_MESSAGE,
+      message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
     };
   }
 
@@ -59,6 +61,6 @@ export const handleUnverifiedUser = async (
     ok: true as const,
     reason: "RESENT_OTP" as const,
     email: user.email,
-    message: EMAIL_MESSAGE,
+    message: VERIFICATION_SUCCESS.EMAIL_SENT,
   };
 };

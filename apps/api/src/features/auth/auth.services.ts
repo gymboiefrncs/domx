@@ -28,7 +28,6 @@ import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
 import { withTransaction } from "@api/shared/db/transaction.js";
-import { LOGOUT_MESSAGE } from "./auth.constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import { config } from "@api/shared/config.js";
@@ -206,5 +205,5 @@ export const logoutUser = async (refreshToken: string): Promise<Result> => {
   } catch (_error) {
     // Ignore errors and allow logout to succeed
   }
-  return { ok: true, message: LOGOUT_MESSAGE };
+  return { ok: true, message: "You have been logged out successfully." };
 };

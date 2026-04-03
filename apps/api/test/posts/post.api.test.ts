@@ -1,20 +1,19 @@
 import request from "supertest";
 import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
-import {
-  GROUP_NOT_FOUND,
-  NOT_A_GROUP_MEMBER,
-} from "@api/features/groups/group.constants.js";
-import {
-  CANNOT_DELETE_POST,
-  CANNOT_EDIT_POST,
-  POST_CREATED,
-  POST_DELETED,
-  POST_EDITED,
-  POST_NOT_FOUND,
-} from "@api/features/posts/post.constants.js";
+import { GROUP_ERROR } from "@api/features/groups/group.constants.js";
+import { POST_ERROR } from "@api/features/posts/post.constants.js";
 import { pool } from "@api/shared/db/db.js";
 import crypto from "crypto";
+
+const GROUP_NOT_FOUND = GROUP_ERROR.NOT_FOUND;
+const NOT_A_GROUP_MEMBER = GROUP_ERROR.NOT_A_MEMBER;
+const CANNOT_DELETE_POST = "You are not allowed to delete this post.";
+const CANNOT_EDIT_POST = "You are not allowed to edit this post.";
+const POST_CREATED = "Post created successfully.";
+const POST_DELETED = "Post deleted successfully.";
+const POST_EDITED = "Post edited successfully.";
+const POST_NOT_FOUND = POST_ERROR.NOT_FOUND;
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";

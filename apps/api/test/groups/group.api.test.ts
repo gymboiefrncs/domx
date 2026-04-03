@@ -2,24 +2,31 @@ import request from "supertest";
 import { app } from "@api/app.js";
 import { describe, beforeEach, it, expect, vi } from "vitest";
 import {
-  ALREADY_A_MEMBER,
-  ALREADY_AN_ADMIN,
-  ALREADY_A_REGULAR_MEMBER,
-  CANNOT_KICK_SELF,
-  GROUP_NOT_FOUND,
-  LEFT_GROUP,
-  MEMBER_ADDED,
-  MEMBER_DEMOTED,
-  MEMBER_KICKED,
-  MEMBER_PROMOTED,
-  NOT_A_GROUP_MEMBER,
-  SOLE_ADMIN_CANNOT_DEMOTE,
-  SOLE_ADMIN_CANNOT_LEAVE,
-  SUCCESSFULLY_CREATED_GROUP_MESSAGE,
+  GROUP_ERROR,
+  GROUP_SUCCESS,
 } from "@api/features/groups/group.constants.js";
-import { USER_NOT_FOUND } from "@api/features/profile/profile.constants.js";
+import { PROFILE_ERROR } from "@api/features/profile/profile.constants.js";
 import { pool } from "@api/shared/db/db.js";
 import crypto from "crypto";
+
+const ALREADY_A_MEMBER = "User is already a member of this group.";
+const ALREADY_AN_ADMIN = "User is already an admin.";
+const ALREADY_A_REGULAR_MEMBER = "User is already a regular member.";
+const CANNOT_KICK_SELF =
+  "You cannot remove yourself. Use the leave option instead.";
+const GROUP_NOT_FOUND = GROUP_ERROR.NOT_FOUND;
+const LEFT_GROUP = GROUP_SUCCESS.LEFT_GROUP;
+const MEMBER_ADDED = "Member added to the group.";
+const MEMBER_DEMOTED = "Member has been demoted to regular member.";
+const MEMBER_KICKED = "Member has been removed from the group.";
+const MEMBER_PROMOTED = "Member has been promoted to admin.";
+const NOT_A_GROUP_MEMBER = GROUP_ERROR.NOT_A_MEMBER;
+const SOLE_ADMIN_CANNOT_DEMOTE =
+  "Cannot demote. This would leave the group with no admins.";
+const SOLE_ADMIN_CANNOT_LEAVE =
+  "Promote a member to admin before leaving this group.";
+const SUCCESSFULLY_CREATED_GROUP_MESSAGE = "Group created successfully.";
+const USER_NOT_FOUND = PROFILE_ERROR.USER_NOT_FOUND;
 
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";

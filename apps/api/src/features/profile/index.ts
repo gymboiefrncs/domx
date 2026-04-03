@@ -1,1 +1,1 @@
-export { USER_NOT_FOUND } from "./profile.constants.js";
+export { PROFILE_ERROR } from "./profile.constants.js";

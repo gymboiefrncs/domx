@@ -1,5 +1,7 @@
 import * as jose from "jose";
-import { SET_INFO_SECRET } from "../verification.constants.js";
+import { config } from "@api/shared/config.js";
+
+const setInfoSecret = new TextEncoder().encode(config.jwt.setInfoTokenSecret);
 
 export const generateSetInfoToken = async (userId: string): Promise<string> => {
   const token = await new jose.SignJWT({
@@ -9,7 +11,7 @@ export const generateSetInfoToken = async (userId: string): Promise<string> => {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("10m")
-    .sign(SET_INFO_SECRET);
+    .sign(setInfoSecret);
 
   return token;
 };

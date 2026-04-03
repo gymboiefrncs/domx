@@ -9,11 +9,9 @@ import {
 } from "./verification.repositories.js";
 import { fetchUserForSignup } from "@api/features/auth/index.js";
 import {
-  OTP_MESSAGE_FAIL,
-  OTP_MESSAGE_SUCCESS,
-  RESEND_OTP_MESSAGE,
-  COOLDOWN_MESSAGE,
-  OTP_COOLDOWN_MS,
+  VERIFICATION_ERROR,
+  VERIFICATION_POLICY,
+  VERIFICATION_SUCCESS,
 } from "./verification.constants.js";
 import crypto from "crypto";
 import {
@@ -56,7 +54,10 @@ export const validateOtp = async ({
         otpRecord.used_at ||
         otpRecord.expires_at < new Date()
       ) {
-        return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+        return {
+          ok: false as const,
+          errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
+        };
       }
 
       // To prevent timing attacks
@@ -73,14 +74,23 @@ export const validateOtp = async ({
         );
 
         if (!newRetryCount) {
-          return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+          return {
+            ok: false as const,
+            errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
+          };
         }
 
         if (newRetryCount >= 5) {
           await deleteOtp(otpRecord.user_id, client);
-          return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+          return {
+            ok: false as const,
+            errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
+          };
         }
-        return { ok: false as const, errMessage: OTP_MESSAGE_FAIL };
+        return {
+          ok: false as const,
+          errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
+        };
       }
 
       await markUserAsVerified(otpRecord.user_id, client);
@@ -96,7 +106,11 @@ export const validateOtp = async ({
    */
   if (result.ok) {
     const token = await generateSetInfoToken(result.userId);
-    return { ok: true, message: OTP_MESSAGE_SUCCESS, data: token };
+    return {
+      ok: true,
+      message: VERIFICATION_SUCCESS.OTP_VERIFIED,
+      data: token,
+    };
   }
 
   return result;
@@ -118,14 +132,14 @@ export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
       return {
         ok: true as const,
         reason: "USER_NOT_FOUND" as const,
-        message: RESEND_OTP_MESSAGE,
+        message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
     if (user.is_verified)
       return {
         ok: true as const,
         reason: "ALREADY_VERIFIED" as const,
         email: user.email,
-        message: RESEND_OTP_MESSAGE,
+        message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
 
     /**
@@ -135,12 +149,13 @@ export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
     const latestOTP = await getLatestOTP(user.id, client);
     const isTooSoon =
       latestOTP &&
-      Date.now() - latestOTP.created_at.getTime() <= OTP_COOLDOWN_MS;
+      Date.now() - latestOTP.created_at.getTime() <=
+        VERIFICATION_POLICY.OTP_COOLDOWN_MS;
     if (isTooSoon) {
       return {
         ok: true as const,
         reason: "COOLDOWN" as const,
-        message: COOLDOWN_MESSAGE,
+        message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
       };
     }
 
@@ -151,7 +166,7 @@ export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
       ok: true as const,
       reason: "RESENT_OTP" as const,
       email: user.email,
-      message: RESEND_OTP_MESSAGE,
+      message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
     };
   });
 

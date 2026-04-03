@@ -11,7 +11,7 @@ export {
 } from "./verification.repositories.js";
 
 export {
-  EMAIL_MESSAGE,
-  COOLDOWN_MESSAGE,
-  OTP_COOLDOWN_MS,
+  VERIFICATION_SUCCESS,
+  VERIFICATION_ERROR,
+  VERIFICATION_POLICY,
 } from "./verification.constants.js";

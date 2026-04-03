@@ -1,7 +1,3 @@
-import {
-  INFO_SET_FAILED_MESSAGE,
-  INFO_SET_SUCCESS_MESSAGE,
-} from "./auth.constants.js";
 import type { SetInfoResult } from "./auth.types.js";
 import type { Result } from "@api/shared/types/types.js";
 import { pool } from "@api/shared/db/db.js";
@@ -46,14 +42,14 @@ export const setInfo = async ({
       return {
         ok: true,
         reason: "INFO_SET_SUCCESS",
-        message: INFO_SET_SUCCESS_MESSAGE,
+        message: "Information set successfully",
         data: { role },
       };
 
     return {
       ok: false,
       reason: "INFO_SET_FAILED",
-      message: INFO_SET_FAILED_MESSAGE,
+      message: "Failed to set information",
     };
   });
 

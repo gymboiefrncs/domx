@@ -1,11 +1,4 @@
-import {
-  CANNOT_DELETE_POST,
-  CANNOT_EDIT_POST,
-  POST_CREATED,
-  POST_DELETED,
-  POST_EDITED,
-  POST_NOT_FOUND,
-} from "./post.constants.js";
+import { POST_ERROR } from "./post.constants.js";
 import type { Result } from "@api/shared/types/types.js";
 import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import {
@@ -50,7 +43,7 @@ export const createPost = async (
 
   return {
     ok: true,
-    message: POST_CREATED,
+    message: "Post created successfully.",
     data,
   };
 };
@@ -66,18 +59,18 @@ export const editPost = async (
   const requesterRole = await performChecks(groupId, requesterId);
 
   const post = await fetchPostById(postId, groupId);
-  if (!post) throw new NotFoundError(POST_NOT_FOUND);
+  if (!post) throw new NotFoundError(POST_ERROR.NOT_FOUND);
 
   //  Only the post author or a group admin can edit a post.
   if (post.user_id !== requesterId && requesterRole !== "admin") {
-    throw new ForbiddenError(CANNOT_EDIT_POST);
+    throw new ForbiddenError("You are not allowed to edit this post.");
   }
 
   await updatePost(title, body, postId, groupId);
 
   return {
     ok: true,
-    message: POST_EDITED,
+    message: "Post edited successfully.",
   };
 };
 
@@ -90,17 +83,17 @@ export const removePost = async (
   const requesterRole = await performChecks(groupId, requesterId);
 
   const post = await fetchPostById(postId, groupId);
-  if (!post) throw new NotFoundError(POST_NOT_FOUND);
+  if (!post) throw new NotFoundError(POST_ERROR.NOT_FOUND);
 
   // Only post author and group admin can delete a post.
   if (post.user_id !== requesterId && requesterRole !== "admin") {
-    throw new ForbiddenError(CANNOT_DELETE_POST);
+    throw new ForbiddenError("You are not allowed to delete this post.");
   }
 
   await deletePost(postId, groupId);
 
   return {
     ok: true,
-    message: POST_DELETED,
+    message: "Post deleted successfully.",
   };
 };

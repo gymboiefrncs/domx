@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateOtp, resendOtp } from "./verification.services.js";
-import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/features/auth/index.js";
+import { AUTH_TOKEN } from "@api/features/auth/index.js";
 import { config } from "@api/shared/config.js";
 
 export const verificationHandler = async (
@@ -15,7 +15,7 @@ export const verificationHandler = async (
         httpOnly: true,
         secure: config.server.nodeEnv === "production",
         sameSite: "strict",
-        maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
+        maxAge: AUTH_TOKEN.INCOMPLETE_SIGNUP_MAX_AGE_MS,
       });
       res.status(200).json({
         success: true,

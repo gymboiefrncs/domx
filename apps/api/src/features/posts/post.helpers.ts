@@ -1,9 +1,6 @@
 import { fetchGroupById, fetchMemberRole } from "@api/features/groups/index.js";
 import { NotFoundError, ForbiddenError } from "@api/shared/error.js";
-import {
-  GROUP_NOT_FOUND,
-  NOT_A_GROUP_MEMBER,
-} from "@api/features/groups/index.js";
+import { GROUP_ERROR } from "@api/features/groups/index.js";
 import type { GroupRole } from "@domx/shared";
 
 export const performChecks = async (
@@ -11,9 +8,9 @@ export const performChecks = async (
   requesterId: string,
 ): Promise<GroupRole> => {
   const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_NOT_FOUND);
+  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
   const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(NOT_A_GROUP_MEMBER);
+  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
   return requesterRole;
 };

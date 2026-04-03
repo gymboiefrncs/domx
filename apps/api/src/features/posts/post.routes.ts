@@ -2,10 +2,8 @@ import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
-  postValidator,
-  postParamsValidator,
-  editPostParamsValidator,
-  deletePostParamsValidator,
+  validateBody,
+  validateParams,
 } from "@api/shared/middlewares/validate.js";
 import {
   handleCreatePost,
@@ -14,6 +12,17 @@ import {
   handleGetPosts,
 } from "./post.controllers.js";
 import { config } from "@api/shared/config.js";
+import {
+  DeletePostParamsSchema,
+  PostSchema,
+  PostParamsSchema,
+  EditPostParamsSchema,
+} from "./post.schemas.js";
+
+const postValidator = validateBody(PostSchema);
+const postParamsValidator = validateParams(PostParamsSchema);
+const editPostParamsValidator = validateParams(EditPostParamsSchema);
+const deletePostParamsValidator = validateParams(DeletePostParamsSchema);
 
 export const postRouter: Router = express.Router();
 

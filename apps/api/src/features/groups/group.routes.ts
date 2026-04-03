@@ -2,11 +2,6 @@ import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
-  manageMemberValidator,
-  groupValidator,
-  groupParamsValidator,
-} from "@api/shared/middlewares/validate.js";
-import {
   handleAddMember,
   handleChangeGroupName,
   handleCreateGroup,
@@ -20,6 +15,19 @@ import {
   handleDeleteGroup,
 } from "./group.controllers.js";
 import { config } from "@api/shared/config.js";
+import {
+  validateBody,
+  validateParams,
+} from "@api/shared/middlewares/validate.js";
+import {
+  GroupParamsSchema,
+  ManageMemberSchema,
+  GroupSchema,
+} from "./group.schemas.js";
+
+const manageMemberValidator = validateParams(ManageMemberSchema);
+const groupParamsValidator = validateParams(GroupParamsSchema);
+const groupValidator = validateBody(GroupSchema);
 
 export const groupRouter: Router = express.Router();
 

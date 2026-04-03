@@ -7,13 +7,14 @@ import {
   setInfoHandler,
   signupHandler,
 } from "./auth.controllers.js";
-import {
-  loginValidator,
-  infoValidator,
-  signupValidator,
-} from "@api/shared/middlewares/validate.js";
 import { verifySetInfoToken } from "@api/shared/middlewares/authenticate.js";
 import { config } from "@api/shared/config.js";
+import { validateBody } from "@api/shared/middlewares/validate.js";
+import { infoSchema, loginSchema, signupSchema } from "./auth.schemas.js";
+
+const loginValidator = validateBody(loginSchema);
+const signupValidator = validateBody(signupSchema);
+const infoValidator = validateBody(infoSchema);
 
 export const authRouter: Router = express.Router();
 

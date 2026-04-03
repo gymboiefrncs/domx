@@ -4,7 +4,10 @@ import {
   resendOtpHandler,
   verificationHandler,
 } from "./verification.controllers.js";
-import { emailValidator, otpValidator } from "@api/middlewares/validate.js";
+import {
+  emailValidator,
+  otpValidator,
+} from "@api/shared/middlewares/validate.js";
 
 export const verificationRouter: Router = express.Router();
 

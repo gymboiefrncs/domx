@@ -3,9 +3,9 @@ import {
   INFO_SET_SUCCESS_MESSAGE,
 } from "./auth.constants.js";
 import type { SetInfoResult } from "./auth.types.js";
-import type { Result } from "@api/common/types.js";
-import { pool } from "@api/config/db.js";
-import { withTransaction } from "@api/config/transaction.js";
+import type { Result } from "@api/shared/types/types.js";
+import { pool } from "@api/shared/db/db.js";
+import { withTransaction } from "@api/shared/db/transaction.js";
 import { generateDisplayId } from "./auth-helpers/generateDisplayId.js";
 import {
   createDisplayId,

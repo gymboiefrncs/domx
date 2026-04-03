@@ -7,7 +7,7 @@ import {
 } from "./auth.services.js";
 import { setInfo } from "./auth.setInfo.js";
 import { clearCookieOptions, setCookies } from "./auth-helpers/setCookies.js";
-import { UnauthorizedError } from "@api/utils/error.js";
+import { UnauthorizedError } from "@api/shared/error.js";
 import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import type { Role } from "@domx/shared";

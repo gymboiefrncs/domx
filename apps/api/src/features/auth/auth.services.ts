@@ -9,15 +9,15 @@ import {
 import type { SignupSchema, LoginSchema } from "./auth.schemas.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { UnauthorizedError } from "@api/utils/error.js";
+import { UnauthorizedError } from "@api/shared/error.js";
 import type { RegistrationResult, Tokens } from "./auth.types.js";
-import type { Result } from "@api/common/types.js";
+import type { Result } from "@api/shared/types/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "@api/utils/sendEmail.js";
-import { pool } from "@api/config/db.js";
+} from "@api/shared/mailer/sendEmail.js";
+import { pool } from "@api/shared/db/db.js";
 import { generateOTP } from "@api/features/auth/auth-helpers/generateOTP.js";
 import * as jose from "jose";
 import {
@@ -27,7 +27,7 @@ import {
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";
-import { withTransaction } from "@api/config/transaction.js";
+import { withTransaction } from "@api/shared/db/transaction.js";
 import { LOGOUT_MESSAGE } from "./auth.constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";

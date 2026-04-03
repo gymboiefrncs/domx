@@ -1,4 +1,4 @@
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import type { User } from "@domx/shared";
 
 export const getProfile = async (userId: string): Promise<User> => {

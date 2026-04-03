@@ -1,4 +1,4 @@
-import { withTransaction } from "@api/config/transaction.js";
+import { withTransaction } from "@api/shared/db/transaction.js";
 import {
   countMembers,
   deleteGroup,
@@ -15,7 +15,7 @@ import {
   fetchMemberRole,
   fetchGroupById,
 } from "./group.repositories.js";
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import {
   ALREADY_A_MEMBER,
   ALREADY_AN_ADMIN,
@@ -34,12 +34,12 @@ import {
   GROUP_NAME_CHANGED,
 } from "./group.constants.js";
 import { USER_NOT_FOUND } from "@api/features/profile/index.js";
-import type { Result } from "@api/common/types.js";
+import type { Result } from "@api/shared/types/types.js";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
-} from "@api/utils/error.js";
+} from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
 import type { CreateGroup, GroupDetail, NewMember } from "@domx/shared";
 

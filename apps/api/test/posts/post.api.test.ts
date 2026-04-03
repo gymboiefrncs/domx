@@ -13,7 +13,7 @@ import {
   POST_EDITED,
   POST_NOT_FOUND,
 } from "@api/features/posts/post.constants.js";
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";

@@ -9,10 +9,3 @@ export const pool = new Pool({
   max: 5,
   connectionTimeoutMillis: 2000,
 });
-
-export const resetDB = async () => {
-  const query = `
-  TRUNCATE TABLE users restart identity cascade;
-  `;
-  await pool.query(query);
-};

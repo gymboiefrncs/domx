@@ -1,7 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import type { CreateGroup, NewMember } from "@domx/shared";
 import type { GroupDetail, GroupRole } from "@domx/shared";
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 
 export const insertGroup = async (
   groupName: string,

@@ -1,5 +1,5 @@
 import { describe, it, vi, beforeEach, expect } from "vitest";
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import crypto from "crypto";
 import {
   resendOtp,

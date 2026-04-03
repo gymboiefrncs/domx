@@ -1,7 +1,7 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import { handleGetProfile } from "./profile.controllers.js";
-import { jwtHandler } from "@api/middlewares/jwtHandler.js";
+import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 
 export const profileRouter: Router = express.Router();
 

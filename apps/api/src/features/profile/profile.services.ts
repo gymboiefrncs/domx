@@ -1,6 +1,6 @@
-import { NotFoundError } from "@api/utils/error.js";
+import { NotFoundError } from "@api/shared/error.js";
 import { getProfile } from "./profile.repositories.js";
-import type { Result } from "@api/common/types.js";
+import type { Result } from "@api/shared/types/types.js";
 import type { User } from "@domx/shared";
 
 export const fetchProfile = async (userId: string): Promise<Result<User>> => {

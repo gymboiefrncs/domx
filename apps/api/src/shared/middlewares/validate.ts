@@ -4,24 +4,24 @@ import {
   loginSchema,
   infoSchema,
   signupSchema,
-} from "../features/auth/auth.schemas.js";
-import { ValidationError } from "../utils/error.js";
+} from "../../features/auth/auth.schemas.js";
+import { ValidationError } from "../error.js";
 import {
   emailSchema,
   otpSchema,
-} from "../features/verification/verification.schemas.js";
+} from "../../features/verification/verification.schemas.js";
 import {
   ManageMemberSchema,
   GroupSchema,
   GroupParamsSchema,
-} from "../features/groups/group.schemas.js";
+} from "../../features/groups/group.schemas.js";
 import type { ParamsDictionary } from "express-serve-static-core";
 import {
   PostSchema,
   PostParamsSchema,
   EditPostParamsSchema,
   DeletePostParamsSchema,
-} from "../features/posts/post.schemas.js";
+} from "../../features/posts/post.schemas.js";
 
 // Generic validation middleware factory
 const validate =

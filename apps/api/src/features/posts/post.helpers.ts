@@ -1,5 +1,5 @@
 import { fetchGroupById, fetchMemberRole } from "@api/features/groups/index.js";
-import { NotFoundError, ForbiddenError } from "@api/utils/error.js";
+import { NotFoundError, ForbiddenError } from "@api/shared/error.js";
 import {
   GROUP_NOT_FOUND,
   NOT_A_GROUP_MEMBER,

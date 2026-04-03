@@ -6,8 +6,8 @@ import {
   POST_EDITED,
   POST_NOT_FOUND,
 } from "./post.constants.js";
-import type { Result } from "@api/common/types.js";
-import { ForbiddenError, NotFoundError } from "@api/utils/error.js";
+import type { Result } from "@api/shared/types/types.js";
+import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import {
   deletePost,
   fetchAllPostsByGroupId,

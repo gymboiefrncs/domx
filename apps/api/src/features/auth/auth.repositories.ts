@@ -1,5 +1,5 @@
 import type { SignupSchema } from "./auth.schemas.js";
-import { pool } from "../../config/db.js";
+import { pool } from "../../shared/db/db.js";
 import type { UserRole, LoginUser, NewUser, SignupUser } from "./auth.types.js";
 import type { Pool, PoolClient } from "pg";
 import type { Role } from "@domx/shared";

@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler } from "express";
-import { AppError } from "../utils/error.js";
+import { AppError } from "../error.js";
 import { JWSInvalid, JWTExpired } from "jose/errors";
 
 export const globalErrorHandler: ErrorRequestHandler = (

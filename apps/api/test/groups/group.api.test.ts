@@ -18,7 +18,7 @@ import {
   SUCCESSFULLY_CREATED_GROUP_MESSAGE,
 } from "@api/features/groups/group.constants.js";
 import { USER_NOT_FOUND } from "@api/features/profile/profile.constants.js";
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import crypto from "crypto";
 
 const TEST_OTP = "123456";

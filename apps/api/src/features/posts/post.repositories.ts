@@ -1,4 +1,4 @@
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import type { Post, PostDetails } from "@domx/shared";
 import type { EditPost } from "./post.types.js";
 

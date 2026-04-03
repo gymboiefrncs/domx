@@ -1,4 +1,4 @@
-import { pool } from "@api/config/db.js";
+import { pool } from "@api/shared/db/db.js";
 import {
   fetchOtp,
   incrementRetries,
@@ -19,10 +19,10 @@ import crypto from "crypto";
 import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
-} from "@api/utils/sendEmail.js";
+} from "@api/shared/mailer/sendEmail.js";
 import { generateOTP } from "@api/features/auth/auth-helpers/generateOTP.js";
 import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
-import { withTransaction } from "@api/config/transaction.js";
+import { withTransaction } from "@api/shared/db/transaction.js";
 import type {
   OtpPayload,
   ResendOtpResult,

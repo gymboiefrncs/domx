@@ -1,4 +1,4 @@
-import type { CustomErrorContent } from "../common/types.js";
+import type { CustomErrorContent } from "./types/types.js";
 
 export abstract class AppError extends Error {
   abstract readonly statusCode: number;

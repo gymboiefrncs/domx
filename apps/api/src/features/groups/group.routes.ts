@@ -1,11 +1,11 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
-import { jwtHandler } from "@api/middlewares/jwtHandler.js";
+import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
   manageMemberValidator,
   groupValidator,
   groupParamsValidator,
-} from "@api/middlewares/validate.js";
+} from "@api/shared/middlewares/validate.js";
 import {
   handleAddMember,
   handleChangeGroupName,

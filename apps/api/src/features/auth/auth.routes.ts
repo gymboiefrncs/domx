@@ -11,8 +11,8 @@ import {
   loginValidator,
   infoValidator,
   signupValidator,
-} from "../../middlewares/validate.js";
-import { verifySetInfoToken } from "../../middlewares/jwtHandler.js";
+} from "../../shared/middlewares/validate.js";
+import { verifySetInfoToken } from "../../shared/middlewares/authenticate.js";
 
 export const authRouter: Router = express.Router();
 

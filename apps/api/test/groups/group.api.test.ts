@@ -26,7 +26,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "grouptest@example.com" };
 
-vi.mock("@api/utils/generateOTP.js", () => ({
+vi.mock("@api/features/auth/auth-helpers/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),

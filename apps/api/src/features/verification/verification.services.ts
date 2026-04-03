@@ -20,7 +20,7 @@ import {
   sendAlreadyRegisteredEmail,
   sendVerificationEmail,
 } from "@api/utils/sendEmail.js";
-import { generateOTP } from "@api/utils/generateOTP.js";
+import { generateOTP } from "@api/features/auth/auth-helpers/generateOTP.js";
 import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
 import { withTransaction } from "@api/config/transaction.js";
 import type {

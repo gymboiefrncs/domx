@@ -1,5 +1,6 @@
 import * as jose from "jose";
-import type { Role, Tokens } from "../common/types.js";
+import type { Role } from "@domx/shared";
+import type { Tokens } from "../auth.types.js";
 
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
 const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);

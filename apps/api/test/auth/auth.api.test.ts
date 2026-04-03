@@ -16,7 +16,7 @@ const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
 
-vi.mock("@api/utils/generateOTP.js", () => ({
+vi.mock("@api/features/auth/auth-helpers/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),
@@ -24,39 +24,53 @@ vi.mock("@api/utils/generateOTP.js", () => ({
   })),
 }));
 
+const requireCookies = (
+  value: string | string[] | undefined,
+  step: string,
+): string[] => {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`Expected set-cookie header from ${step}`);
+  }
+
+  return value;
+};
+
 // helpers
 const setupVerifiedUser = async () => {
   await request(app).post("/api/v1/auth/signup").send(signupData);
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
-  const verifyCookies = verifyRes.headers["set-cookie"];
+  const verifyCookies = requireCookies(
+    verifyRes.headers["set-cookie"],
+    "verify-email",
+  );
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Cookie", verifyCookies as string[])
+    .set("Cookie", verifyCookies)
     .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 };
 
-const setupAndLogin = async () => {
+const setupAndLogin = async (): Promise<string[]> => {
   await request(app).post("/api/v1/auth/signup").send(signupData);
   const verifyRes = await request(app)
     .post("/api/v1/verify-email")
     .send({ email: signupData.email, otp: TEST_OTP });
 
-  const verifyCookies = verifyRes.headers["set-cookie"];
+  const verifyCookies = requireCookies(
+    verifyRes.headers["set-cookie"],
+    "verify-email",
+  );
   await request(app)
     .post("/api/v1/auth/set-info")
-    .set("Cookie", verifyCookies as string[])
+    .set("Cookie", verifyCookies)
     .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
 
   const loginRes = await request(app)
     .post("/api/v1/auth/login")
     .send({ email: signupData.email, password: TEST_PASSWORD });
 
-  const cookies = loginRes.headers["set-cookie"];
-  if (!Array.isArray(cookies)) return cookies;
-
-  return cookies as string[];
+  return requireCookies(loginRes.headers["set-cookie"], "auth/login");
 };
 
 describe("Auth API", () => {
@@ -95,11 +109,14 @@ describe("Auth API", () => {
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
 
-      const verifyCookies = verifyRes.headers["set-cookie"];
+      const verifyCookies = requireCookies(
+        verifyRes.headers["set-cookie"],
+        "verify-email",
+      );
 
       const res = await request(app)
         .post("/api/v1/auth/set-info")
-        .set("Cookie", verifyCookies as string[])
+        .set("Cookie", verifyCookies)
         .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -179,16 +196,19 @@ describe("Auth API", () => {
       const verifyRes = await request(app)
         .post("/api/v1/verify-email")
         .send({ email: signupData.email, otp: TEST_OTP });
-      const verifyCookies = verifyRes.headers["set-cookie"];
+      const verifyCookies = requireCookies(
+        verifyRes.headers["set-cookie"],
+        "verify-email",
+      );
 
       const [res1, res2] = await Promise.all([
         request(app)
           .post("/api/v1/auth/set-info")
-          .set("Cookie", verifyCookies as string[])
+          .set("Cookie", verifyCookies)
           .send({ username: TEST_USERNAME, password: TEST_PASSWORD }),
         request(app)
           .post("/api/v1/auth/set-info")
-          .set("Cookie", verifyCookies as string[])
+          .set("Cookie", verifyCookies)
           .send({ username: TEST_USERNAME, password: "test_W2322422" }),
       ]);
 
@@ -274,7 +294,7 @@ describe("Auth API", () => {
       const cookies = await setupAndLogin();
       const res = await request(app)
         .post("/api/v1/auth/refresh")
-        .set("Cookie", cookies as string[]);
+        .set("Cookie", cookies);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ success: true, message: "Token refreshed" });
@@ -313,7 +333,7 @@ describe("Auth API", () => {
         .post("/api/v1/auth/refresh")
         .set(
           "Cookie",
-          (cookies as string[])?.map((c) =>
+          cookies.map((c) =>
             c.replace(/refreshToken=([^;]+)/, "refreshToken=invalidtoken"),
           ),
         );
@@ -325,13 +345,11 @@ describe("Auth API", () => {
     it("rejects a replayed refresh token", async () => {
       const cookies = await setupAndLogin();
 
-      await request(app)
-        .post("/api/v1/auth/refresh")
-        .set("Cookie", cookies as string[]);
+      await request(app).post("/api/v1/auth/refresh").set("Cookie", cookies);
 
       const res = await request(app)
         .post("/api/v1/auth/refresh")
-        .set("Cookie", cookies as string[]);
+        .set("Cookie", cookies);
 
       expect(res.status).toBe(401);
       expect(res.body.errors[0].message).toBe(
@@ -342,13 +360,11 @@ describe("Auth API", () => {
     it("rejects refresh after logout", async () => {
       const cookies = await setupAndLogin();
 
-      await request(app)
-        .post("/api/v1/auth/logout")
-        .set("Cookie", cookies as string[]);
+      await request(app).post("/api/v1/auth/logout").set("Cookie", cookies);
 
       const res = await request(app)
         .post("/api/v1/auth/refresh")
-        .set("Cookie", cookies as string[]);
+        .set("Cookie", cookies);
 
       expect(res.status).toBe(401);
     });

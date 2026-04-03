@@ -17,7 +17,7 @@ const TEST_OTP = "123456";
 const hashOTP = () => {
   return crypto.createHash("sha256").update(TEST_OTP).digest("hex");
 };
-vi.mock("@api/utils/generateOTP.js", () => ({
+vi.mock("@api/features/auth/auth-helpers/generateOTP.js", () => ({
   generateOTP: vi.fn(() => ({
     otp: TEST_OTP,
     hashedOTP: crypto.createHash("sha256").update(TEST_OTP).digest("hex"),

@@ -6,7 +6,7 @@ import type { SetInfoResult } from "./auth.types.js";
 import type { Result } from "@api/common/types.js";
 import { pool } from "@api/config/db.js";
 import { withTransaction } from "@api/config/transaction.js";
-import { generateDisplayId } from "@api/utils/generateDisplayId.js";
+import { generateDisplayId } from "./auth-helpers/generateDisplayId.js";
 import {
   createDisplayId,
   updateUsername,

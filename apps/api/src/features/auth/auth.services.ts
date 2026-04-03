@@ -18,12 +18,12 @@ import {
   sendVerificationEmail,
 } from "@api/utils/sendEmail.js";
 import { pool } from "@api/config/db.js";
-import { generateOTP } from "@api/utils/generateOTP.js";
+import { generateOTP } from "@api/features/auth/auth-helpers/generateOTP.js";
 import * as jose from "jose";
 import {
   generateTokens,
   getRefreshTokenExpiry,
-} from "@api/utils/generateToken.js";
+} from "./auth-helpers/generateToken.js";
 import { handleVerifiedUser } from "./auth-helpers/handleVerifiedUser.js";
 import { handleUnverifiedUser } from "./auth-helpers/handleUnverifiedUser.js";
 import { handleNewUser } from "./auth-helpers/handleNewUser.js";

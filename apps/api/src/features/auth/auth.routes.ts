@@ -11,14 +11,15 @@ import {
   loginValidator,
   infoValidator,
   signupValidator,
-} from "../../shared/middlewares/validate.js";
-import { verifySetInfoToken } from "../../shared/middlewares/authenticate.js";
+} from "@api/shared/middlewares/validate.js";
+import { verifySetInfoToken } from "@api/shared/middlewares/authenticate.js";
+import { config } from "@api/shared/config.js";
 
 export const authRouter: Router = express.Router();
 
 const authLimiter = rateLimit({
   windowMs: 2 * 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 3 : 1000,
+  max: config.server.nodeEnv === "production" ? 3 : 1000,
   message: "Too many requests, please try again after 2 minutes",
   standardHeaders: true,
   legacyHeaders: false,
@@ -26,7 +27,7 @@ const authLimiter = rateLimit({
 
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 3 : 1000,
+  max: config.server.nodeEnv === "production" ? 3 : 1000,
   message: "Too many requests, please try again after 15 minutes",
   standardHeaders: true,
   legacyHeaders: false,

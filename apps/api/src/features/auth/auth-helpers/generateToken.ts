@@ -1,13 +1,15 @@
 import * as jose from "jose";
 import type { Role } from "@domx/shared";
 import type { Tokens } from "../auth.types.js";
+import { config } from "@api/shared/config.js";
 
-const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
-const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
+const refreshSecret = new TextEncoder().encode(config.jwt.refreshTokenSecret);
+const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
 
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Returns a fresh expiry date relative to now.
+/**
+ * Returns a fresh expiry date relative to now.
  * Must be called per token, not cached at module level.
  */
 export const getRefreshTokenExpiry = (): Date =>

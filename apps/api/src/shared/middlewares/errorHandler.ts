@@ -1,6 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import { AppError } from "../error.js";
 import { JWSInvalid, JWTExpired } from "jose/errors";
+import { config } from "../config.js";
 
 export const globalErrorHandler: ErrorRequestHandler = (
   err,
@@ -8,7 +9,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
   res,
   _next,
 ) => {
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = config.server.nodeEnv === "development";
 
   if (err instanceof AppError) {
     if (err.logging) {

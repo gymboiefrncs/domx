@@ -2,9 +2,11 @@ import type { NextFunction, Request, Response } from "express";
 import * as jose from "jose";
 import type { Role } from "@domx/shared";
 import { UnauthorizedError } from "../error.js";
+import { config } from "../config.js";
 
-const accessSecret = new TextEncoder().encode(process.env.JWT_ACCESS_TOKEN);
-const setInfoSecret = new TextEncoder().encode(process.env.SET_PASSWORD_TOKEN);
+const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
+const setInfoSecret = new TextEncoder().encode(config.jwt.setInfoTokenSecret);
+
 export const jwtHandler = async (
   req: Request,
   _res: Response,

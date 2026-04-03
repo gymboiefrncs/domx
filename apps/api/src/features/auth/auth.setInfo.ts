@@ -15,6 +15,7 @@ import {
 import bcrypt from "bcrypt";
 import type { UserInfo } from "./auth.types.js";
 import type { Role } from "@domx/shared";
+import { config } from "@api/shared/config.js";
 
 export const setInfo = async ({
   userId,
@@ -23,7 +24,7 @@ export const setInfo = async ({
 }: UserInfo): Promise<Result<Role>> => {
   const hashedPassword = await bcrypt.hash(
     password,
-    process.env.NODE_ENV === "production" ? 12 : 10,
+    config.server.nodeEnv === "production" ? 12 : 10,
   );
 
   /**

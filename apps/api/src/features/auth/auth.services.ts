@@ -31,6 +31,7 @@ import { withTransaction } from "@api/shared/db/transaction.js";
 import { LOGOUT_MESSAGE } from "./auth.constants.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
+import { config } from "@api/shared/config.js";
 
 export const registerUser = async (
   data: SignupSchema,
@@ -84,7 +85,7 @@ export const registerUser = async (
    * confusion if ever the transaction rolls back after the email is sent
    */
   if (result.reason === "NEW_USER" || result.reason === "RESENT_OTP") {
-    if (process.env.NODE_ENV === "development") {
+    if (config.server.nodeEnv === "development") {
       console.log(`Verification OTP for ${result.email}: ${otpData.otp})`);
     } else {
       sendVerificationEmail(result.email, otpData.otp).catch((err) => {
@@ -94,7 +95,7 @@ export const registerUser = async (
   }
 
   if (result.reason === "ALREADY_VERIFIED") {
-    if (process.env.NODE_ENV === "development") {
+    if (config.server.nodeEnv === "development") {
       console.log(
         `Attempt to register already verified email ${result.email}. Sent "already registered" email.`,
       );
@@ -120,7 +121,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
    */
   const passwordMatch = await bcrypt.compare(
     data.password,
-    user?.password ?? process.env.DUMMY_HASH!,
+    user?.password ?? config.auth.dummyHash,
   );
 
   if (!user || !user.is_verified || !user.password) {
@@ -140,7 +141,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
 export const rotateTokens = async (
   oldRefreshToken: string,
 ): Promise<Tokens> => {
-  const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN);
+  const refreshSecret = new TextEncoder().encode(config.jwt.refreshTokenSecret);
 
   const { payload } = await jose.jwtVerify(oldRefreshToken, refreshSecret);
 
@@ -193,7 +194,7 @@ export const rotateTokens = async (
 export const logoutUser = async (refreshToken: string): Promise<Result> => {
   try {
     const refreshSecret = new TextEncoder().encode(
-      process.env.JWT_REFRESH_TOKEN,
+      config.jwt.refreshTokenSecret,
     );
 
     const { payload } = await jose.jwtVerify(refreshToken, refreshSecret);

@@ -1,6 +1,6 @@
 import type { GroupRole } from "@domx/shared";
 import { fetchGroupById, fetchMemberRole } from "./group.repositories.js";
-import { ForbiddenError, NotFoundError } from "../../shared/error.js";
+import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import { GROUP_NOT_FOUND, NOT_A_GROUP_MEMBER } from "./group.constants.js";
 import { USER_NOT_FOUND } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";

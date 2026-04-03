@@ -3,10 +3,11 @@ import {
   REFRESH_TOKEN_MAX_AGE,
   ACCESS_TOKEN_MAX_AGE,
 } from "../auth.constants.js";
+import { config } from "@api/shared/config.js";
 
 const baseCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: config.server.nodeEnv === "production",
   sameSite: "strict" as const,
   path: "/",
 };

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateOtp, resendOtp } from "./verification.services.js";
 import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "@api/features/auth/index.js";
+import { config } from "@api/shared/config.js";
 
 export const verificationHandler = async (
   req: Request,
@@ -12,7 +13,7 @@ export const verificationHandler = async (
     if (result.ok) {
       res.cookie("setInfoToken", result.data, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: config.server.nodeEnv === "production",
         sameSite: "strict",
         maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
       });

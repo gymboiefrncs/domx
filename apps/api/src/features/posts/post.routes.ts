@@ -13,12 +13,13 @@ import {
   handleEditPost,
   handleGetPosts,
 } from "./post.controllers.js";
+import { config } from "@api/shared/config.js";
 
 export const postRouter: Router = express.Router();
 
 const postLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 120 : 1000,
+  max: config.server.nodeEnv === "production" ? 120 : 1000,
   message: "Too many requests, please try again in a minute",
   standardHeaders: true,
   legacyHeaders: false,

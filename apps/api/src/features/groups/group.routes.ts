@@ -19,12 +19,13 @@ import {
   handleUpdateSeen,
   handleDeleteGroup,
 } from "./group.controllers.js";
+import { config } from "@api/shared/config.js";
 
 export const groupRouter: Router = express.Router();
 
 const groupLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: process.env.NODE_ENV === "production" ? 120 : 1000,
+  max: config.server.nodeEnv === "production" ? 120 : 1000,
   message: "Too many requests, please try again in a minute",
   standardHeaders: true,
   legacyHeaders: false,

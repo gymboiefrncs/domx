@@ -1,6 +1,7 @@
 import { Resend } from "resend";
+import { config } from "../config.js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(config.email.resendSecret);
 
 export const sendVerificationEmail = async (email: string, otp: string) => {
   await resend.emails.send({

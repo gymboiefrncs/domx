@@ -11,6 +11,7 @@ import { UnauthorizedError } from "@api/shared/error.js";
 import { INCOMPLETE_SIGNUP_TOKEN_MAX_AGE } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import type { Role } from "@domx/shared";
+import { config } from "@api/shared/config.js";
 
 export const signupHandler = async (
   req: Request,
@@ -22,7 +23,7 @@ export const signupHandler = async (
     if (result.reason === "INCOMPLETE_SIGNUP") {
       res.cookie("setInfoToken", result.data.setInfoToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: config.server.nodeEnv === "production",
         sameSite: "strict",
         maxAge: INCOMPLETE_SIGNUP_TOKEN_MAX_AGE,
       });

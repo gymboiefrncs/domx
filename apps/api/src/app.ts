@@ -5,6 +5,7 @@ import { routes } from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import { NotFoundError } from "./shared/error.js";
 import cors from "cors";
+
 export const app: Express = express();
 
 const corsOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")

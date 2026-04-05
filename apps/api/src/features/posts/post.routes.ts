@@ -1,28 +1,25 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
-import {
-  validateBody,
-  validateParams,
-} from "@api/shared/middlewares/validate.js";
+import { validateParams } from "@api/shared/middlewares/validate.js";
 import {
   handleCreatePost,
-  handleDeletePost,
   handleEditPost,
   handleGetPosts,
+  handleDeletePost,
+  handleJoinGroup,
 } from "./post.controllers.js";
 import { config } from "@api/shared/config.js";
 import {
-  DeletePostParamsSchema,
-  PostSchema,
+  DeletePostPayloadSchema,
+  EditPostPayloadSchema,
+  JoinGroupPayloadSchema,
   PostParamsSchema,
-  EditPostParamsSchema,
+  PostSchema,
 } from "./post.schemas.js";
+import type { ChatSocket, MessageHandler } from "./post.types.js";
 
-const postValidator = validateBody(PostSchema);
 const postParamsValidator = validateParams(PostParamsSchema);
-const editPostParamsValidator = validateParams(EditPostParamsSchema);
-const deletePostParamsValidator = validateParams(DeletePostParamsSchema);
 
 export const postRouter: Router = express.Router();
 
@@ -43,25 +40,38 @@ postRouter.get(
   handleGetPosts,
 );
 
-postRouter.post(
-  "/groups/:groupId/posts",
-  jwtHandler,
-  postParamsValidator,
-  postValidator,
-  handleCreatePost,
-);
+const messageHandlers: Record<string, MessageHandler> = {
+  joinGroup: {
+    schema: JoinGroupPayloadSchema,
+    handler: handleJoinGroup,
+  },
+  sendMessage: {
+    schema: PostSchema,
+    handler: handleCreatePost,
+  },
+  editMessage: {
+    schema: EditPostPayloadSchema,
+    handler: handleEditPost,
+  },
+  deleteMessage: {
+    schema: DeletePostPayloadSchema,
+    handler: handleDeletePost,
+  },
+};
 
-postRouter.put(
-  "/groups/:groupId/posts/:postId",
-  jwtHandler,
-  editPostParamsValidator,
-  postValidator,
-  handleEditPost,
-);
+export const handleChatMessage = async (
+  type: string,
+  payload: unknown,
+  socket: ChatSocket,
+  rooms: Map<string, Set<ChatSocket>>,
+) => {
+  const entry = messageHandlers[type];
+  if (!entry)
+    return socket.send(JSON.stringify({ message: "Unknown message type" }));
 
-postRouter.delete(
-  "/groups/:groupId/posts/:postId",
-  jwtHandler,
-  deletePostParamsValidator,
-  handleDeletePost,
-);
+  const parsed = entry.schema.safeParse(payload);
+  if (!parsed.success) {
+    return socket.send(JSON.stringify({ message: parsed.error.flatten() }));
+  }
+  await entry.handler(parsed.data, socket, rooms);
+};

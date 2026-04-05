@@ -9,7 +9,7 @@ import {
   updatePost,
 } from "./post.repositories.js";
 import { performChecks } from "./post.helpers.js";
-import type { Post, PostDetails } from "@domx/shared";
+import type { PostDetails } from "@domx/shared";
 
 /**
  * Fetches all posts in a group.
@@ -35,7 +35,7 @@ export const createPost = async (
   body: string,
   requesterId: string,
   groupId: string,
-): Promise<Result<Post>> => {
+): Promise<Result<PostDetails>> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   await performChecks(groupId, requesterId);
 

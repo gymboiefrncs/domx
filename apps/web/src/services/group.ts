@@ -80,7 +80,7 @@ export const fetchGroupMembers = async (groupId: string) => {
 
 export const deleteGroup = async (groupId: string) => {
   const res = await fetchWithAuth(
-    `http://localhost:8080/api/v1/groups/${groupId}/delete`,
+    `http://localhost:8080/api/v1/groups/${groupId}`,
     {
       method: "DELETE",
       credentials: "include",

@@ -1,5 +1,5 @@
 import { pool } from "@api/shared/db/db.js";
-import type { Post, PostDetails } from "@domx/shared";
+import type { PostDetails } from "@domx/shared";
 import type { EditPost } from "./post.types.js";
 
 export const fetchAllPostsByGroupId = async (
@@ -22,8 +22,16 @@ export const insertPost = async (
   body: string,
   userId: string,
   groupId: string,
-): Promise<Post> => {
-  const query = `INSERT INTO posts (title, body, user_id, group_id) VALUES ($1, $2, $3, $4) returning *`;
+): Promise<PostDetails> => {
+  const query = `
+  WITH inserted_post AS (
+    INSERT INTO posts (title, body, user_id, group_id)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+  )
+  SELECT p.*, u.username, u.display_id
+  FROM inserted_post p
+  JOIN users u ON p.user_id = u.id`;
   const values = [title, body, userId, groupId];
   const result = await pool.query(query, values);
   return result.rows[0];

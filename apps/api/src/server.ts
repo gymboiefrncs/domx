@@ -4,6 +4,7 @@ import http from "http";
 import { WebSocketServer } from "ws";
 import { authenticateWs } from "./shared/middlewares/authenticateWs.js";
 import type { ChatSocket } from "./features/posts/index.js";
+import { handleChatMessage } from "./features/posts/post.routes.js";
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -15,13 +16,31 @@ wss.on("connection", async (socket: ChatSocket, req) => {
   if (!authenticate) return socket.terminate();
 
   socket.on("message", async (data) => {
+    let parsed: { type: string; payload: unknown };
+
     try {
-      const { type, payload } = JSON.parse(data.toString());
-      // TODO: handle different types(join room, send message ...)
+      parsed = JSON.parse(data.toString()) as {
+        type: string;
+        payload: unknown;
+      };
     } catch {
       socket.send(
         JSON.stringify({ type: "error", payload: "Invalid message format" }),
       );
+      return;
+    }
+
+    try {
+      await handleChatMessage(parsed.type, parsed.payload, socket, rooms);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unexpected server error";
+      socket.send(JSON.stringify({ type: "error", payload: message }));
+    }
+  });
+  socket.on("close", () => {
+    if (socket.groupId) {
+      rooms.get(socket.groupId)?.delete(socket);
     }
   });
 });

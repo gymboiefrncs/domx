@@ -13,7 +13,8 @@ import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
-  const { posts, loading, handleCreatePost, handleEditPost } = usePosts(id!);
+  const { posts, loading, handleCreatePost, handleEditPost, handleDeletePost } =
+    usePosts(id!);
   const { user } = useAuthContext();
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
@@ -23,6 +24,9 @@ export const GroupChatPage = () => {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState<string>("");
   const [editBody, setEditBody] = useState<string>("");
+  const [pendingDeletePostId, setPendingDeletePostId] = useState<string | null>(
+    null,
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -91,6 +95,26 @@ export const GroupChatPage = () => {
     await handleEditPost(editingPostId, editBody.trim(), editTitle.trim());
     cancelEditingPost();
     toast.success("Post update sent");
+  };
+
+  const requestDeletePost = (postId: string): void => {
+    setPendingDeletePostId(postId);
+  };
+
+  const cancelDeletePost = (): void => {
+    setPendingDeletePostId(null);
+  };
+
+  const confirmDeletePost = async (): Promise<void> => {
+    if (!pendingDeletePostId) return;
+
+    if (editingPostId === pendingDeletePostId) {
+      cancelEditingPost();
+    }
+
+    await handleDeletePost(pendingDeletePostId);
+    setPendingDeletePostId(null);
+    toast.success("Post deleted");
   };
 
   if (loading) {
@@ -237,35 +261,46 @@ export const GroupChatPage = () => {
                     </>
                   )}
 
-                  <div className="flex justify-end pt-3">
-                    {editingPostId === post.id ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={cancelEditingPost}
-                          className="text-xs font-medium text-text-muted hover:text-text transition-colors mr-3"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void saveEditedPost()}
-                          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
-                        >
-                          Save
-                        </button>
-                      </>
-                    ) : (
-                      user?.display_id === post.display_id && (
-                        <button
-                          type="button"
-                          onClick={() => startEditingPost(post)}
-                          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
-                        >
-                          Edit
-                        </button>
-                      )
-                    )}
+                  <div className="flex items-center justify-between pt-3">
+                    <div className="flex items-center">
+                      {editingPostId === post.id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={cancelEditingPost}
+                            className="text-xs font-medium text-text-muted hover:text-text transition-colors mr-3"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void saveEditedPost()}
+                            className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                          >
+                            Save
+                          </button>
+                        </>
+                      ) : (
+                        user?.display_id === post.display_id && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEditingPost(post)}
+                              className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => requestDeletePost(post.id)}
+                              className="text-xs font-medium text-error hover:text-error/80 transition-colors mr-3"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )
+                      )}
+                    </div>
 
                     <button
                       type="button"
@@ -341,6 +376,33 @@ export const GroupChatPage = () => {
           </div>
         </div>
       </div>
+
+      {pendingDeletePostId && (
+        <div className="fixed inset-0 z-400 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-lg bg-surface p-4 shadow-lg shadow-black/25 border border-border">
+            <h3 className="text-sm font-semibold text-text">Delete post?</h3>
+            <p className="mt-2 text-xs text-text-muted">
+              This action cannot be undone.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={cancelDeletePost}
+                className="text-xs font-medium text-text-muted hover:text-text px-3 py-1"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeletePost()}
+                className="btn px-3 py-1 bg-error text-on-error hover:bg-error-hover"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

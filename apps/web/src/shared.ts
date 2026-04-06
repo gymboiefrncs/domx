@@ -89,4 +89,5 @@ export type GetPostsState = HookState & {
     body: string,
     title: string,
   ) => Promise<void>;
+  handleDeletePost: (postId: string) => Promise<void>;
 };

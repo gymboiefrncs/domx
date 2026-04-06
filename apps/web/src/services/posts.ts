@@ -8,7 +8,8 @@ type ChatOutgoingMessage =
   | {
       type: "editMessage";
       payload: { postId: string; title: string; body: string };
-    };
+    }
+  | { type: "deleteMessage"; payload: { postId: string } };
 
 export type ChatIncomingMessage =
   | { type: "newMessage"; data: Post | PostDetails }
@@ -95,6 +96,17 @@ export const sendEditPostMessage = (
 ): void => {
   const message: ChatOutgoingMessage = {
     type: "editMessage",
+    payload,
+  };
+  socket.send(JSON.stringify(message));
+};
+
+export const sendDeletePostMessage = (
+  socket: WebSocket,
+  payload: { postId: string },
+): void => {
+  const message: ChatOutgoingMessage = {
+    type: "deleteMessage",
     payload,
   };
   socket.send(JSON.stringify(message));

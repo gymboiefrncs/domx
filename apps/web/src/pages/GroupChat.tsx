@@ -5,6 +5,10 @@ import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/hooks/useGroups";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
@@ -125,7 +129,55 @@ export const GroupChatPage = () => {
                     {post.title}
                   </h2>
                   <div className="p-4 border-border-strong border-2 rounded-md">
-                    <p className="text-sm text-text-muted">{post.body}</p>
+                    <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[
+                          [
+                            rehypeHighlight,
+                            { detect: true, ignoreMissing: true },
+                          ],
+                        ]}
+                        components={{
+                          p: ({ children }) => (
+                            <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
+                              {children}
+                            </p>
+                          ),
+                          pre: ({ children }) => (
+                            <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
+                              {children}
+                            </pre>
+                          ),
+                          code: ({ className, children, ...props }) => {
+                            const isBlock = Boolean(
+                              className?.includes("language-"),
+                            );
+                            if (isBlock) {
+                              return (
+                                <code
+                                  className={`${className} block whitespace-pre-wrap wrap-break-word`}
+                                  {...props}
+                                >
+                                  {children}
+                                </code>
+                              );
+                            }
+
+                            return (
+                              <code
+                                className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            );
+                          },
+                        }}
+                      >
+                        {post.body}
+                      </ReactMarkdown>
+                    </div>
                     <div className="flex justify-end pt-3">
                       <button
                         type="button"

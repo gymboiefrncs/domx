@@ -95,7 +95,6 @@ export const handleEditPost = async (
   }
 
   const room = rooms.get(socket.groupId);
-  console.log(result.data);
   room?.forEach((client) => {
     client.send(JSON.stringify({ type: "postEdited", data: result.data }));
   });

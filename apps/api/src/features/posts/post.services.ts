@@ -54,7 +54,7 @@ export const editPost = async (
   requesterId: string,
   groupId: string,
   postId: string,
-): Promise<Result> => {
+): Promise<Result<PostDetails>> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   const requesterRole = await performChecks(groupId, requesterId);
 
@@ -66,11 +66,12 @@ export const editPost = async (
     throw new ForbiddenError("You are not allowed to edit this post.");
   }
 
-  await updatePost(title, body, postId, groupId);
+  const updatedPost = await updatePost(title, body, postId, groupId);
 
   return {
     ok: true,
     message: "Post edited successfully.",
+    data: updatedPost,
   };
 };
 

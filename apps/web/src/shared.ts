@@ -84,4 +84,9 @@ export type GetPostsState = HookState & {
     body: string,
     title: string,
   ) => Promise<void>;
+  handleEditPost: (
+    postId: string,
+    body: string,
+    title: string,
+  ) => Promise<void>;
 };

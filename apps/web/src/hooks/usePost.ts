@@ -3,6 +3,7 @@ import {
   connectPostSocket,
   fetchMessages,
   joinPostGroup,
+  sendEditPostMessage,
   sendPostMessage,
   type ChatIncomingMessage,
 } from "@/services/posts";
@@ -225,5 +226,24 @@ export const usePosts = (groupId: string): GetPostsState => {
     }
   };
 
-  return { posts, loading, handleCreatePost };
+  const handleEditPost = async (
+    postId: string,
+    body: string,
+    title: string,
+  ) => {
+    const socket = socketRef.current;
+
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      toast.error("Chat connection is not ready");
+      return;
+    }
+
+    sendEditPostMessage(socket, {
+      postId,
+      body,
+      title,
+    });
+  };
+
+  return { posts, loading, handleCreatePost, handleEditPost };
 };

@@ -4,7 +4,11 @@ import type { Post, PostDetails } from "@domx/shared";
 
 type ChatOutgoingMessage =
   | { type: "joinGroup"; payload: { groupId: string } }
-  | { type: "sendMessage"; payload: { title: string; body: string } };
+  | { type: "sendMessage"; payload: { title: string; body: string } }
+  | {
+      type: "editMessage";
+      payload: { postId: string; title: string; body: string };
+    };
 
 export type ChatIncomingMessage =
   | { type: "newMessage"; data: Post | PostDetails }
@@ -80,6 +84,17 @@ export const sendPostMessage = (
 ): void => {
   const message: ChatOutgoingMessage = {
     type: "sendMessage",
+    payload,
+  };
+  socket.send(JSON.stringify(message));
+};
+
+export const sendEditPostMessage = (
+  socket: WebSocket,
+  payload: { postId: string; title: string; body: string },
+): void => {
+  const message: ChatOutgoingMessage = {
+    type: "editMessage",
     payload,
   };
   socket.send(JSON.stringify(message));

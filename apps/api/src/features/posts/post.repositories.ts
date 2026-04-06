@@ -52,15 +52,22 @@ export const updatePost = async (
   body: string,
   postId: string,
   groupId: string,
-): Promise<void> => {
+): Promise<PostDetails> => {
   const query = `
-  UPDATE posts 
-  SET title = coalesce($1, title), 
-      body = coalesce($2, body), 
-      updated_at = now()
-  WHERE id = $3 AND group_id = $4`;
+  WITH updated_post AS (
+    UPDATE posts
+    SET title = coalesce($1, title),
+        body = coalesce($2, body),
+        updated_at = now()
+    WHERE id = $3 AND group_id = $4
+    RETURNING *
+  )
+  SELECT p.*, u.username, u.display_id
+  FROM updated_post p
+  JOIN users u ON p.user_id = u.id`;
   const values = [title, body, postId, groupId];
-  await pool.query(query, values);
+  const result = await pool.query(query, values);
+  return result.rows[0];
 };
 
 export const deletePost = async (

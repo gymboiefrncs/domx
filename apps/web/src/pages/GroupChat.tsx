@@ -5,6 +5,7 @@ import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/hooks/useGroups";
 import { toast } from "sonner";
+import { useAuthContext } from "@/context/AuthContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -12,12 +13,16 @@ import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
-  const { posts, loading, handleCreatePost } = usePosts(id!);
+  const { posts, loading, handleCreatePost, handleEditPost } = usePosts(id!);
+  const { user } = useAuthContext();
   const { groups } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState<string>("");
+  const [editBody, setEditBody] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -62,6 +67,30 @@ export const GroupChatPage = () => {
     } catch {
       toast.error("Failed to copy post body");
     }
+  };
+
+  const startEditingPost = (selectedPost: PostDetails): void => {
+    setEditingPostId(selectedPost.id);
+    setEditTitle(selectedPost.title);
+    setEditBody(selectedPost.body);
+  };
+
+  const cancelEditingPost = (): void => {
+    setEditingPostId(null);
+    setEditTitle("");
+    setEditBody("");
+  };
+
+  const saveEditedPost = async (): Promise<void> => {
+    if (!editingPostId) return;
+    if (!editTitle.trim() || !editBody.trim()) {
+      toast.error("Title and body are required");
+      return;
+    }
+
+    await handleEditPost(editingPostId, editBody.trim(), editTitle.trim());
+    cancelEditingPost();
+    toast.success("Post update sent");
   };
 
   if (loading) {
@@ -125,68 +154,126 @@ export const GroupChatPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <h2 className="text-sm font-medium text-text">
-                    {post.title}
-                  </h2>
-                  <div className="p-4 border-border-strong border-2 rounded-md">
-                    <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[
-                          [
-                            rehypeHighlight,
-                            { detect: true, ignoreMissing: true },
-                          ],
-                        ]}
-                        components={{
-                          p: ({ children }) => (
-                            <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
-                              {children}
-                            </p>
-                          ),
-                          pre: ({ children }) => (
-                            <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
-                              {children}
-                            </pre>
-                          ),
-                          code: ({ className, children, ...props }) => {
-                            const isBlock = Boolean(
-                              className?.includes("language-"),
-                            );
-                            if (isBlock) {
-                              return (
-                                <code
-                                  className={`${className} block whitespace-pre-wrap wrap-break-word`}
-                                  {...props}
-                                >
+                  {editingPostId === post.id ? (
+                    <>
+                      <textarea
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        rows={1}
+                        className="w-full text-sm font-medium text-text bg-transparent border border-border rounded-md p-2 resize-none outline-none"
+                      />
+                      <div className="p-4 border-border-strong border-2 rounded-md">
+                        <textarea
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                          rows={6}
+                          className="w-full text-sm text-text-muted bg-transparent resize-y outline-none"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-sm font-medium text-text flex items-center gap-2">
+                        <span>{post.title}</span>
+                        {new Date(post.updated_at).getTime() -
+                          new Date(post.created_at).getTime() >
+                          1000 && (
+                          <span className="text-[10px] uppercase tracking-wide text-text-muted">
+                            edited
+                          </span>
+                        )}
+                      </h2>
+                      <div className="p-4 border-border-strong border-2 rounded-md">
+                        <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[
+                              [
+                                rehypeHighlight,
+                                { detect: true, ignoreMissing: true },
+                              ],
+                            ]}
+                            components={{
+                              p: ({ children }) => (
+                                <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
                                   {children}
-                                </code>
-                              );
-                            }
+                                </p>
+                              ),
+                              pre: ({ children }) => (
+                                <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
+                                  {children}
+                                </pre>
+                              ),
+                              code: ({ className, children, ...props }) => {
+                                const isBlock = Boolean(
+                                  className?.includes("language-"),
+                                );
+                                if (isBlock) {
+                                  return (
+                                    <code
+                                      className={`${className} block whitespace-pre-wrap wrap-break-word`}
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  );
+                                }
 
-                            return (
-                              <code
-                                className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
-                                {...props}
-                              >
-                                {children}
-                              </code>
-                            );
-                          },
-                        }}
-                      >
-                        {post.body}
-                      </ReactMarkdown>
-                    </div>
-                    <div className="flex justify-end pt-3">
-                      <button
-                        type="button"
-                        onClick={() => handleCopyBody(post.body)}
-                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                      >
-                        Copy
-                      </button>
-                    </div>
+                                return (
+                                  <code
+                                    className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
+                                    {...props}
+                                  >
+                                    {children}
+                                  </code>
+                                );
+                              },
+                            }}
+                          >
+                            {post.body}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex justify-end pt-3">
+                    {editingPostId === post.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={cancelEditingPost}
+                          className="text-xs font-medium text-text-muted hover:text-text transition-colors mr-3"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void saveEditedPost()}
+                          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                        >
+                          Save
+                        </button>
+                      </>
+                    ) : (
+                      user?.display_id === post.display_id && (
+                        <button
+                          type="button"
+                          onClick={() => startEditingPost(post)}
+                          className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                        >
+                          Edit
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopyBody(post.body)}
+                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                    >
+                      Copy
+                    </button>
                   </div>
                 </div>
               </li>

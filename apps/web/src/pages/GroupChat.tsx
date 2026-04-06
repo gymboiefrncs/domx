@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { SpinnerIcon, SendIcon, SettingsIcon } from "@/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/hooks/useGroups";
+import { toast } from "sonner";
 
 export const GroupChatPage = () => {
   const { id } = useParams();
@@ -47,6 +48,15 @@ export const GroupChatPage = () => {
     setIsFocused(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
+    }
+  };
+
+  const handleCopyBody = async (body: string): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(body);
+      toast.success("Copied to clipboard");
+    } catch {
+      toast.error("Failed to copy post body");
     }
   };
 
@@ -116,6 +126,15 @@ export const GroupChatPage = () => {
                   </h2>
                   <div className="p-4 border-border-strong border-2 rounded-md">
                     <p className="text-sm text-text-muted">{post.body}</p>
+                    <div className="flex justify-end pt-3">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyBody(post.body)}
+                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </div>
                 </div>
               </li>

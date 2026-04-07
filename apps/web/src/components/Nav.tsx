@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { GroupsIcon, SavedIcon, ProfileIcon } from "@/assets/icons";
+import { GroupsIcon, ProfileIcon } from "@/assets/icons";
 
 type NavItem = {
   label: string;
@@ -9,7 +9,6 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Groups", href: "/groups", icon: GroupsIcon },
-  { label: "Saved", href: "/saved", icon: SavedIcon },
   { label: "Profile", href: "/profile", icon: ProfileIcon },
 ];
 

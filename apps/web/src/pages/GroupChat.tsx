@@ -155,165 +155,167 @@ export const GroupChatPage = () => {
             No posts yet. Be the first to post!
           </p>
         ) : (
-          <ul className="max-w-md mx-auto">
-            {posts.map((post: PostDetails) => (
-              <li
-                key={post.id}
-                className="card px-4 py-3 flex flex-col gap-1 mb-4"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-primary">
-                        {post.username.charAt(0).toUpperCase()}
+          <div className="max-w-md mx-auto">
+            <ul>
+              {posts.map((post: PostDetails) => (
+                <li
+                  key={post.id}
+                  className="card px-4 py-3 flex flex-col gap-1 mb-4"
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-primary">
+                          {post.username.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-text">
+                        {post.username}
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-text">
-                      {post.username}
+                    <span className="text-xs text-text-muted">
+                      @{post.display_id}
                     </span>
                   </div>
-                  <span className="text-xs text-text-muted">
-                    @{post.display_id}
-                  </span>
-                </div>
 
-                <div className="flex flex-col gap-3">
-                  {editingPostId === post.id ? (
-                    <>
-                      <textarea
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        rows={1}
-                        className="w-full text-sm font-medium text-text bg-transparent border border-border rounded-md p-2 resize-none outline-none"
-                      />
-                      <div className="p-4 border-border-strong border-2 rounded-md">
+                  <div className="flex flex-col gap-3">
+                    {editingPostId === post.id ? (
+                      <>
                         <textarea
-                          value={editBody}
-                          onChange={(e) => setEditBody(e.target.value)}
-                          rows={6}
-                          className="w-full text-sm text-text-muted bg-transparent resize-y outline-none"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          rows={1}
+                          className="w-full text-sm font-medium text-text bg-transparent border border-border rounded-md p-2 resize-none outline-none"
                         />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-sm font-medium text-text flex items-center gap-2">
-                        <span>{post.title}</span>
-                        {new Date(post.updated_at).getTime() -
-                          new Date(post.created_at).getTime() >
-                          1000 && (
-                          <span className="text-[10px] uppercase tracking-wide text-text-muted">
-                            edited
-                          </span>
-                        )}
-                      </h2>
-                      <div className="p-4 border-border-strong border-2 rounded-md">
-                        <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[
-                              [
-                                rehypeHighlight,
-                                { detect: true, ignoreMissing: true },
-                              ],
-                            ]}
-                            components={{
-                              p: ({ children }) => (
-                                <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
-                                  {children}
-                                </p>
-                              ),
-                              pre: ({ children }) => (
-                                <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
-                                  {children}
-                                </pre>
-                              ),
-                              code: ({ className, children, ...props }) => {
-                                const isBlock = Boolean(
-                                  className?.includes("language-"),
-                                );
-                                if (isBlock) {
+                        <div className="p-4 border-border-strong border-2 rounded-md">
+                          <textarea
+                            value={editBody}
+                            onChange={(e) => setEditBody(e.target.value)}
+                            rows={6}
+                            className="w-full text-sm text-text-muted bg-transparent resize-y outline-none"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-sm font-medium text-text flex items-center gap-2">
+                          <span>{post.title}</span>
+                          {new Date(post.updated_at).getTime() -
+                            new Date(post.created_at).getTime() >
+                            1000 && (
+                            <span className="text-[10px] uppercase tracking-wide text-text-muted">
+                              edited
+                            </span>
+                          )}
+                        </h2>
+                        <div className="p-4 border-border-strong border-2 rounded-md">
+                          <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[
+                                [
+                                  rehypeHighlight,
+                                  { detect: true, ignoreMissing: true },
+                                ],
+                              ]}
+                              components={{
+                                p: ({ children }) => (
+                                  <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
+                                    {children}
+                                  </p>
+                                ),
+                                pre: ({ children }) => (
+                                  <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
+                                    {children}
+                                  </pre>
+                                ),
+                                code: ({ className, children, ...props }) => {
+                                  const isBlock = Boolean(
+                                    className?.includes("language-"),
+                                  );
+                                  if (isBlock) {
+                                    return (
+                                      <code
+                                        className={`${className} block whitespace-pre-wrap wrap-break-word`}
+                                        {...props}
+                                      >
+                                        {children}
+                                      </code>
+                                    );
+                                  }
+
                                   return (
                                     <code
-                                      className={`${className} block whitespace-pre-wrap wrap-break-word`}
+                                      className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
                                       {...props}
                                     >
                                       {children}
                                     </code>
                                   );
-                                }
-
-                                return (
-                                  <code
-                                    className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
-                                    {...props}
-                                  >
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
-                            {post.body}
-                          </ReactMarkdown>
+                                },
+                              }}
+                            >
+                              {post.body}
+                            </ReactMarkdown>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
 
-                  <div className="flex items-center justify-between pt-3">
-                    <div className="flex items-center">
-                      {editingPostId === post.id ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={cancelEditingPost}
-                            className="text-xs font-medium text-text-muted hover:text-text transition-colors mr-3"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void saveEditedPost()}
-                            className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
-                          >
-                            Save
-                          </button>
-                        </>
-                      ) : (
-                        user?.display_id === post.display_id && (
+                    <div className="flex items-center justify-between pt-3">
+                      <div className="flex items-center">
+                        {editingPostId === post.id ? (
                           <>
                             <button
                               type="button"
-                              onClick={() => startEditingPost(post)}
-                              className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                              onClick={cancelEditingPost}
+                              className="text-xs font-medium text-text-muted hover:text-text transition-colors mr-3"
                             >
-                              Edit
+                              Cancel
                             </button>
                             <button
                               type="button"
-                              onClick={() => requestDeletePost(post.id)}
-                              className="text-xs font-medium text-error hover:text-error/80 transition-colors mr-3"
+                              onClick={() => void saveEditedPost()}
+                              className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
                             >
-                              Delete
+                              Save
                             </button>
                           </>
-                        )
-                      )}
-                    </div>
+                        ) : (
+                          user?.display_id === post.display_id && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => startEditingPost(post)}
+                                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mr-3"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => requestDeletePost(post.id)}
+                                className="text-xs font-medium text-error hover:text-error/80 transition-colors mr-3"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )
+                        )}
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleCopyBody(post.body)}
-                      className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                    >
-                      Copy
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyBody(post.body)}
+                        className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         <div ref={bottomRef} />
       </div>

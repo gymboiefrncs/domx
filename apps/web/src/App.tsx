@@ -48,5 +48,3 @@ export function App() {
     </>
   );
 }
-// add saved posts page and functionality
-// add profile page and functionality

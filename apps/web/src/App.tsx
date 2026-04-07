@@ -11,6 +11,7 @@ import { AuthLayout } from "./layout/AuthLayout";
 import { Toaster } from "sonner";
 import { GroupSettingsPage } from "./pages/GroupSettings";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { ProfilePage } from "./pages/Profile";
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
             >
               <Route path="/groups" element={<GroupPage />} />
               <Route path="/groups/:id" element={<GroupChatPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/groups/:id/settings"
                 element={<GroupSettingsPage />}
@@ -46,3 +48,5 @@ export function App() {
     </>
   );
 }
+// add saved posts page and functionality
+// add profile page and functionality

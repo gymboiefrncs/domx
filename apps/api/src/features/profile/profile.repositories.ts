@@ -7,3 +7,11 @@ export const getProfile = async (userId: string): Promise<User> => {
   const result = await pool.query(query, [userId]);
   return result.rows[0];
 };
+
+export const deleteProfileAccount = async (
+  userId: string,
+): Promise<boolean> => {
+  const query = `DELETE FROM users WHERE id = $1`;
+  const result = await pool.query(query, [userId]);
+  return (result.rowCount ?? 0) > 0;
+};

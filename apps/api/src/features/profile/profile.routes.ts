@@ -1,6 +1,9 @@
 import express, { type Router } from "express";
 import rateLimit from "express-rate-limit";
-import { handleGetProfile } from "./profile.controllers.js";
+import {
+  handleDeleteProfile,
+  handleGetProfile,
+} from "./profile.controllers.js";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import { config } from "@api/shared/config.js";
 
@@ -15,3 +18,9 @@ const profileLimiter = rateLimit({
 });
 
 profileRouter.get("/profile/me", profileLimiter, jwtHandler, handleGetProfile);
+profileRouter.delete(
+  "/profile/me",
+  profileLimiter,
+  jwtHandler,
+  handleDeleteProfile,
+);

@@ -43,6 +43,23 @@ export function GroupProvider({
     );
   };
 
+  const clearUnreadCount = (groupId: string) => {
+    setGroups((prev) => {
+      let changed = false;
+
+      const next = prev.map((g) => {
+        if (g.group_id !== groupId || g.unread_count === 0) {
+          return g;
+        }
+
+        changed = true;
+        return { ...g, unread_count: 0 };
+      });
+
+      return changed ? next : prev;
+    });
+  };
+
   // fetch groups on mount
   useEffect(() => {
     fetchMyGroups()
@@ -62,6 +79,7 @@ export function GroupProvider({
         renameGroupInList,
         deleteGroupInList,
         incrementMemberCount,
+        clearUnreadCount,
       }}
     >
       {children}

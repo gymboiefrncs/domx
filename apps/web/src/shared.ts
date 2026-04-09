@@ -40,6 +40,7 @@ export type GroupContextType = {
   renameGroupInList: (groupId: string, newName: string) => void;
   deleteGroupInList: (groupId: string) => void;
   incrementMemberCount: (groupId: string) => void;
+  clearUnreadCount: (groupId: string) => void;
 };
 
 export type Props = {

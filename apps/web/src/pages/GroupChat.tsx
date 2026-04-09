@@ -16,7 +16,7 @@ export const GroupChatPage = () => {
   const { posts, loading, handleCreatePost, handleEditPost, handleDeletePost } =
     usePosts(id!);
   const { user } = useAuthContext();
-  const { groups } = useGroups();
+  const { groups, markGroupSeen } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");
   const [title, setTitle] = useState<string>("");
@@ -30,6 +30,15 @@ export const GroupChatPage = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const seenGroupRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    if (seenGroupRef.current === id) return;
+
+    seenGroupRef.current = id;
+    void markGroupSeen(id);
+  }, [id, markGroupSeen]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });

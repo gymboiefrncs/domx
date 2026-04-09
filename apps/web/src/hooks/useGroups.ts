@@ -3,6 +3,7 @@ import {
   deleteGroup,
   createGroup,
   addMemberToGroup,
+  markGroupAsSeen,
 } from "@/services/group";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
@@ -17,6 +18,7 @@ export const useGroups = () => {
     deleteGroupInList,
     loading,
     incrementMemberCount,
+    clearUnreadCount,
   } = useGroupContext();
 
   const renameGroup = async (groupId: string, newName: string) => {
@@ -62,6 +64,15 @@ export const useGroups = () => {
     }
   };
 
+  const markGroupSeen = async (groupId: string): Promise<void> => {
+    clearUnreadCount(groupId);
+    try {
+      await markGroupAsSeen(groupId);
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+    }
+  };
+
   return {
     groups,
     loading,
@@ -69,5 +80,6 @@ export const useGroups = () => {
     removeGroup,
     buildGroup,
     addMember,
+    markGroupSeen,
   };
 };

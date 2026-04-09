@@ -107,7 +107,6 @@ export const usePosts = (groupId: string): GetPostsState => {
               (id) => id !== replacedOptimisticId,
             );
           }
-          toast.success("Message sent!", { duration: 2000 });
           return copy;
         });
         return;
@@ -218,6 +217,7 @@ export const usePosts = (groupId: string): GetPostsState => {
         body: post,
         title,
       });
+      toast.success("Message sent!", { duration: 2000 });
     } catch (error) {
       optimisticQueueRef.current = optimisticQueueRef.current.filter(
         (id) => id !== optimisticPost.id,

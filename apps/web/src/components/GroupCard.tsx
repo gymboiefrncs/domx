@@ -19,15 +19,9 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
         </p>
       </div>
 
-      {group.unread_count > 0 ? (
-        <div className="w-5 h-5 rounded-full bg-neutral-900 flex items-center justify-center">
-          <span className="text-[10px] font-medium text-text">
-            {group.unread_count}
-          </span>
-        </div>
-      ) : (
-        <span className="text-[11px] font-medium text-text-muted">
-          No new messages
+      {group.unread_count > 0 && (
+        <span className="text-[10px] font-medium text-text">
+          {group.unread_count}
         </span>
       )}
     </div>

@@ -1,5 +1,4 @@
 import express, { type Router } from "express";
-import rateLimit from "express-rate-limit";
 import {
   loginHandler,
   logoutHandler,
@@ -8,9 +7,13 @@ import {
   signupHandler,
 } from "./auth.controllers.js";
 import { verifySetInfoToken } from "@api/shared/middlewares/authenticate.js";
-import { config } from "@api/shared/config.js";
 import { validateBody } from "@api/shared/middlewares/validate.js";
 import { infoSchema, loginSchema, signupSchema } from "./auth.schemas.js";
+import {
+  signupLimiter,
+  loginLimiter,
+  refreshLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 
 const loginValidator = validateBody(loginSchema);
 const signupValidator = validateBody(signupSchema);
@@ -18,24 +21,8 @@ const infoValidator = validateBody(infoSchema);
 
 export const authRouter: Router = express.Router();
 
-const authLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: config.server.nodeEnv === "production" ? 3 : 1000,
-  message: "Too many requests, please try again after 2 minutes",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const refreshLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: config.server.nodeEnv === "production" ? 3 : 1000,
-  message: "Too many requests, please try again after 15 minutes",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-authRouter.post("/auth/signup", authLimiter, signupValidator, signupHandler);
-authRouter.post("/auth/login", authLimiter, loginValidator, loginHandler);
+authRouter.post("/auth/signup", signupLimiter, signupValidator, signupHandler);
+authRouter.post("/auth/login", loginLimiter, loginValidator, loginHandler);
 authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post("/auth/logout", logoutHandler);
 

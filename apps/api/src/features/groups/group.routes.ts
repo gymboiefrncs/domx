@@ -1,5 +1,4 @@
 import express, { type Router } from "express";
-import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
   handleAddMember,
@@ -14,7 +13,6 @@ import {
   handleUpdateSeen,
   handleDeleteGroup,
 } from "./group.controllers.js";
-import { config } from "@api/shared/config.js";
 import {
   validateBody,
   validateParams,
@@ -24,20 +22,16 @@ import {
   ManageMemberSchema,
   GroupSchema,
 } from "./group.schemas.js";
+import {
+  groupLimiter,
+  createGroupLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 
 const manageMemberValidator = validateParams(ManageMemberSchema);
 const groupParamsValidator = validateParams(GroupParamsSchema);
 const groupValidator = validateBody(GroupSchema);
 
 export const groupRouter: Router = express.Router();
-
-const groupLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: config.server.nodeEnv === "production" ? 120 : 1000,
-  message: "Too many requests, please try again in a minute",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 groupRouter.use(groupLimiter);
 
@@ -64,7 +58,13 @@ groupRouter.patch(
   handleUpdateSeen,
 );
 
-groupRouter.post("/groups", jwtHandler, groupValidator, handleCreateGroup);
+groupRouter.post(
+  "/groups",
+  createGroupLimiter,
+  jwtHandler,
+  groupValidator,
+  handleCreateGroup,
+);
 groupRouter.post(
   "/groups/:groupId/add/:displayId",
   jwtHandler,

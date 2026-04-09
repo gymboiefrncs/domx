@@ -5,6 +5,10 @@ import { WebSocketServer } from "ws";
 import { authenticateWs } from "./shared/middlewares/authenticateWs.js";
 import type { ChatSocket } from "./features/posts/index.js";
 import { handleChatMessage } from "./features/posts/post.routes.js";
+import {
+  getRetryAfterSeconds,
+  wsConnectionLimiter,
+} from "./shared/middlewares/rateLimit.js";
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -12,6 +16,21 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map<string, Set<ChatSocket>>();
 
 wss.on("connection", async (socket: ChatSocket, req) => {
+  const ipKey = req.socket.remoteAddress ?? "unknown";
+  try {
+    await wsConnectionLimiter.consume(ipKey);
+  } catch (error) {
+    const retryAfter = getRetryAfterSeconds(error);
+    socket.send(
+      JSON.stringify({
+        type: "error",
+        payload: "Too many WebSocket connections, try again later",
+        retryAfter,
+      }),
+    );
+    return socket.terminate();
+  }
+
   const authenticate = await authenticateWs(socket, req);
   if (!authenticate) return socket.terminate();
 

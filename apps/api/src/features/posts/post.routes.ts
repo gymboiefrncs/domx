@@ -1,5 +1,4 @@
 import express, { type Router } from "express";
-import rateLimit from "express-rate-limit";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import { validateParams } from "@api/shared/middlewares/validate.js";
 import {
@@ -9,7 +8,6 @@ import {
   handleDeletePost,
   handleJoinGroup,
 } from "./post.controllers.js";
-import { config } from "@api/shared/config.js";
 import {
   DeletePostPayloadSchema,
   EditPostPayloadSchema,
@@ -18,18 +16,15 @@ import {
   PostSchema,
 } from "./post.schemas.js";
 import type { ChatSocket, MessageHandler } from "./post.types.js";
+import {
+  postLimiter,
+  wsWritePostLimiter,
+  getRetryAfterSeconds,
+} from "@api/shared/middlewares/rateLimit.js";
 
 const postParamsValidator = validateParams(PostParamsSchema);
 
 export const postRouter: Router = express.Router();
-
-const postLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: config.server.nodeEnv === "production" ? 120 : 1000,
-  message: "Too many requests, please try again in a minute",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 postRouter.use(postLimiter);
 
@@ -65,6 +60,18 @@ export const handleChatMessage = async (
   socket: ChatSocket,
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
+  try {
+    await wsWritePostLimiter.consume(socket.userId);
+  } catch (error) {
+    const retryAfter = getRetryAfterSeconds(error);
+    return socket.send(
+      JSON.stringify({
+        type: "error",
+        payload: "Too many requests, slow down",
+        retryAfter,
+      }),
+    );
+  }
   const entry = messageHandlers[type];
   if (!entry)
     return socket.send(JSON.stringify({ message: "Unknown message type" }));

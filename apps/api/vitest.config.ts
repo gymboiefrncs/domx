@@ -20,7 +20,7 @@ export default defineConfig({
             "./test/auth/auth.api.test.ts",
             "./test/verification/verification-service.test.ts",
             "./test/groups/group.api.test.ts",
-            "./test/posts/post.api.test.ts",
+            "./test/rate-limit.api.test.ts",
           ],
         },
       },

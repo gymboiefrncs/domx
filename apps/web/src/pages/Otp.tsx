@@ -1,5 +1,5 @@
 import { SpinnerIcon } from "@/assets/icons";
-import { useVerifyOTP } from "@/hooks/useAuth";
+import { useResendOTP, useVerifyOTP } from "@/hooks/useAuth";
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
 import { Navigate } from "react-router-dom";
 
@@ -8,6 +8,7 @@ const OTP_LENGTH = 6;
 export default function OtpPage() {
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const { handleVerifyOTP, loading } = useVerifyOTP();
+  const { handleResendOTP, loading: loadingResend } = useResendOTP();
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   /**
@@ -116,8 +117,13 @@ export default function OtpPage() {
 
         <p className="text-text-muted text-center mt-5 leading-relaxed font-normal">
           Didn't receive anything?{" "}
-          <button className="text-text-link border-b border-text-link pb-px bg-transparent cursor-pointer">
-            Resend OTP
+          <button
+            type="button"
+            onClick={() => void handleResendOTP(email)}
+            disabled={loadingResend}
+            className="text-text-link border-b border-text-link pb-px bg-transparent cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loadingResend ? "Resending..." : "Resend OTP"}
           </button>
         </p>
       </div>

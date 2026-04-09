@@ -1,6 +1,7 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { API_BASE_URL } from "@/config";
 import type { Post, PostDetails } from "@domx/shared";
+import { getApiErrorMessage } from "@/utils/error";
 
 type ChatOutgoingMessage =
   | { type: "joinGroup"; payload: { groupId: string } }
@@ -15,7 +16,12 @@ export type ChatIncomingMessage =
   | { type: "newMessage"; data: Post | PostDetails }
   | { type: "postEdited"; data: Partial<PostDetails> & { id: string } }
   | { type: "postDeleted"; data: { postId: string } }
-  | { type: "error"; message?: string; payload?: string }
+  | {
+      type: "error";
+      message?: string;
+      payload?: string;
+      retryAfter?: number | null;
+    }
   | { message: string };
 
 type PostSocketHandlers = {
@@ -120,7 +126,7 @@ export const fetchMessages = async (
     credentials: "include",
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.errors[0].message);
+  if (!res.ok) throw new Error(getApiErrorMessage(data));
 
   return data.data;
 };

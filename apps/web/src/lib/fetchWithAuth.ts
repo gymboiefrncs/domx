@@ -5,6 +5,8 @@
  * for the refresh to complete before retrying the original request to avoid multiple refresh attempts.
  */
 
+import { API_BASE_URL } from "@/config";
+
 let refreshPromise: Promise<Response> | null = null;
 
 export const fetchWithAuth = async (
@@ -15,12 +17,16 @@ export const fetchWithAuth = async (
   if (res.status !== 401) return res;
 
   if (!refreshPromise) {
-    refreshPromise = fetch("http://localhost:8080/api/v1/auth/refresh", {
+    refreshPromise = fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
       credentials: "include",
-    }).finally(() => {
-      refreshPromise = null;
-    });
+    })
+      .catch(() => {
+        return new Response(null, { status: 503 });
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
   }
 
   const refreshRes = await refreshPromise;
@@ -30,6 +36,5 @@ export const fetchWithAuth = async (
     return res;
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 100));
   return fetch(url, { ...options, credentials: "include" });
 };

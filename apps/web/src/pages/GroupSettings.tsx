@@ -4,6 +4,8 @@ import { AddMemberModal } from "@/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
 import { fetchGroupMembers } from "@/services/group";
 import { useGroups } from "@/hooks/useGroups";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/utils/error";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
@@ -18,7 +20,13 @@ export const GroupSettingsPage = () => {
   const [members, setMembers] = useState<NewMember[]>([]);
 
   useEffect(() => {
-    fetchGroupMembers(id!).then(setMembers);
+    if (!id) return;
+
+    fetchGroupMembers(id)
+      .then(setMembers)
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+      });
   }, [id]);
 
   if (loading) return;

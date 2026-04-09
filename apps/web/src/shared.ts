@@ -20,6 +20,9 @@ export type VerifyOTPState = HookState & {
 export type SetInfoState = HookState & {
   handleSetInfo: (username: string, password: string) => Promise<void>;
 };
+export type ResendOTPState = HookState & {
+  handleResendOTP: (email: string) => Promise<void>;
+};
 
 // -------- LOGIN HOOK STATE
 export type LoginState = HookState & {

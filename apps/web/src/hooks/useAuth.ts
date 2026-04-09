@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login, logout, setInfo, signup, verifyOTP } from "@/services/auth";
+import {
+  login,
+  logout,
+  resendOTP,
+  setInfo,
+  signup,
+  verifyOTP,
+} from "@/services/auth";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
 import type {
   LoginState,
+  ResendOTPState,
   SetInfoState,
   SignupState,
   VerifyOTPState,
@@ -65,7 +73,6 @@ export const useSignup = (): SignupState => {
        */
       sessionStorage.setItem("OTP_EMAIL", email);
       navigate("/otp", { replace: true });
-      sessionStorage.setItem("OTP_EMAIL", email);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -73,6 +80,24 @@ export const useSignup = (): SignupState => {
     }
   }
   return { handleSignup, loading };
+};
+
+export const useResendOTP = (): ResendOTPState => {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleResendOTP = async (email: string): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await resendOTP(email);
+      toast.success(response.message || "OTP resent successfully");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, handleResendOTP };
 };
 
 export const useVerifyOTP = (): VerifyOTPState => {

@@ -12,34 +12,37 @@ import { Toaster } from "sonner";
 import { GroupSettingsPage } from "./pages/GroupSettings";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProfilePage } from "./pages/Profile";
+import { ProtectedRoute } from "./layout/ProtectedRoute";
 
 export function App() {
   return (
     <>
       <Toaster position="top-right" />
       <Routes>
-        <Route path="/" element={<Navigate to="/signup" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/otp" element={<OtpPage />} />
         <Route path="/setup-profile" element={<SetupProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
 
         <Route element={<AuthLayout />}>
-          <Route element={<AppLayout />}>
-            <Route
-              element={
-                <GroupProvider>
-                  <Outlet />
-                </GroupProvider>
-              }
-            >
-              <Route path="/groups" element={<GroupPage />} />
-              <Route path="/groups/:id" element={<GroupChatPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
               <Route
-                path="/groups/:id/settings"
-                element={<GroupSettingsPage />}
-              />
+                element={
+                  <GroupProvider>
+                    <Outlet />
+                  </GroupProvider>
+                }
+              >
+                <Route path="/groups" element={<GroupPage />} />
+                <Route path="/groups/:id" element={<GroupChatPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route
+                  path="/groups/:id/settings"
+                  element={<GroupSettingsPage />}
+                />
+              </Route>
             </Route>
           </Route>
         </Route>

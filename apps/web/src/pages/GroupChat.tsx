@@ -166,10 +166,11 @@ export const GroupChatPage = () => {
         ) : (
           <div className="mx-auto w-full max-w-4xl">
             <ul>
-              {posts.map((post: PostDetails) => (
+              {posts.map((post: PostDetails, index: number) => (
                 <li
                   key={post.id}
-                  className="mb-4 flex flex-col gap-1 rounded-2xl bg-white/90 px-4 py-3 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 md:mb-5 md:px-5 md:py-4"
+                  style={{ animationDelay: `${Math.min(index * 30, 210)}ms` }}
+                  className="animate-fade-rise mb-4 flex flex-col gap-1 rounded-2xl bg-white/90 px-4 py-3 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 transition-transform duration-200 hover:-translate-y-0.5 md:mb-5 md:px-5 md:py-4"
                 >
                   <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
                     <div className="flex items-center gap-2">
@@ -216,7 +217,7 @@ export const GroupChatPage = () => {
                           )}
                         </h2>
                         <div className="border-l-3 rounded-tl-lg rounded-bl-lg border-primary/50 pl-3 p-2 md:pl-4">
-                          <div className="wrap-break-word border rounded-md max-h-72 overflow-y-auto pr-1 text-sm text-text-muted md:max-h-96 md:text-base">
+                          <div className="wrap-break-word border rounded-md max-h-72 overflow-y-auto p-2 text-sm text-text-muted md:max-h-96 md:text-base">
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               rehypePlugins={[
@@ -344,7 +345,7 @@ export const GroupChatPage = () => {
         }}
       >
         <div className="mx-auto w-full max-w-4xl">
-          <div className="flex flex-col gap-1 rounded-2xl bg-white/95 px-3 py-2 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 transition-shadow duration-200 focus-within:shadow-[0_16px_30px_-20px_rgba(15,23,42,0.6)] md:px-4 md:py-3">
+          <div className="animate-soft-pop flex flex-col gap-1 rounded-2xl bg-white/95 px-3 py-2 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 transition-all duration-200 focus-within:-translate-y-0.5 focus-within:shadow-[0_16px_30px_-20px_rgba(15,23,42,0.6)] md:px-4 md:py-3">
             {/* Title */}
             {isFocused && (
               <textarea
@@ -374,7 +375,7 @@ export const GroupChatPage = () => {
             {isFocused && (
               <div className="flex justify-end pt-1">
                 <button
-                  className="btn btn-primary flex h-9 w-9 items-center justify-center rounded-full p-0"
+                  className="btn btn-primary animate-soft-pop flex h-9 w-9 items-center justify-center rounded-full p-0 transition-transform duration-200 hover:scale-105 active:scale-95"
                   onClick={handleSend}
                   disabled={loading}
                 >

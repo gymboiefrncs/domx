@@ -10,10 +10,10 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
-      <div className="card w-full">
+    <div className="auth-shell">
+      <div className="auth-card">
         {/* Eyebrow */}
-        <h5 className=" uppercase tracking-wide text-text mb-4 font-weight">
+        <h5 className="mb-4 text-sm font-medium uppercase tracking-wide text-text md:mb-5 md:text-base">
           Log in
         </h5>
 
@@ -72,16 +72,16 @@ export const LoginPage = () => {
         </form>
 
         {/* Divider */}
-        <div className="flex items-center gap-2.5 my-6">
+        <div className="my-6 flex items-center gap-2.5 md:my-7">
           <div className="flex-1 h-px bg-gray-300" />
-          <span className="text-[11px] text-text-muted tracking-wide whitespace-nowrap">
+          <span className="whitespace-nowrap text-xs tracking-wide text-text-muted md:text-sm">
             or sign up
           </span>
           <div className="flex-1 h-px bg-gray-300" />
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-text-muted font-light">
+        <p className="text-center text-xs font-light text-text-muted md:text-sm">
           Don't have an account?{" "}
           <Link
             to="/signup"

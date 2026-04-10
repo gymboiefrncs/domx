@@ -135,17 +135,17 @@ export const GroupChatPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50">
+    <div className="flex h-dvh flex-col bg-neutral-50 md:h-full">
       {/* Header */}
-      <div className="flex items-center px-4 py-4 border-b border-neutral-200 bg-neutral-50">
-        <button onClick={() => navigate(-1)} className="text-text mr-4">
+      <div className="shrink-0 flex items-center border-b border-border-subtle bg-neutral-50/90 px-4 py-4 backdrop-blur-sm md:px-6 lg:px-8">
+        <button onClick={() => navigate(-1)} className="mr-4 text-text">
           <span>{"<-"}</span>
         </button>
         <div>
-          <h1 className="text-base font-medium text-neutral-900">
+          <h1 className="text-base font-medium text-neutral-900 md:text-lg xl:text-xl">
             {group?.name ?? "Group Chat"}
           </h1>
-          <p className="text-xs text-neutral-400 mt-0.5">
+          <p className="mt-0.5 text-xs text-neutral-400 md:text-sm">
             {(group?.member_count ?? 0) === 1
               ? `${group?.member_count} member`
               : `${group?.member_count ?? 0} members`}
@@ -158,31 +158,31 @@ export const GroupChatPage = () => {
         </div>
       </div>
       {/* Posts area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-7">
         {posts.length === 0 ? (
-          <p className="text-sm text-neutral-400 text-center mt-10">
+          <p className="mt-10 text-center text-sm text-neutral-400 md:text-base">
             No posts yet. Be the first to post!
           </p>
         ) : (
-          <div className="max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-4xl">
             <ul>
               {posts.map((post: PostDetails) => (
                 <li
                   key={post.id}
-                  className="card px-4 py-3 flex flex-col gap-1 mb-4"
+                  className="mb-4 flex flex-col gap-1 rounded-2xl bg-white/90 px-4 py-3 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 md:mb-5 md:px-5 md:py-4"
                 >
-                  <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                         <span className="text-xs font-bold text-primary">
                           {post.username.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-text">
+                      <span className="text-sm font-medium text-text md:text-base">
                         {post.username}
                       </span>
                     </div>
-                    <span className="text-xs text-text-muted">
+                    <span className="text-xs text-text-muted md:text-sm">
                       @{post.display_id}
                     </span>
                   </div>
@@ -194,20 +194,18 @@ export const GroupChatPage = () => {
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
                           rows={1}
-                          className="w-full text-sm font-medium text-text bg-transparent border border-border rounded-md p-2 resize-none outline-none"
+                          className="w-full resize-none rounded-lg bg-white px-3 py-2 text-sm font-medium text-text outline-none ring-1 ring-black/10 md:text-base"
                         />
-                        <div className="p-4 border-border-strong border-2 rounded-md">
-                          <textarea
-                            value={editBody}
-                            onChange={(e) => setEditBody(e.target.value)}
-                            rows={6}
-                            className="w-full text-sm text-text-muted bg-transparent resize-y outline-none"
-                          />
-                        </div>
+                        <textarea
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                          rows={6}
+                          className="w-full resize-y rounded-lg bg-white p-3 text-sm text-text-muted outline-none ring-1 ring-black/10 md:text-base"
+                        />
                       </>
                     ) : (
                       <>
-                        <h2 className="text-sm font-medium text-text flex items-center gap-2">
+                        <h2 className="flex items-center gap-2 text-sm font-medium text-text md:text-base">
                           <span>{post.title}</span>
                           {new Date(post.updated_at).getTime() -
                             new Date(post.created_at).getTime() >
@@ -217,8 +215,8 @@ export const GroupChatPage = () => {
                             </span>
                           )}
                         </h2>
-                        <div className="p-4 border-border-strong border-2 rounded-md">
-                          <div className="text-sm text-text-muted wrap-break-word max-h-72 overflow-y-auto pr-1">
+                        <div className="border-l-3 rounded-tl-lg rounded-bl-lg border-primary/50 pl-3 p-2 md:pl-4">
+                          <div className="wrap-break-word border rounded-md max-h-72 overflow-y-auto pr-1 text-sm text-text-muted md:max-h-96 md:text-base">
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               rehypePlugins={[
@@ -229,12 +227,12 @@ export const GroupChatPage = () => {
                               ]}
                               components={{
                                 p: ({ children }) => (
-                                  <p className="text-sm text-text-muted whitespace-pre-wrap mb-2 last:mb-0">
+                                  <p className="mb-2 whitespace-pre-wrap text-sm text-text-muted last:mb-0 md:text-base">
                                     {children}
                                   </p>
                                 ),
                                 pre: ({ children }) => (
-                                  <pre className="rounded-md overflow-x-hidden border border-border bg-neutral-100 text-xs leading-5 my-2 p-3 whitespace-pre-wrap wrap-break-word">
+                                  <pre className="my-2 wrap-break-word overflow-x-hidden whitespace-pre-wrap rounded-lg text-xs leading-5 md:text-sm">
                                     {children}
                                   </pre>
                                 ),
@@ -255,7 +253,7 @@ export const GroupChatPage = () => {
 
                                   return (
                                     <code
-                                      className="rounded bg-neutral-200 px-1 py-0.5 text-xs text-neutral-900"
+                                      className="rounded bg-neutral-200/80 px-1 py-0.5 text-xs text-neutral-900"
                                       {...props}
                                     >
                                       {children}
@@ -330,7 +328,7 @@ export const GroupChatPage = () => {
       </div>
       {/* Input area */}
       <div
-        className="border-t border-neutral-200 bg-neutral-50 px-4 py-3"
+        className="sticky bottom-0 z-10 border-t border-border-subtle bg-neutral-50/95 px-4 py-3 backdrop-blur-sm md:static"
         onBlur={(e) => {
           /**
            * If click happens outside of the current target(input area) and post/title is empty, then set isFocused to false
@@ -345,8 +343,8 @@ export const GroupChatPage = () => {
             setIsFocused(false);
         }}
       >
-        <div className="max-w-md mx-auto">
-          <div className="card flex flex-col px-3 py-2 gap-1 focus-within:border-border focus-within:shadow-md focus-within:shadow-black/50 transition-shadow duration-200">
+        <div className="mx-auto w-full max-w-4xl">
+          <div className="flex flex-col gap-1 rounded-2xl bg-white/95 px-3 py-2 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.65)] ring-1 ring-black/5 transition-shadow duration-200 focus-within:shadow-[0_16px_30px_-20px_rgba(15,23,42,0.6)] md:px-4 md:py-3">
             {/* Title */}
             {isFocused && (
               <textarea
@@ -356,7 +354,7 @@ export const GroupChatPage = () => {
                 onKeyDown={handleKeyDown}
                 onChange={(e) => setTitle(e.target.value)}
                 rows={1}
-                className="w-full text-sm font-medium text-text bg-transparent placeholder:text-text-muted resize-none outline-none"
+                className="w-full resize-none bg-transparent text-sm font-medium text-text placeholder:text-text-muted outline-none md:text-base"
               />
             )}
 
@@ -371,12 +369,12 @@ export const GroupChatPage = () => {
               onFocus={() => setIsFocused(true)}
               ref={textareaRef}
               rows={1}
-              className="w-full min-h-10 max-h-40 overflow-y-auto text-sm text-text bg-transparent placeholder:text-text-muted placeholder:text-xs resize-none outline-none"
+              className="w-full min-h-10 max-h-40 resize-none overflow-y-auto bg-transparent text-sm text-text placeholder:text-xs placeholder:text-text-muted outline-none md:max-h-48 md:text-base"
             />
             {isFocused && (
               <div className="flex justify-end pt-1">
                 <button
-                  className="btn btn-primary p-2"
+                  className="btn btn-primary flex h-9 w-9 items-center justify-center rounded-full p-0"
                   onClick={handleSend}
                   disabled={loading}
                 >

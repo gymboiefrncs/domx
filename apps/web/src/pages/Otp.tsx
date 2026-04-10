@@ -63,13 +63,13 @@ export default function OtpPage() {
   const isComplete: boolean = otp.every(Boolean);
 
   return (
-    <div className="min-h-screen bg-bg flex items-center p-8 font-sans">
-      <div className="card w-full">
-        <h5 className=" uppercase tracking-wide text-text mb-6 font-medium">
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h5 className="mb-5 text-sm font-medium uppercase tracking-wide text-text md:mb-6 md:text-base">
           Verify your email
         </h5>
 
-        <p className="text-text-secondary font-normal leading-relaxed mb-4">
+        <p className="mb-4 text-sm font-normal leading-relaxed text-text-secondary md:text-base">
           If this email exist we will send you an OTP.
         </p>
 
@@ -79,7 +79,7 @@ export default function OtpPage() {
             handleVerifyOTP(email, otp.join(""));
           }}
         >
-          <div className="flex gap-2 justify-between mb-6">
+          <div className="mb-6 flex justify-between gap-2 md:gap-3">
             {otp.map((char, i) => (
               <input
                 key={i}
@@ -95,7 +95,7 @@ export default function OtpPage() {
                 onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
                   handleKeyDown(e, i)
                 }
-                className="input"
+                className="input text-center"
               />
             ))}
           </div>
@@ -115,7 +115,7 @@ export default function OtpPage() {
           </button>
         </form>
 
-        <p className="text-text-muted text-center mt-5 leading-relaxed font-normal">
+        <p className="mt-5 text-center text-sm font-normal leading-relaxed text-text-muted md:text-base">
           Didn't receive anything?{" "}
           <button
             type="button"

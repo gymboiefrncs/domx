@@ -95,18 +95,43 @@
   #root {
     height: 100%;
   }
+  html {
+    font-size: clamp(15px, 0.55vw + 13px, 18px);
+  }
   body {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     background-color: var(--color-bg);
   }
   p {
-    font-size: 11px;
+    font-size: clamp(0.75rem, 0.2vw + 0.7rem, 0.95rem);
   }
 }
 
 @layer components {
+  .app-shell {
+    @apply mx-auto flex h-full w-full max-w-screen-2xl flex-col;
+    @apply md:grid md:grid-cols-[15rem_1fr] lg:grid-cols-[17rem_1fr] xl:grid-cols-[19rem_1fr];
+  }
+  .main-pane {
+    @apply flex min-h-0 flex-1 flex-col pb-20;
+    @apply md:pb-0;
+  }
+  .page-shell {
+    @apply h-full px-4 py-5 md:px-6 md:py-7 lg:px-8 lg:py-8 xl:px-10;
+  }
+  .page-content {
+    @apply mx-auto w-full max-w-3xl;
+  }
+  .auth-shell {
+    @apply min-h-screen bg-bg px-4 py-6 md:px-6 md:py-10 lg:px-8 lg:py-12;
+    @apply flex items-center justify-center;
+  }
+  .auth-card {
+    @apply w-full max-w-md rounded-lg bg-surface p-4 shadow-sm shadow-black/10;
+    @apply md:max-w-lg md:rounded-xl md:p-5 lg:max-w-xl lg:p-6;
+  }
   .btn {
-    @apply px-4 py-2 rounded-md;
+    @apply rounded-md px-4 py-2 text-sm md:text-base;
     @apply bg-black/90 text-white shadow-sm shadow-black/20;
     @apply transition-colors duration-200 ease-in cursor-pointer;
   }
@@ -126,10 +151,10 @@
     @apply flex flex-col gap-1;
   }
   .field-label {
-    @apply font-medium text-text-secondary text-sm;
+    @apply text-sm font-medium text-text-secondary md:text-base;
   }
   .input {
-    @apply w-full py-2 px-3 rounded-md;
+    @apply w-full rounded-md px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base;
     @apply bg-surface border border-border text-text;
     @apply transition-all;
     &::placeholder {
@@ -147,7 +172,7 @@
     }
   }
   .card {
-    @apply rounded-lg p-4;
+    @apply rounded-lg p-4 md:rounded-xl md:p-5 lg:p-6;
     @apply bg-surface shadow-sm shadow-black/10;
   }
 }

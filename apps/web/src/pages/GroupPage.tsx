@@ -30,20 +30,20 @@ export const GroupPage = () => {
   }
 
   return (
-    <div className="h-full bg-neutral-50 px-4 py-8">
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-between mb-6">
+    <div className="page-shell bg-neutral-50">
+      <div className="page-content max-w-5xl">
+        <div className="mb-6 flex items-center justify-between md:mb-8">
           <div>
-            <h1 className="text-2xl font-medium text-neutral-900 tracking-tight">
+            <h1 className="text-2xl font-medium tracking-tight text-neutral-900 md:text-3xl xl:text-4xl">
               My Groups
             </h1>
-            <p className="text-xs text-neutral-400 mt-1">
+            <p className="mt-1 text-xs text-neutral-400 md:text-sm">
               {groups.length > 0 ? groups.length : "No"} group
               {groups.length !== 1 && "s"}
             </p>
           </div>
           <button
-            className="bg-error py-2 px-4 rounded-md text-xs text-white"
+            className="rounded-md bg-error px-4 py-2 text-xs text-white md:text-sm"
             onClick={async () => {
               await handleLogout();
               navigate("/login");
@@ -52,7 +52,7 @@ export const GroupPage = () => {
             Log out
           </button>
         </div>
-        <div className="flex flex-col gap-2.5">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
           {groups.map((group: GroupDetail) => (
             <GroupCard
               key={group.group_id}
@@ -63,7 +63,7 @@ export const GroupPage = () => {
         </div>
       </div>
       <button
-        className="btn btn-primary fixed bottom-20 right-4"
+        className="btn btn-primary fixed bottom-20 right-4 md:bottom-6 md:right-8 xl:right-12"
         onClick={() => setModal(true)}
       >
         Create Group

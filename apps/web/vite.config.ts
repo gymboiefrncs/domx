@@ -22,6 +22,19 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          router: ["react-router-dom"],
+          markdown: [
+            "react-markdown",
+            "remark-gfm",
+            "rehype-highlight",
+            "highlight.js",
+          ],
+        },
+      },
+    },
   },
   logLevel: "warn",
 });

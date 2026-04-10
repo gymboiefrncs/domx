@@ -28,9 +28,9 @@ export default function SetupProfilePage() {
     username.length > 0 && password.length > 0 && passwordErrors.length === 0;
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
-      <div className="card w-full">
-        <h5 className=" uppercase tracking-wide text-text mb-4 font-medium">
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h5 className="mb-4 text-sm font-medium uppercase tracking-wide text-text md:mb-5 md:text-base">
           One last step
         </h5>
 
@@ -54,7 +54,7 @@ export default function SetupProfilePage() {
               }
               className="input"
             />
-            <p className="text-text-secondary mt-1.5 font-normal leading-relaxed">
+            <p className="mt-1.5 text-sm font-normal leading-relaxed text-text-secondary md:text-base">
               This is how others will see you on the platform.
             </p>
           </div>
@@ -87,7 +87,7 @@ export default function SetupProfilePage() {
               </button>
             </div>
             {passwordErrors.length > 0 && (
-              <p className="text-error mt-1.5 font-normal">
+              <p className="mt-1.5 text-sm font-normal text-error md:text-base">
                 Password must contain {passwordErrors.join(", ")}.
               </p>
             )}

@@ -22,10 +22,12 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
       onClick={onClose}
     >
       <div
-        className="card w-full max-w-sm mx-4 flex flex-col gap-4"
+        className="card mx-4 flex w-full max-w-sm flex-col gap-4 md:max-w-md lg:max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-base font-medium text-text">Add a member</h2>
+        <h2 className="text-base font-medium text-text md:text-lg">
+          Add a member
+        </h2>
 
         <div className="field">
           <label className="field-label">Display Id</label>
@@ -39,7 +41,7 @@ export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
           />
         </div>
 
-        <div className="flex gap-2 justify-end">
+        <div className="flex justify-end gap-2">
           <button className="btn" onClick={onClose}>
             Cancel
           </button>

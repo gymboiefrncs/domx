@@ -8,10 +8,10 @@ export default function SignupPage() {
   const { handleSignup, loading } = useSignup();
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-8 font-sans">
-      <div className="card w-full">
+    <div className="auth-shell">
+      <div className="auth-card">
         {/* Eyebrow */}
-        <h5 className=" uppercase tracking-wide text-text mb-4 font-medium">
+        <h5 className="mb-4 text-sm font-medium uppercase tracking-wide text-text md:mb-5 md:text-base">
           Create account
         </h5>
 
@@ -50,7 +50,7 @@ export default function SignupPage() {
         </form>
 
         {/* Terms */}
-        <p className=" text-text-secondary text-center mt-4 leading-relaxed font-light">
+        <p className="mt-4 text-center text-sm font-light leading-relaxed text-text-secondary md:text-base">
           By signing up you agree to our{" "}
           <a href="#" className="underline text-text-link">
             Terms
@@ -63,16 +63,16 @@ export default function SignupPage() {
         </p>
 
         {/* Divider */}
-        <div className="flex items-center gap-2.5 my-6">
+        <div className="my-6 flex items-center gap-2.5 md:my-7">
           <div className="flex-1 h-px bg-gray-300" />
-          <span className="text-[11px] text-text-muted tracking-wide whitespace-nowrap">
+          <span className="whitespace-nowrap text-xs tracking-wide text-text-muted md:text-sm">
             or sign in
           </span>
           <div className="flex-1 h-px bg-gray-300" />
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-text-muted font-light">
+        <p className="text-center text-xs font-light text-text-muted md:text-sm">
           Already have an account?{" "}
           <Link
             to="/login"

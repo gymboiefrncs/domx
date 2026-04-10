@@ -3,11 +3,11 @@ import { Nav } from "@/components/Nav";
 
 export const AppLayout = () => {
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto">
+    <div className="app-shell">
+      <Nav />
+      <div className="main-pane">
         <Outlet />
       </div>
-      <Nav />
     </div>
   );
 };

@@ -17,17 +17,21 @@ export const Nav = () => {
   const { pathname } = useLocation();
 
   return (
-    <nav className="flex bg-surface border-t border-border-subtle p-4">
-      {/* Nav links */}
-      <ul className="flex gap-12 w-full justify-center">
+    <nav className="fixed inset-x-0 bottom-0 z-sticky border-t border-border-subtle bg-surface px-3 py-2 md:static md:h-full md:border-r md:border-t-0 md:px-4 md:py-6 lg:px-5">
+      <div className="mb-6 hidden md:block">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+          Domx
+        </p>
+      </div>
+      <ul className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 md:max-w-none md:flex-col md:items-stretch md:justify-start md:gap-1.5">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
           const isActive = pathname.startsWith(href);
           return (
-            <li key={href}>
+            <li key={href} className="flex-1 md:flex-none">
               <button
                 onClick={() => navigate(href)}
                 className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm
+                  flex w-full items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm md:justify-start md:px-3.5 md:py-3 md:text-base
                   transition-colors duration-150 cursor-pointer
                   ${
                     isActive
@@ -42,7 +46,7 @@ export const Nav = () => {
                 </span>
 
                 {/* Label */}
-                <span className="hidden font-medium">{label}</span>
+                <span className="font-medium">{label}</span>
               </button>
             </li>
           );

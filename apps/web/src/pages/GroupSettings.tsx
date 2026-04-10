@@ -70,26 +70,26 @@ export const GroupSettingsPage = () => {
   return (
     <div className="h-full bg-bg flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+      <div className="flex items-center gap-3 border-b border-border px-4 py-4 md:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
           className="text-text-muted hover:text-text transition-colors text-sm"
         >
           ←
         </button>
-        <h1 className="text-sm font-semibold text-text tracking-wide uppercase">
+        <h1 className="text-sm font-semibold uppercase tracking-wide text-text md:text-base lg:text-lg">
           Group Settings
         </h1>
       </div>
 
-      <div className="flex flex-col divide-y divide-border overflow-y-auto">
+      <div className="mx-auto flex w-full max-w-4xl flex-col divide-y divide-border overflow-y-auto">
         {/* Group Name */}
-        <section className="px-4 py-5">
-          <p className="text-[12px] text-text-muted uppercase font-bold mb-3">
+        <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
+          <p className="mb-3 text-[12px] font-bold uppercase text-text-muted md:text-xs">
             Group Name
           </p>
           {isEditingName ? (
-            <div className="flex px-3 items-center gap-2">
+            <div className="flex items-center gap-2 px-3">
               <input
                 ref={inputRef}
                 autoFocus
@@ -100,17 +100,17 @@ export const GroupSettingsPage = () => {
                   if (e.key === "Enter") handleNameConfirm();
                   if (e.key === "Escape") handleNameCancel();
                 }}
-                className="flex-1 min-w-0 bg-transparent text-text text-base border-b border-primary outline-none py-1"
+                className="min-w-0 flex-1 border-b border-primary bg-transparent py-1 text-base text-text outline-none md:text-lg"
               />
               <button
                 onClick={handleNameConfirm}
-                className="text-primary text-sm font-medium hover:opacity-70 transition-opacity shrink-0"
+                className="shrink-0 text-sm font-medium text-primary transition-opacity hover:opacity-70 md:text-base"
               >
                 Save
               </button>
               <button
                 onClick={handleNameCancel}
-                className="text-text-muted text-sm hover:opacity-70 transition-opacity shrink-0"
+                className="shrink-0 text-sm text-text-muted transition-opacity hover:opacity-70 md:text-base"
               >
                 Cancel
               </button>
@@ -120,8 +120,10 @@ export const GroupSettingsPage = () => {
               onClick={handleStartEditing}
               className="flex items-center justify-between w-full group"
             >
-              <span className="text-text px-3 text-base">{group.name}</span>
-              <span className="text-xs text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="px-3 text-base text-text md:text-lg">
+                {group.name}
+              </span>
+              <span className="text-xs text-text-muted opacity-0 transition-opacity group-hover:opacity-100 md:text-sm">
                 Edit
               </span>
             </button>
@@ -129,13 +131,13 @@ export const GroupSettingsPage = () => {
         </section>
 
         {/* Members */}
-        <section className="px-4 py-5">
+        <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[12px] text-text-muted uppercase font-bold">
+            <p className="text-[12px] font-bold uppercase text-text-muted md:text-xs">
               Members / {members.length}
             </p>
             <button
-              className="text-xs text-primary bg-primary/10 p-2 rounded-lg font-medium hover:opacity-70 transition-opacity"
+              className="rounded-lg bg-primary/10 p-2 text-xs font-medium text-primary transition-opacity hover:opacity-70 md:text-sm"
               onClick={() => setModal(true)}
             >
               + Add Member
@@ -146,20 +148,22 @@ export const GroupSettingsPage = () => {
             {members.map((member) => (
               <li
                 key={member.display_id}
-                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-bg-subtle transition-colors"
+                className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-bg-subtle"
               >
                 <div className="flex gap-3 justify-start items-center w-full">
-                  <div className="w-8 h-8 rounded-full bg-primary/70 flex items-center justify-center text-text text-md font-bold">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/70 text-md font-bold text-text md:h-9 md:w-9">
                     {member.username.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs text-text">{member.username}</span>
-                    <span className="text-xs text-text-muted">
+                    <span className="text-xs text-text md:text-sm">
+                      {member.username}
+                    </span>
+                    <span className="text-xs text-text-muted md:text-sm">
                       {member.display_id}
                     </span>
                   </div>
                   <span className="text-text-muted">•</span>
-                  <span className="text-xs text-text-muted capitalize">
+                  <span className="text-xs capitalize text-text-muted md:text-sm">
                     {member.role}
                   </span>
                 </div>
@@ -178,14 +182,14 @@ export const GroupSettingsPage = () => {
           )}
         </section>
         {/* Danger Zone */}
-        <section className="px-4 py-5">
-          <p className="text-xs text-error font-semibold uppercase tracking-widest mb-3">
+        <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-error md:text-sm">
             Danger Zone
           </p>
 
           {showDeleteConfirm ? (
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-text">
+              <p className="text-sm text-text md:text-base">
                 Are you sure? This can't be undone.
               </p>
               <div className="flex gap-2">

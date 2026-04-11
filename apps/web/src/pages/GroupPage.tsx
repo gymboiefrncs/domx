@@ -34,15 +34,23 @@ export const GroupPage = () => {
               {groups.length !== 1 && "s"}
             </p>
           </div>
-          <button
-            className="rounded-md bg-error px-4 py-2 text-xs text-white md:text-sm"
-            onClick={async () => {
-              await handleLogout();
-              navigate("/login");
-            }}
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="btn btn-primary hidden md:inline-flex"
+              onClick={() => setModal(true)}
+            >
+              Create Group
+            </button>
+            <button
+              className="rounded-md bg-error px-4 py-2 text-xs text-white md:hidden"
+              onClick={async () => {
+                await handleLogout();
+                navigate("/login", { replace: true });
+              }}
+            >
+              Log out
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-1 items-stretch gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
           {groups.map((group: GroupDetail) => (
@@ -55,7 +63,7 @@ export const GroupPage = () => {
         </div>
       </div>
       <button
-        className="btn btn-primary fixed bottom-20 right-4 md:bottom-6 md:right-8 xl:right-12"
+        className="btn btn-primary fixed bottom-20 right-4 md:hidden"
         onClick={() => setModal(true)}
       >
         Create Group

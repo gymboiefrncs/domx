@@ -2,10 +2,10 @@ import { GroupCard } from "../components/GroupCard";
 import { useState } from "react";
 import { CreateGroupModal } from "@/components/CreateGroupModal";
 import { useNavigate } from "react-router-dom";
-import { SpinnerIcon } from "@/assets/icons";
 import type { GroupDetail } from "@domx/shared";
 import { useLogout } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
+import { PageLoader } from "@/components/common/PageLoader";
 
 export const GroupPage = () => {
   const { groups, loading } = useGroups();
@@ -14,19 +14,11 @@ export const GroupPage = () => {
   const navigate = useNavigate();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
-        <SpinnerIcon className="h-4 w-4 spinner" />
-      </div>
-    );
+    return <PageLoader fullHeight={true} />;
   }
 
   if (loadingLogout) {
-    return (
-      <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
-        <SpinnerIcon className="h-4 w-4 spinner" />
-      </div>
-    );
+    return <PageLoader fullHeight={true} />;
   }
 
   return (
@@ -52,7 +44,7 @@ export const GroupPage = () => {
             Log out
           </button>
         </div>
-        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
+        <div className="grid grid-cols-1 items-stretch gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
           {groups.map((group: GroupDetail) => (
             <GroupCard
               key={group.group_id}

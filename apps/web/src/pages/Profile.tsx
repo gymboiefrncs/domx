@@ -3,8 +3,8 @@ import { useLogout } from "@/hooks/useAuth";
 import { useDeleteAccount } from "@/hooks/useProfile";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SpinnerIcon } from "@/assets/icons";
 import { toast } from "sonner";
+import { PageLoader } from "@/components/common/PageLoader";
 
 export const ProfilePage = () => {
   const { user, loading } = useAuthContext();
@@ -26,11 +26,7 @@ export const ProfilePage = () => {
   };
 
   if (loading || loadingLogout) {
-    return (
-      <div className="flex items-center justify-center h-screen text-sm text-neutral-400">
-        <SpinnerIcon className="h-4 w-4 spinner" />
-      </div>
-    );
+    return <PageLoader fullHeight={true} />;
   }
 
   return (

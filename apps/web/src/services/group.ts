@@ -82,6 +82,64 @@ export const deleteGroup = async (groupId: string) => {
   return data;
 };
 
+export const promoteMemberInGroup = async (
+  groupId: string,
+  displayId: string,
+) => {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/groups/${groupId}/promote/${displayId}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(getApiErrorMessage(data));
+  return data;
+};
+
+export const demoteMemberInGroup = async (
+  groupId: string,
+  displayId: string,
+) => {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/groups/${groupId}/demote/${displayId}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(getApiErrorMessage(data));
+  return data;
+};
+
+export const kickMemberFromGroup = async (
+  groupId: string,
+  displayId: string,
+) => {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/groups/${groupId}/kick/${displayId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(getApiErrorMessage(data));
+  return data;
+};
+
+export const leaveGroupById = async (groupId: string) => {
+  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/leave`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(getApiErrorMessage(data));
+  return data;
+};
+
 export const markGroupAsSeen = async (groupId: string): Promise<void> => {
   const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/seen`, {
     method: "PATCH",

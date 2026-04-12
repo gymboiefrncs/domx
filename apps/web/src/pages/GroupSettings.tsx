@@ -4,13 +4,24 @@ import { AddMemberModal } from "@/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
 import { fetchGroupMembers } from "@/services/group";
 import { useGroups } from "@/hooks/useGroups";
+import { useAuthContext } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { groups, loading, renameGroup, removeGroup } = useGroups();
+  const {
+    groups,
+    loading,
+    renameGroup,
+    removeGroup,
+    promoteMember,
+    demoteMember,
+    kickMember,
+    leaveGroup,
+  } = useGroups();
+  const { user } = useAuthContext();
   const group = groups.find((g) => g.group_id === id);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
@@ -63,7 +74,51 @@ export const GroupSettingsPage = () => {
   };
 
   const handleDeleteGroupCB = async (groupId: string) => {
-    await removeGroup(groupId);
+    const removed = await removeGroup(groupId);
+    if (!removed) return;
+    navigate("/groups");
+  };
+
+  const handlePromoteMember = async (displayId: string) => {
+    if (!id) return;
+    const promoted = await promoteMember(id, displayId);
+    if (!promoted) return;
+
+    setMembers((prev) =>
+      prev.map((member) =>
+        member.display_id === displayId ? { ...member, role: "admin" } : member,
+      ),
+    );
+  };
+
+  const handleDemoteMember = async (displayId: string) => {
+    if (!id) return;
+    const demoted = await demoteMember(id, displayId);
+    if (!demoted) return;
+
+    setMembers((prev) =>
+      prev.map((member) =>
+        member.display_id === displayId
+          ? { ...member, role: "member" }
+          : member,
+      ),
+    );
+  };
+
+  const handleKickMember = async (displayId: string) => {
+    if (!id) return;
+    const removed = await kickMember(id, displayId);
+    if (!removed) return;
+
+    setMembers((prev) =>
+      prev.filter((member) => member.display_id !== displayId),
+    );
+  };
+
+  const handleLeaveGroupCB = async () => {
+    if (!id) return;
+    const left = await leaveGroup(id);
+    if (!left) return;
     navigate("/groups");
   };
 
@@ -166,6 +221,41 @@ export const GroupSettingsPage = () => {
                   <span className="text-xs capitalize text-text-muted md:text-sm">
                     {member.role}
                   </span>
+                  {group.role === "admin" &&
+                    member.display_id !== user?.display_id && (
+                      <div className="ml-auto flex items-center gap-2">
+                        {member.role === "member" ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handlePromoteMember(member.display_id)
+                            }
+                            className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
+                          >
+                            Promote
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleDemoteMember(member.display_id)
+                            }
+                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                          >
+                            Demote
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void handleKickMember(member.display_id)
+                          }
+                          className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                        >
+                          Kick
+                        </button>
+                      </div>
+                    )}
                 </div>
               </li>
             ))}
@@ -187,7 +277,14 @@ export const GroupSettingsPage = () => {
             Danger Zone
           </p>
 
-          {showDeleteConfirm ? (
+          <button
+            onClick={() => void handleLeaveGroupCB()}
+            className="mb-3 text-sm text-text bg-bg-subtle py-2 px-1 w-full text-center rounded border border-border hover:bg-bg transition-colors"
+          >
+            Leave group
+          </button>
+
+          {group.role === "admin" && showDeleteConfirm ? (
             <div className="flex flex-col gap-3">
               <p className="text-sm text-text md:text-base">
                 Are you sure? This can't be undone.
@@ -209,14 +306,14 @@ export const GroupSettingsPage = () => {
                 </button>
               </div>
             </div>
-          ) : (
+          ) : group.role === "admin" ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="text-sm text-text-inverse bg-error py-2 px-1 w-full text-center rounded hover:opacity-70 transition-opacity"
             >
               Delete group
             </button>
-          )}
+          ) : null}
         </section>
       </div>
     </div>

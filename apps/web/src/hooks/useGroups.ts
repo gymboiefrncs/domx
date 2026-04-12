@@ -4,6 +4,10 @@ import {
   createGroup,
   addMemberToGroup,
   markGroupAsSeen,
+  promoteMemberInGroup,
+  demoteMemberInGroup,
+  kickMemberFromGroup,
+  leaveGroupById,
 } from "@/services/group";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
@@ -30,12 +34,68 @@ export const useGroups = () => {
     }
   };
 
-  const removeGroup = async (groupId: string) => {
+  const removeGroup = async (groupId: string): Promise<boolean> => {
     try {
       await deleteGroup(groupId);
       deleteGroupInList(groupId);
+      return true;
     } catch (error) {
       toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
+    }
+  };
+
+  const promoteMember = async (
+    groupId: string,
+    displayId: string,
+  ): Promise<boolean> => {
+    try {
+      await promoteMemberInGroup(groupId, displayId);
+      toast.success("Member promoted", { duration: 2000 });
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
+    }
+  };
+
+  const demoteMember = async (
+    groupId: string,
+    displayId: string,
+  ): Promise<boolean> => {
+    try {
+      await demoteMemberInGroup(groupId, displayId);
+      toast.success("Member demoted", { duration: 2000 });
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
+    }
+  };
+
+  const kickMember = async (
+    groupId: string,
+    displayId: string,
+  ): Promise<boolean> => {
+    try {
+      await kickMemberFromGroup(groupId, displayId);
+      toast.success("Member removed", { duration: 2000 });
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
+    }
+  };
+
+  const leaveGroup = async (groupId: string): Promise<boolean> => {
+    try {
+      await leaveGroupById(groupId);
+      deleteGroupInList(groupId);
+      toast.success("You left the group", { duration: 2000 });
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
     }
   };
 
@@ -78,6 +138,10 @@ export const useGroups = () => {
     loading,
     renameGroup,
     removeGroup,
+    promoteMember,
+    demoteMember,
+    kickMember,
+    leaveGroup,
     buildGroup,
     addMember,
     markGroupSeen,

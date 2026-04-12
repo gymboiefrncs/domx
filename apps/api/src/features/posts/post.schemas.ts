@@ -10,7 +10,7 @@ export const PostSchema = z.object({
     .string()
     .trim()
     .min(1, "Post body is required")
-    .max(1000, "Post body exceeded"),
+    .max(10000, "Post body exceeded"),
 });
 
 export const PostParamsSchema = z.object({
@@ -30,7 +30,7 @@ export const EditPostPayloadSchema = z.object({
     .string()
     .trim()
     .min(1, "Post body is required")
-    .max(1000, "Post body exceeded"),
+    .max(10000, "Post body exceeded"),
 });
 
 export const DeletePostPayloadSchema = z.object({

@@ -50,7 +50,7 @@ export const ProfilePage = () => {
             </div>
             <button
               type="button"
-              className="btn ml-auto bg-error text-xs text-on-error hover:bg-error-hover md:text-sm"
+              className="btn ml-auto bg-error text-xs text-on-error hover:bg-error-hover md:hidden"
               onClick={async () => {
                 await handleLogout();
                 navigate("/login", { replace: true });

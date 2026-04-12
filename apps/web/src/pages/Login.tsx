@@ -56,7 +56,7 @@ export const LoginPage = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 text-text-muted hover:text-text transition-colors cursor-pointer"
+              className="absolute right-3 top-9 text-text-muted hover:text-text transition-colors cursor-pointer md:top-10.5"
             >
               {showPassword ? (
                 <EyeOffIcon className="h-4 w-4" />

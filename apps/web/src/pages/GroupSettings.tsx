@@ -26,6 +26,10 @@ export const GroupSettingsPage = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [pendingKickDisplayId, setPendingKickDisplayId] = useState<
+    string | null
+  >(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [modal, setModal] = useState<boolean>(false);
   const [members, setMembers] = useState<NewMember[]>([]);
@@ -110,6 +114,7 @@ export const GroupSettingsPage = () => {
     const removed = await kickMember(id, displayId);
     if (!removed) return;
 
+    setPendingKickDisplayId(null);
     setMembers((prev) =>
       prev.filter((member) => member.display_id !== displayId),
     );
@@ -120,6 +125,14 @@ export const GroupSettingsPage = () => {
     const left = await leaveGroup(id);
     if (!left) return;
     navigate("/groups");
+  };
+
+  const requestKickMember = (displayId: string) => {
+    setPendingKickDisplayId(displayId);
+  };
+
+  const cancelKickMember = () => {
+    setPendingKickDisplayId(null);
   };
 
   return (
@@ -224,36 +237,59 @@ export const GroupSettingsPage = () => {
                   {group.role === "admin" &&
                     member.display_id !== user?.display_id && (
                       <div className="ml-auto flex items-center gap-2">
-                        {member.role === "member" ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void handlePromoteMember(member.display_id)
-                            }
-                            className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
-                          >
-                            Promote
-                          </button>
+                        {pendingKickDisplayId === member.display_id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void handleKickMember(member.display_id)
+                              }
+                              className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                            >
+                              Confirm Kick
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelKickMember}
+                              className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                            >
+                              Cancel
+                            </button>
+                          </>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void handleDemoteMember(member.display_id)
-                            }
-                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
-                          >
-                            Demote
-                          </button>
+                          <>
+                            {member.role === "member" ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void handlePromoteMember(member.display_id)
+                                }
+                                className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
+                              >
+                                Promote
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void handleDemoteMember(member.display_id)
+                                }
+                                className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                              >
+                                Demote
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                requestKickMember(member.display_id)
+                              }
+                              className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                            >
+                              Kick
+                            </button>
+                          </>
                         )}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            void handleKickMember(member.display_id)
-                          }
-                          className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
-                        >
-                          Kick
-                        </button>
                       </div>
                     )}
                 </div>
@@ -277,12 +313,34 @@ export const GroupSettingsPage = () => {
             Danger Zone
           </p>
 
-          <button
-            onClick={() => void handleLeaveGroupCB()}
-            className="mb-3 text-sm text-text bg-bg-subtle py-2 px-1 w-full text-center rounded border border-border hover:bg-bg transition-colors"
-          >
-            Leave group
-          </button>
+          {showLeaveConfirm ? (
+            <div className="mb-3 flex flex-col gap-3">
+              <p className="text-sm text-text md:text-base">
+                Leave this group?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 py-2 text-sm font-medium text-text bg-bg-subtle border border-border rounded hover:bg-bg transition-colors"
+                  onClick={() => void handleLeaveGroupCB()}
+                >
+                  Yes, leave
+                </button>
+                <button
+                  className="flex-1 py-2 text-sm text-text-muted border border-border rounded hover:bg-bg-subtle transition-colors"
+                  onClick={() => setShowLeaveConfirm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLeaveConfirm(true)}
+              className="mb-3 text-sm text-text bg-bg-subtle py-2 px-1 w-full text-center rounded border border-border hover:bg-bg transition-colors"
+            >
+              Leave group
+            </button>
+          )}
 
           {group.role === "admin" && showDeleteConfirm ? (
             <div className="flex flex-col gap-3">

@@ -5,6 +5,7 @@ import type { NewMember } from "@domx/shared";
 import { fetchGroupMembers } from "@/services/group";
 import { useGroups } from "@/hooks/useGroups";
 import { useAuthContext } from "@/context/AuthContext";
+import { connectPostSocket, joinPostGroup } from "@/services/posts";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/error";
 
@@ -32,8 +33,15 @@ export const GroupSettingsPage = () => {
     string | null
   >(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const socketRef = useRef<WebSocket | null>(null);
   const [modal, setModal] = useState<boolean>(false);
   const [members, setMembers] = useState<NewMember[]>([]);
+  const currentMemberRole = members.find(
+    (member) => member.display_id === user?.display_id,
+  )?.role;
+  const canManageMembers =
+    currentMemberRole === "admin" ||
+    (!currentMemberRole && group?.role === "admin");
 
   useEffect(() => {
     if (!id) return;
@@ -43,6 +51,68 @@ export const GroupSettingsPage = () => {
       .catch((error) => {
         toast.error(getErrorMessage(error));
       });
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const socket = connectPostSocket({
+      onOpen: () => {
+        joinPostGroup(socket, id);
+      },
+      onMessage: (message) => {
+        if (!("type" in message)) return;
+        if (message.type === "memberPromoted") {
+          if (message.data.groupId !== id) return;
+          setMembers((prev) =>
+            prev.map((member) =>
+              member.display_id === message.data.displayId
+                ? { ...member, role: "admin" }
+                : member,
+            ),
+          );
+          return;
+        }
+
+        if (message.type === "memberDemoted") {
+          if (message.data.groupId !== id) return;
+          setMembers((prev) =>
+            prev.map((member) =>
+              member.display_id === message.data.displayId
+                ? { ...member, role: "member" }
+                : member,
+            ),
+          );
+          return;
+        }
+
+        if (message.type === "memberKicked") {
+          if (message.data.groupId !== id) return;
+          setMembers((prev) =>
+            prev.filter(
+              (member) => member.display_id !== message.data.displayId,
+            ),
+          );
+          return;
+        }
+
+        if (message.type === "groupLeft") {
+          if (message.data.groupId !== id) return;
+          void fetchGroupMembers(id)
+            .then(setMembers)
+            .catch((error) => {
+              toast.error(getErrorMessage(error));
+            });
+        }
+      },
+    });
+
+    socketRef.current = socket;
+
+    return () => {
+      socketRef.current?.close();
+      socketRef.current = null;
+    };
   }, [id]);
 
   if (loading) return;
@@ -86,6 +156,10 @@ export const GroupSettingsPage = () => {
 
   const handlePromoteMember = async (displayId: string) => {
     if (!id) return;
+    if (!canManageMembers) {
+      toast.error("Only admins can promote members");
+      return;
+    }
     const promoted = await promoteMember(id, displayId);
     if (!promoted) return;
 
@@ -98,6 +172,10 @@ export const GroupSettingsPage = () => {
 
   const handleDemoteMember = async (displayId: string) => {
     if (!id) return;
+    if (!canManageMembers) {
+      toast.error("Only admins can demote members");
+      return;
+    }
     const demoted = await demoteMember(id, displayId);
     if (!demoted) return;
 
@@ -112,6 +190,10 @@ export const GroupSettingsPage = () => {
 
   const handleKickMember = async (displayId: string) => {
     if (!id) return;
+    if (!canManageMembers) {
+      toast.error("Only admins can remove members");
+      return;
+    }
     const removed = await kickMember(id, displayId);
     if (!removed) return;
 
@@ -155,7 +237,7 @@ export const GroupSettingsPage = () => {
           <p className="mb-3 text-[12px] font-bold uppercase text-text-muted md:text-xs">
             Group Name
           </p>
-          {group.role === "admin" && isEditingName ? (
+          {canManageMembers && isEditingName ? (
             <div className="flex items-center gap-2 px-3">
               <input
                 ref={inputRef}
@@ -182,7 +264,7 @@ export const GroupSettingsPage = () => {
                 Cancel
               </button>
             </div>
-          ) : group.role === "admin" ? (
+          ) : canManageMembers ? (
             <button
               onClick={handleStartEditing}
               className="flex items-center justify-between w-full group"
@@ -237,7 +319,7 @@ export const GroupSettingsPage = () => {
                     {member.role}
                   </span>
 
-                  {group.role === "admin" && (
+                  {canManageMembers && (
                     <div className="ml-auto flex items-center gap-2">
                       {member.display_id === user?.display_id ? (
                         member.role === "admin" ? (
@@ -354,7 +436,7 @@ export const GroupSettingsPage = () => {
             </button>
           )}
 
-          {group.role === "admin" && showDeleteConfirm ? (
+          {canManageMembers && showDeleteConfirm ? (
             <div className="flex flex-col gap-3">
               <p className="text-sm text-text md:text-base">
                 Are you sure? This can't be undone.
@@ -376,7 +458,7 @@ export const GroupSettingsPage = () => {
                 </button>
               </div>
             </div>
-          ) : group.role === "admin" ? (
+          ) : canManageMembers ? (
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="text-sm text-text-inverse bg-error py-2 px-1 w-full text-center rounded hover:opacity-70 transition-opacity"

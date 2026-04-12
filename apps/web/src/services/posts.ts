@@ -17,6 +17,16 @@ export type ChatIncomingMessage =
   | { type: "postEdited"; data: Partial<PostDetails> & { id: string } }
   | { type: "postDeleted"; data: { postId: string } }
   | {
+      type: "memberPromoted" | "memberDemoted" | "memberKicked";
+      data: { groupId: string; displayId: string };
+      message?: string;
+    }
+  | {
+      type: "groupLeft";
+      data: { groupId: string };
+      message?: string;
+    }
+  | {
       type: "error";
       message?: string;
       payload?: string;

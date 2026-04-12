@@ -133,8 +133,11 @@ export const GroupChatPage = () => {
   return (
     <div className="flex h-dvh min-w-0 flex-col overflow-x-hidden bg-neutral-50 md:h-full">
       <div className="shrink-0 flex items-center border-b border-border-subtle bg-neutral-50/90 px-4 py-4 backdrop-blur-sm md:px-6 lg:px-8">
-        <button onClick={() => navigate(-1)} className="mr-4 text-text">
-          <span>{"<-"}</span>
+        <button
+          onClick={() => navigate(-1)}
+          className="mr-4 text-text text-lg font-bold"
+        >
+          <span>{"↩"}</span>
         </button>
         <div>
           <h1 className="text-base font-medium text-neutral-900 md:text-lg xl:text-xl">

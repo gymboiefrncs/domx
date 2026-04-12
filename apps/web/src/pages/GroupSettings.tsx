@@ -128,9 +128,9 @@ export const GroupSettingsPage = () => {
       <div className="flex items-center gap-3 border-b border-border px-4 py-4 md:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
-          className="text-text-muted hover:text-text transition-colors text-sm"
+          className="text-text-muted hover:text-text transition-colors text-lg font-bold"
         >
-          ←
+          <span>{"↩"}</span>
         </button>
         <h1 className="text-sm font-semibold uppercase tracking-wide text-text md:text-base lg:text-lg">
           Group Settings

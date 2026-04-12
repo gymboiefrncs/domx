@@ -29,7 +29,7 @@ export const ChatComposer = ({
   onSend,
 }: ChatComposerProps) => (
   <div
-    className="sticky bottom-0 z-10 border-t border-border-subtle bg-neutral-50/95 px-4 py-3 backdrop-blur-sm md:static"
+    className="sticky bottom-0 z-10 shrink-0 border-t border-border-subtle bg-neutral-50/95 px-4 py-3 backdrop-blur-sm"
     onBlur={onBlurArea}
   >
     <div className="mx-auto w-full max-w-4xl">

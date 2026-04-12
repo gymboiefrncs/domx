@@ -131,7 +131,7 @@ export const GroupChatPage = () => {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-neutral-50 md:h-full">
+    <div className="flex h-dvh min-w-0 flex-col overflow-x-hidden bg-neutral-50 md:h-full">
       <div className="shrink-0 flex items-center border-b border-border-subtle bg-neutral-50/90 px-4 py-4 backdrop-blur-sm md:px-6 lg:px-8">
         <button onClick={() => navigate(-1)} className="mr-4 text-text">
           <span>{"<-"}</span>
@@ -153,20 +153,23 @@ export const GroupChatPage = () => {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-7">
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-5 md:px-6 md:py-6 lg:px-8 lg:py-7">
         {posts.length === 0 ? (
           <p className="mt-10 text-center text-sm text-neutral-400 md:text-base">
             No posts yet. Be the first to post!
           </p>
         ) : (
-          <div className="mx-auto w-full max-w-4xl">
-            <ul>
+          <div className="mx-auto w-full min-w-0 max-w-4xl">
+            <ul className="min-w-0">
               {posts.map((post: PostDetails, index: number) => (
                 <PostCard
                   key={post.id}
                   post={post}
                   index={index}
-                  isOwner={user?.display_id === post.display_id}
+                  isOwner={
+                    group?.role === "admin" ||
+                    user?.display_id === post.display_id
+                  }
                   isEditing={editingPostId === post.id}
                   editTitle={editTitle}
                   editBody={editBody}

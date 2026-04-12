@@ -4,12 +4,8 @@ import {
   handleAddMember,
   handleChangeGroupName,
   handleCreateGroup,
-  handleDemoteMember,
   handleGetGroups,
   handleGetMembers,
-  handleKickMember,
-  handleLeaveGroup,
-  handlePromoteMember,
   handleUpdateSeen,
   handleDeleteGroup,
 } from "./group.controllers.js";
@@ -77,39 +73,6 @@ groupRouter.post(
   jwtHandler,
   manageMemberValidator,
   handleAddMember,
-);
-groupRouter.delete(
-  "/groups/:groupId/kick/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handleKickMember,
-);
-
-// REST alias kept alongside legacy route for compatibility
-groupRouter.delete(
-  "/groups/:groupId/members/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handleKickMember,
-);
-groupRouter.patch(
-  "/groups/:groupId/promote/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handlePromoteMember,
-);
-groupRouter.patch(
-  "/groups/:groupId/demote/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handleDemoteMember,
-);
-
-groupRouter.delete(
-  "/groups/:groupId/leave",
-  jwtHandler,
-  groupParamsValidator,
-  handleLeaveGroup,
 );
 
 groupRouter.delete(

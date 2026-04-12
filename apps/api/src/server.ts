@@ -6,6 +6,10 @@ import { authenticateWs } from "./shared/middlewares/authenticateWs.js";
 import type { ChatSocket } from "./features/posts/index.js";
 import { handleChatMessage } from "./features/posts/post.routes.js";
 import {
+  handleGroupWsMessage,
+  isGroupWsAction,
+} from "./features/groups/group.ws.js";
+import {
   getRetryAfterSeconds,
   wsConnectionLimiter,
 } from "./shared/middlewares/rateLimit.js";
@@ -50,7 +54,11 @@ wss.on("connection", async (socket: ChatSocket, req) => {
     }
 
     try {
-      await handleChatMessage(parsed.type, parsed.payload, socket, rooms);
+      if (isGroupWsAction(parsed.type)) {
+        await handleGroupWsMessage(parsed.type, parsed.payload, socket, rooms);
+      } else {
+        await handleChatMessage(parsed.type, parsed.payload, socket, rooms);
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unexpected server error";

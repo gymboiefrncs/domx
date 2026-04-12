@@ -4,6 +4,7 @@ import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import { GROUP_ERROR } from "./group.constants.js";
 import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";
+import type { ChatSocket } from "../posts/index.js";
 
 /**
  * Shared preamble for group member actions.
@@ -32,4 +33,15 @@ export const resolveGroupAction = async (
   if (!userId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
   return { userId, requesterRole };
+};
+
+export const broadcastToGroup = (
+  rooms: Map<string, Set<ChatSocket>>,
+  groupId: string,
+  payload: string,
+): void => {
+  const room = rooms.get(groupId);
+  room?.forEach((client) => {
+    client.send(payload);
+  });
 };

@@ -23,6 +23,7 @@ export const GroupSettingsPage = () => {
   } = useGroups();
   const { user } = useAuthContext();
   const group = groups.find((g) => g.group_id === id);
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -137,7 +138,6 @@ export const GroupSettingsPage = () => {
 
   return (
     <div className="h-full bg-bg flex flex-col">
-      {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-4 md:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
@@ -151,7 +151,6 @@ export const GroupSettingsPage = () => {
       </div>
 
       <div className="mx-auto flex w-full max-w-4xl flex-col divide-y divide-border overflow-y-auto">
-        {/* Group Name */}
         <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
           <p className="mb-3 text-[12px] font-bold uppercase text-text-muted md:text-xs">
             Group Name
@@ -202,7 +201,6 @@ export const GroupSettingsPage = () => {
           )}
         </section>
 
-        {/* Members */}
         <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[12px] font-bold uppercase text-text-muted md:text-xs">
@@ -238,64 +236,74 @@ export const GroupSettingsPage = () => {
                   <span className="text-xs capitalize text-text-muted md:text-sm">
                     {member.role}
                   </span>
-                  {group.role === "admin" &&
-                    member.display_id !== user?.display_id && (
-                      <div className="ml-auto flex items-center gap-2">
-                        {pendingKickDisplayId === member.display_id ? (
-                          <>
+
+                  {group.role === "admin" && (
+                    <div className="ml-auto flex items-center gap-2">
+                      {member.display_id === user?.display_id ? (
+                        member.role === "admin" ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleDemoteMember(member.display_id)
+                            }
+                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                          >
+                            Demote
+                          </button>
+                        ) : null
+                      ) : pendingKickDisplayId === member.display_id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleKickMember(member.display_id)
+                            }
+                            className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                          >
+                            Confirm Kick
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelKickMember}
+                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {member.role === "member" ? (
                             <button
                               type="button"
                               onClick={() =>
-                                void handleKickMember(member.display_id)
+                                void handlePromoteMember(member.display_id)
                               }
-                              className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                              className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
                             >
-                              Confirm Kick
+                              Promote
                             </button>
+                          ) : (
                             <button
                               type="button"
-                              onClick={cancelKickMember}
+                              onClick={() =>
+                                void handleDemoteMember(member.display_id)
+                              }
                               className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
                             >
-                              Cancel
+                              Demote
                             </button>
-                          </>
-                        ) : (
-                          <>
-                            {member.role === "member" ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void handlePromoteMember(member.display_id)
-                                }
-                                className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
-                              >
-                                Promote
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void handleDemoteMember(member.display_id)
-                                }
-                                className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
-                              >
-                                Demote
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                requestKickMember(member.display_id)
-                              }
-                              className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
-                            >
-                              Kick
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => requestKickMember(member.display_id)}
+                            className="rounded-md border border-error/30 px-2 py-1 text-xs text-error transition-colors hover:bg-error/10"
+                          >
+                            Kick
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
@@ -311,7 +319,7 @@ export const GroupSettingsPage = () => {
             />
           )}
         </section>
-        {/* Danger Zone */}
+
         <section className="px-4 py-5 md:px-6 md:py-6 lg:px-8">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-error md:text-sm">
             Danger Zone
@@ -355,7 +363,7 @@ export const GroupSettingsPage = () => {
                 <button
                   className="flex-1 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
                   onClick={() => {
-                    handleDeleteGroupCB(group.group_id);
+                    void handleDeleteGroupCB(group.group_id);
                   }}
                 >
                   Yes, delete

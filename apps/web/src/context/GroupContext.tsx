@@ -43,6 +43,16 @@ export function GroupProvider({
     );
   };
 
+  const decrementMemberCount = (groupId: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.group_id === groupId
+          ? { ...g, member_count: Math.max(0, g.member_count - 1) }
+          : g,
+      ),
+    );
+  };
+
   const clearUnreadCount = (groupId: string) => {
     setGroups((prev) => {
       let changed = false;
@@ -79,6 +89,7 @@ export function GroupProvider({
         renameGroupInList,
         deleteGroupInList,
         incrementMemberCount,
+        decrementMemberCount,
         clearUnreadCount,
       }}
     >

@@ -156,7 +156,7 @@ export const GroupSettingsPage = () => {
           <p className="mb-3 text-[12px] font-bold uppercase text-text-muted md:text-xs">
             Group Name
           </p>
-          {isEditingName ? (
+          {group.role === "admin" && isEditingName ? (
             <div className="flex items-center gap-2 px-3">
               <input
                 ref={inputRef}
@@ -183,7 +183,7 @@ export const GroupSettingsPage = () => {
                 Cancel
               </button>
             </div>
-          ) : (
+          ) : group.role === "admin" ? (
             <button
               onClick={handleStartEditing}
               className="flex items-center justify-between w-full group"
@@ -195,6 +195,10 @@ export const GroupSettingsPage = () => {
                 Edit
               </span>
             </button>
+          ) : (
+            <div className="px-3 text-base text-text md:text-lg">
+              {group.name}
+            </div>
           )}
         </section>
 

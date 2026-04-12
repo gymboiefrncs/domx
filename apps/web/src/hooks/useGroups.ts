@@ -22,6 +22,7 @@ export const useGroups = () => {
     deleteGroupInList,
     loading,
     incrementMemberCount,
+    decrementMemberCount,
     clearUnreadCount,
   } = useGroupContext();
 
@@ -79,6 +80,7 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await kickMemberFromGroup(groupId, displayId);
+      decrementMemberCount(groupId);
       toast.success("Member removed", { duration: 2000 });
       return true;
     } catch (error) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useLogin } from "@/hooks/useAuth";
-import { EyeIcon, EyeOffIcon } from "@/assets/icons";
+import { useLogin } from "@/features/auth/hooks/useAuth";
+import { EyeIcon, EyeOffIcon } from "@/shared/assets/icons";
 import { Link } from "react-router-dom";
 
 export const LoginPage = () => {

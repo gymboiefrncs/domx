@@ -1,15 +1,15 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { usePosts } from "@/hooks/usePost";
+import { usePosts } from "@/features/posts/hooks/usePost";
 import React, { useEffect, useRef, useState } from "react";
-import { SettingsIcon } from "@/assets/icons";
+import { SettingsIcon } from "@/shared/assets/icons";
 import type { PostDetails } from "@domx/shared";
-import { useGroups } from "@/hooks/useGroups";
+import { useGroups } from "@/features/groups/hooks/useGroups";
 import { toast } from "sonner";
-import { useAuthContext } from "@/context/AuthContext";
-import { PostCard } from "@/components/chat/PostCard";
-import { ChatComposer } from "@/components/chat/ChatComposer";
-import { DeletePostModal } from "@/components/chat/DeletePostModal";
-import { PageLoader } from "@/components/common/PageLoader";
+import { useAuthContext } from "@/providers/AuthContext";
+import { PostCard } from "@/features/posts/components/PostCard";
+import { ChatComposer } from "@/features/posts/components/ChatComposer";
+import { DeletePostModal } from "@/features/posts/components/DeletePostModal";
+import { PageLoader } from "@/shared/components/PageLoader";
 import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {

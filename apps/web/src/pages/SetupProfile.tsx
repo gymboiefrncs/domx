@@ -1,5 +1,5 @@
-import { EyeOffIcon, SpinnerIcon, EyeIcon } from "@/assets/icons";
-import { useSetInfo } from "@/hooks/useAuth";
+import { EyeOffIcon, SpinnerIcon, EyeIcon } from "@/shared/assets/icons";
+import { useSetInfo } from "@/features/auth/hooks/useAuth";
 import { useState, type ChangeEvent } from "react";
 
 export default function SetupProfilePage() {

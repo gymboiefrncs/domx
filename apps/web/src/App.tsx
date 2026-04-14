@@ -4,15 +4,15 @@ import SignupPage from "./pages/Signup";
 import { GroupPage } from "./pages/GroupPage";
 import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { LoginPage } from "./pages/Login";
-import { AppLayout } from "./layout/AppLayout";
-import { GroupProvider } from "./context/GroupContext";
+import { AppLayout } from "./shared/layout/AppLayout";
+import { GroupProvider } from "./providers/GroupContext";
 import { GroupChatPage } from "./pages/GroupChat";
-import { AuthLayout } from "./layout/AuthLayout";
+import { AuthLayout } from "./shared/layout/AuthLayout";
 import { Toaster } from "sonner";
 import { GroupSettingsPage } from "./pages/GroupSettings";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProfilePage } from "./pages/Profile";
-import { ProtectedRoute } from "./layout/ProtectedRoute";
+import { ProtectedRoute } from "./shared/layout/ProtectedRoute";
 
 export function App() {
   return (

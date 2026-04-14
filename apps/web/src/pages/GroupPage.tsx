@@ -1,11 +1,11 @@
-import { GroupCard } from "../components/GroupCard";
+import { GroupCard } from "@/features/groups/components/GroupCard";
 import { useState } from "react";
-import { CreateGroupModal } from "@/components/CreateGroupModal";
+import { CreateGroupModal } from "@/features/groups/components/CreateGroupModal";
 import { useNavigate } from "react-router-dom";
 import type { GroupDetail } from "@domx/shared";
-import { useLogout } from "@/hooks/useAuth";
-import { useGroups } from "@/hooks/useGroups";
-import { PageLoader } from "@/components/common/PageLoader";
+import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useGroups } from "@/features/groups/hooks/useGroups";
+import { PageLoader } from "@/shared/components/PageLoader";
 
 export const GroupPage = () => {
   const { groups, loading } = useGroups();

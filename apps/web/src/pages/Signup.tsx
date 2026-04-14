@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useSignup } from "@/hooks/useAuth";
-import { SpinnerIcon } from "@/assets/icons";
+import { useSignup } from "@/features/auth/hooks/useAuth";
+import { SpinnerIcon } from "@/shared/assets/icons";
 import { Link } from "react-router-dom";
 
 export default function SignupPage() {

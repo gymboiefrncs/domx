@@ -1,10 +1,10 @@
-import { useAuthContext } from "@/context/AuthContext";
-import { useLogout } from "@/hooks/useAuth";
-import { useDeleteAccount } from "@/hooks/useProfile";
+import { useAuthContext } from "@/providers/AuthContext";
+import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useDeleteAccount } from "@/features/profile/hooks/useProfile";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { PageLoader } from "@/components/common/PageLoader";
+import { PageLoader } from "@/shared/components/PageLoader";
 
 export const ProfilePage = () => {
   const { user, loading } = useAuthContext();

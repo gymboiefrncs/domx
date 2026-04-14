@@ -1,13 +1,13 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { AddMemberModal } from "@/components/AddMemberModal";
+import { AddMemberModal } from "@/features/groups/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
-import { fetchGroupMembers } from "@/services/group";
-import { useGroups } from "@/hooks/useGroups";
-import { useAuthContext } from "@/context/AuthContext";
-import { connectPostSocket, joinPostGroup } from "@/services/posts";
+import { fetchGroupMembers } from "@/features/groups/transport";
+import { useGroups } from "@/features/groups/hooks/useGroups";
+import { useAuthContext } from "@/providers/AuthContext";
+import { connectPostSocket, joinPostGroup } from "@/features/posts/transport";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/utils/error";
+import { getErrorMessage } from "@/shared/lib/errors";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams();

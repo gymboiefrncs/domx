@@ -1,5 +1,5 @@
-import { SpinnerIcon } from "@/assets/icons";
-import { useResendOTP, useVerifyOTP } from "@/hooks/useAuth";
+import { SpinnerIcon } from "@/shared/assets/icons";
+import { useResendOTP, useVerifyOTP } from "@/features/auth/hooks/useAuth";
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
 import { Navigate } from "react-router-dom";
 

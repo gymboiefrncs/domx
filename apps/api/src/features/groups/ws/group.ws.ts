@@ -3,12 +3,9 @@ import {
   handleKickMember,
   handleLeaveGroup,
   handlePromoteMember,
-} from "./group.controllers.js";
-import { GroupParamsSchema, ManageMemberSchema } from "./group.schemas.js";
-import type {
-  ChatSocket,
-  MessageHandler,
-} from "@api/features/posts/post.types.js";
+} from "./group.handlers.js";
+import { GroupParamsSchema, ManageMemberSchema } from "../group.schemas.js";
+import type { ChatSocket, WsMessageHandler } from "@api/shared/types/ws.js";
 import {
   getRetryAfterSeconds,
   wsWritePostLimiter,
@@ -21,7 +18,7 @@ const GROUP_WS_ACTIONS = new Set([
   "leaveGroup",
 ]);
 
-const messageHandlers: Record<string, MessageHandler> = {
+const messageHandlers: Record<string, WsMessageHandler> = {
   promoteMember: {
     schema: ManageMemberSchema,
     handler: handlePromoteMember,

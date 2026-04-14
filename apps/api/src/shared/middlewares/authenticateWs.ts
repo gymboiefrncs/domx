@@ -1,4 +1,4 @@
-import type { ChatSocket } from "@api/features/posts/post.types.js";
+import type { ChatSocket } from "@api/shared/types/ws.js";
 import * as jose from "jose";
 import type { IncomingMessage } from "node:http";
 import { config } from "../config.js";

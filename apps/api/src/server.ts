@@ -3,12 +3,12 @@ import { app } from "./app.js";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { authenticateWs } from "./shared/middlewares/authenticateWs.js";
-import type { ChatSocket } from "./features/posts/index.js";
-import { handleChatMessage } from "./features/posts/post.routes.js";
+import type { ChatSocket } from "./shared/types/ws.js";
+import { handleChatMessage } from "./features/posts/ws/post.ws.js";
 import {
   handleGroupWsMessage,
   isGroupWsAction,
-} from "./features/groups/group.ws.js";
+} from "./features/groups/index.js";
 import {
   getRetryAfterSeconds,
   wsConnectionLimiter,
@@ -54,6 +54,7 @@ wss.on("connection", async (socket: ChatSocket, req) => {
     }
 
     try {
+      // Checks if the incoming message type is for group WebSocket actions
       if (isGroupWsAction(parsed.type)) {
         await handleGroupWsMessage(parsed.type, parsed.payload, socket, rooms);
       } else {

@@ -17,7 +17,7 @@ import {
   GroupParamsSchema,
   ManageMemberSchema,
   GroupSchema,
-} from "./group.schemas.js";
+} from "../group.schemas.js";
 import {
   groupLimiter,
   createGroupLimiter,

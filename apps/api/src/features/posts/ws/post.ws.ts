@@ -1,41 +1,22 @@
-import express, { type Router } from "express";
-import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
-import { validateParams } from "@api/shared/middlewares/validate.js";
 import {
   handleCreatePost,
-  handleEditPost,
-  handleGetPosts,
   handleDeletePost,
+  handleEditPost,
   handleJoinGroup,
-} from "./post.controllers.js";
+} from "./post.handlers.js";
 import {
   DeletePostPayloadSchema,
   EditPostPayloadSchema,
   JoinGroupPayloadSchema,
-  PostParamsSchema,
   PostSchema,
-} from "./post.schemas.js";
-import type { ChatSocket, MessageHandler } from "./post.types.js";
+} from "../post.schemas.js";
+import type { ChatSocket, WsMessageHandler } from "@api/shared/types/ws.js";
 import {
-  postLimiter,
   wsWritePostLimiter,
   getRetryAfterSeconds,
 } from "@api/shared/middlewares/rateLimit.js";
 
-const postParamsValidator = validateParams(PostParamsSchema);
-
-export const postRouter: Router = express.Router();
-
-postRouter.use(postLimiter);
-
-postRouter.get(
-  "/groups/:groupId/posts",
-  jwtHandler,
-  postParamsValidator,
-  handleGetPosts,
-);
-
-const messageHandlers: Record<string, MessageHandler> = {
+const messageHandlers: Record<string, WsMessageHandler> = {
   joinGroup: {
     schema: JoinGroupPayloadSchema,
     handler: handleJoinGroup,

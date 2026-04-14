@@ -4,7 +4,7 @@ import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import { GROUP_ERROR } from "./group.constants.js";
 import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";
-import type { ChatSocket } from "../posts/index.js";
+import type { ChatSocket } from "@api/shared/types/ws.js";
 
 /**
  * Shared preamble for group member actions.

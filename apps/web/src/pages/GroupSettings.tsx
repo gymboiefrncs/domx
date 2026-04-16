@@ -1,9 +1,11 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import { AddMemberModal } from "@/features/groups/components/AddMemberModal";
 import type { NewMember } from "@domx/shared";
-import { fetchGroupMembers } from "@/features/groups/transport";
-import { useGroups } from "@/features/groups/hooks/useGroups";
+import {
+  fetchGroupMembers,
+  AddMemberModal,
+  useGroups,
+} from "@/features/groups/index";
 import { useAuthContext } from "@/providers/AuthContext";
 import { connectPostSocket, joinPostGroup } from "@/features/posts/transport";
 import { toast } from "sonner";

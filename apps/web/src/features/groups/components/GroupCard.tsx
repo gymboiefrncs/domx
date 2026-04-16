@@ -1,4 +1,4 @@
-import type { GroupCardProps } from "@/features/groups/types";
+import type { GroupCardProps } from "../types";
 
 export function GroupCard({ group, onClick }: GroupCardProps) {
   return (

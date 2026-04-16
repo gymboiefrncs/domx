@@ -8,7 +8,7 @@ import {
   demoteMemberInGroup,
   kickMemberFromGroup,
   leaveGroupById,
-} from "@/features/groups/transport";
+} from "../transport";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import { useGroupContext } from "@/providers/GroupContext";

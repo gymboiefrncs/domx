@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import type { AddMemberProps } from "@/features/groups/types";
+import type { AddMemberProps } from "../types";
 import { useParams } from "react-router-dom";
-import { useGroups } from "@/features/groups/hooks/useGroups";
+import { useGroups } from "../hooks/useGroups";
 
 export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   const { id } = useParams();

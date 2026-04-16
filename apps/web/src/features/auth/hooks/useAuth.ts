@@ -7,7 +7,7 @@ import {
   setInfo,
   signup,
   verifyOTP,
-} from "@/features/auth/transport";
+} from "../transport";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import type {
@@ -16,7 +16,7 @@ import type {
   SetInfoState,
   SignupState,
   VerifyOTPState,
-} from "@/features/auth/types";
+} from "../types";
 
 export const useLogin = (): LoginState => {
   const [loading, setLoading] = useState<boolean>(false);

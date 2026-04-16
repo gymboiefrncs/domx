@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { CreateGroupModalProps } from "@/features/groups/types";
-import { useGroups } from "@/features/groups/hooks/useGroups";
+import type { CreateGroupModalProps } from "../types";
+import { useGroups } from "../hooks/useGroups";
 
 export const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
   const [name, setName] = useState<string>("");

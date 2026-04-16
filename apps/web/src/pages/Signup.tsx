@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSignup } from "@/features/auth/hooks/useAuth";
+import { useSignup } from "@/features/auth/index";
 import { SpinnerIcon } from "@/shared/assets/icons";
 import { Link } from "react-router-dom";
 

@@ -7,7 +7,7 @@ import {
   setInfo,
   signup,
   verifyOTP,
-} from "../transport";
+} from "../transport/rest/auth.api";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import type {

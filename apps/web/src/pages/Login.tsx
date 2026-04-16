@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLogin } from "@/features/auth/hooks/useAuth";
+import { useLogin } from "@/features/auth/index";
 import { EyeIcon, EyeOffIcon } from "@/shared/assets/icons";
 import { Link } from "react-router-dom";
 

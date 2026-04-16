@@ -1,4 +1,4 @@
-import { deleteAccount } from "../transport";
+import { deleteAccount } from "../transport/rest/profile.api";
 import { getErrorMessage } from "@/shared/lib/errors";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,6 +1,6 @@
 import { useAuthContext } from "@/providers/AuthContext";
-import { useLogout } from "@/features/auth/hooks/useAuth";
-import { useDeleteAccount } from "@/features/profile/hooks/useProfile";
+import { useLogout } from "@/features/auth/index";
+import { useDeleteAccount } from "@/features/profile/index";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";

@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { GroupDetail } from "@domx/shared";
 import type { GroupContextType } from "@/features/groups/types";
-import { fetchMyGroups } from "@/features/groups/transport";
+import { fetchMyGroups } from "@/features/groups/index";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 

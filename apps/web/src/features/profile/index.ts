@@ -1,2 +1,2 @@
 export * from "./hooks/useProfile";
-export * from "./transport";
+export * from "./transport/rest/profile.api";

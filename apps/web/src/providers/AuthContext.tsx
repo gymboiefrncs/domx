@@ -1,4 +1,4 @@
-import { fetchProfile } from "@/features/profile/transport";
+import { fetchProfile } from "@/features/profile/index";
 import { createContext, useState, useEffect, useContext } from "react";
 import type { User } from "@domx/shared";
 

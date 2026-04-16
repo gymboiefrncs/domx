@@ -14,6 +14,7 @@
     "build": "tsc --build",
     "dev": "tsc --build --watch",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "devDependencies": {

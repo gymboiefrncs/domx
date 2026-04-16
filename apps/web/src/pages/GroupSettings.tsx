@@ -7,7 +7,7 @@ import {
   useGroups,
 } from "@/features/groups/index";
 import { useAuthContext } from "@/providers/AuthContext";
-import { connectPostSocket, joinPostGroup } from "@/features/posts/transport";
+import { connectPostSocket, joinPostGroup } from "@/features/posts/index";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 

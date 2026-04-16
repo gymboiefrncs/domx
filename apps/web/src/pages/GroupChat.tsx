@@ -1,14 +1,16 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { usePosts } from "@/features/posts/hooks/usePost";
+import {
+  usePosts,
+  PostCard,
+  ChatComposer,
+  DeletePostModal,
+} from "@/features/posts/index";
 import React, { useEffect, useRef, useState } from "react";
 import { SettingsIcon } from "@/shared/assets/icons";
 import type { PostDetails } from "@domx/shared";
-import { useGroups } from "@/features/groups/hooks/useGroups";
+import { useGroups } from "@/features/groups/index";
 import { toast } from "sonner";
 import { useAuthContext } from "@/providers/AuthContext";
-import { PostCard } from "@/features/posts/components/PostCard";
-import { ChatComposer } from "@/features/posts/components/ChatComposer";
-import { DeletePostModal } from "@/features/posts/components/DeletePostModal";
 import { PageLoader } from "@/shared/components/PageLoader";
 import "highlight.js/styles/github.css";
 

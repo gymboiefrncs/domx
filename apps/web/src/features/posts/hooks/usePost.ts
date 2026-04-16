@@ -7,8 +7,8 @@ import {
   sendEditPostMessage,
   sendPostMessage,
   type ChatIncomingMessage,
-} from "@/features/posts/transport";
-import type { GetPostsState } from "@/features/posts/types";
+} from "../transport";
+import type { GetPostsState } from "../types";
 import { getErrorMessage } from "@/shared/lib/errors";
 import type { PostDetails } from "@domx/shared";
 import { useEffect, useRef, useState } from "react";

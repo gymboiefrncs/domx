@@ -198,7 +198,7 @@ export const kickMember = async (
   const deleted = await deleteMember(userId, groupId);
   if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
-  return { ok: true, message: "Member has been removed from the group." };
+  return { ok: true, message: "You have been removed from the group." };
 };
 
 /**

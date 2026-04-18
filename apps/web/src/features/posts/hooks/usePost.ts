@@ -42,9 +42,11 @@ export const usePosts = (groupId: string): GetPostsState => {
     };
 
     const handleIncomingChatMessage = (message: ChatIncomingMessage) => {
-      if ("message" in message && typeof message.message === "string") {
-        toast.error(message.message);
-        return;
+      if (!("type" in message)) {
+        if ("message" in message && typeof message.message === "string") {
+          toast.error(message.message);
+          return;
+        }
       }
 
       if (!("type" in message)) return;

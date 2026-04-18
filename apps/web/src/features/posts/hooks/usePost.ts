@@ -199,7 +199,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       socketRef.current = null;
       socket?.close();
     };
-  }, [groupId, user?.display_id, user?.username]);
+  }, [groupId, user?.display_id, user?.username, deleteGroupInList, navigate]);
 
   const handleCreatePost = async (
     groupId: string,

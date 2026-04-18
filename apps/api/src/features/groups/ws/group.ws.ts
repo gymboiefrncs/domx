@@ -62,13 +62,17 @@ export const handleGroupWsMessage = async (
 
   const entry = messageHandlers[type];
   if (!entry) {
-    socket.send(JSON.stringify({ message: "Unknown message type" }));
+    socket.send(
+      JSON.stringify({ type: "error", message: "Unknown message type" }),
+    );
     return;
   }
 
   const parsed = entry.schema.safeParse(payload);
   if (!parsed.success) {
-    socket.send(JSON.stringify({ message: parsed.error.flatten() }));
+    socket.send(
+      JSON.stringify({ type: "error", message: parsed.error.flatten() }),
+    );
     return;
   }
 

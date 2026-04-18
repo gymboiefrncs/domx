@@ -13,6 +13,8 @@ import { getErrorMessage } from "@/shared/lib/errors";
 import type { PostDetails } from "@domx/shared";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useGroupContext } from "@/providers/GroupContext";
 
 export const usePosts = (groupId: string): GetPostsState => {
   const { user } = useAuthContext();
@@ -20,6 +22,8 @@ export const usePosts = (groupId: string): GetPostsState => {
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<WebSocket | null>(null);
   const optimisticQueueRef = useRef<string[]>([]);
+  const navigate = useNavigate();
+  const { deleteGroupInList } = useGroupContext();
 
   useEffect(() => {
     let isDisposed = false;
@@ -133,6 +137,16 @@ export const usePosts = (groupId: string): GetPostsState => {
         setPosts((prev) =>
           prev.filter((post) => post.id !== message.data.postId),
         );
+      }
+
+      if (message.type === "memberKicked") {
+        if (message.data.displayId === user?.display_id) {
+          navigate("/groups", { replace: true });
+          deleteGroupInList(groupId);
+          toast.error(
+            message.message ?? "You have been removed from the group",
+          );
+        }
       }
     };
 

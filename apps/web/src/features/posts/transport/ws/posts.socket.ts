@@ -1,133 +1,82 @@
-import { API_BASE_URL } from "@/shared/config";
-import type { NewMember, Post, PostDetails } from "@domx/shared";
+import {
+  wsClient,
+  type WsIncomingMessage,
+  type WsOutgoingMessage,
+} from "@/shared/lib/ws/wsClient";
 
-type ChatOutgoingMessage =
-  | { type: "joinGroup"; payload: { groupId: string } }
-  | { type: "sendMessage"; payload: { title: string; body: string } }
-  | {
-      type: "editMessage";
-      payload: { postId: string; title: string; body: string };
-    }
-  | { type: "deleteMessage"; payload: { postId: string } };
+export type ChatIncomingMessage = WsIncomingMessage;
 
-export type ChatIncomingMessage =
-  | { type: "newMessage"; data: Post | PostDetails }
-  | { type: "postEdited"; data: Partial<PostDetails> & { id: string } }
-  | { type: "postDeleted"; data: { postId: string } }
-  | { type: "memberAdded"; data: NewMember; message?: string }
-  | {
-      type: "memberPromoted" | "memberDemoted" | "memberKicked";
-      data: { groupId: string; displayId: string };
-      message?: string;
-    }
-  | {
-      type: "groupLeft";
-      data: { groupId: string; displayId?: string };
-      message?: string;
-    }
-  | {
-      type: "groupDeleted";
-      data: { groupId: string };
-      message?: string;
-    }
-  | {
-      type: "error";
-      message?: string;
-      payload?: string;
-      retryAfter?: number | null;
-    }
-  | { message: string };
-
-type PostSocketHandlers = {
+export type PostSocketHandlers = {
   onOpen?: () => void;
   onMessage?: (message: ChatIncomingMessage) => void;
   onClose?: () => void;
   onError?: () => void;
 };
 
-const getApiHttpBase = (): string => {
-  const baseUrl = new URL(API_BASE_URL);
-  return baseUrl.origin;
-};
-
-const getPostsWsUrl = (): string => {
-  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const url = new URL(getApiHttpBase());
-  url.protocol = wsProtocol;
-  return url.toString();
-};
-
-const safeParseMessage = (raw: unknown): ChatIncomingMessage | null => {
-  if (typeof raw !== "string") return null;
-
-  try {
-    return JSON.parse(raw) as ChatIncomingMessage;
-  } catch {
-    return null;
-  }
-};
-
-export const connectPostSocket = (handlers: PostSocketHandlers): WebSocket => {
-  const socket = new WebSocket(getPostsWsUrl());
-
-  socket.addEventListener("open", () => {
-    handlers.onOpen?.();
+export const connectPostSocket = (
+  handlers: PostSocketHandlers,
+): (() => void) => {
+  const release = wsClient.acquire();
+  const unsubscribeMessage = wsClient.subscribe((message) => {
+    handlers.onMessage?.(message);
   });
 
-  socket.addEventListener("message", (event) => {
-    const parsed = safeParseMessage(event.data);
-    if (!parsed) return;
-    handlers.onMessage?.(parsed);
-  });
-
-  socket.addEventListener("close", () => {
-    handlers.onClose?.();
-  });
-
-  socket.addEventListener("error", () => {
+  const unsubscribeConnection = wsClient.subscribeConnection((event) => {
+    if (event === "open") {
+      handlers.onOpen?.();
+      return;
+    }
+    if (event === "close") {
+      handlers.onClose?.();
+      return;
+    }
     handlers.onError?.();
   });
 
-  return socket;
+  if (wsClient.isOpen()) {
+    handlers.onOpen?.();
+  }
+
+  return () => {
+    unsubscribeMessage();
+    unsubscribeConnection();
+    release();
+  };
 };
 
-export const joinPostGroup = (socket: WebSocket, groupId: string): void => {
-  const message: ChatOutgoingMessage = {
+export const isPostSocketConnected = (): boolean => wsClient.isOpen();
+
+export const joinPostGroup = (groupId: string): void => {
+  wsClient.send({
     type: "joinGroup",
     payload: { groupId },
-  };
-  socket.send(JSON.stringify(message));
+  } satisfies WsOutgoingMessage);
 };
 
-export const sendPostMessage = (
-  socket: WebSocket,
-  payload: { title: string; body: string },
-): void => {
-  const message: ChatOutgoingMessage = {
+export const sendPostMessage = (payload: {
+  title: string;
+  body: string;
+}): void => {
+  wsClient.send({
     type: "sendMessage",
     payload,
-  };
-  socket.send(JSON.stringify(message));
+  } satisfies WsOutgoingMessage);
 };
 
-export const sendEditPostMessage = (
-  socket: WebSocket,
-  payload: { postId: string; title: string; body: string },
-): void => {
-  const message: ChatOutgoingMessage = {
+export const sendEditPostMessage = (payload: {
+  postId: string;
+  title: string;
+  body: string;
+}): void => {
+  wsClient.send({
     type: "editMessage",
     payload,
-  };
-  socket.send(JSON.stringify(message));
+  } satisfies WsOutgoingMessage);
 };
 
-export const sendDeletePostMessage = (
-  socket: WebSocket,
-  payload: { postId: string },
-): void => {
-  const message: ChatOutgoingMessage = {
+export const sendDeletePostMessage = (payload: { postId: string }): void => {
+  wsClient.send({
     type: "deleteMessage",
     payload,
-  };
-  socket.send(JSON.stringify(message));
+  } satisfies WsOutgoingMessage);
 };

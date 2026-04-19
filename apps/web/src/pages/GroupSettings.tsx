@@ -42,7 +42,7 @@ export const GroupSettingsPage = () => {
     string | null
   >(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const socketRef = useRef<WebSocket | null>(null);
+  const recentGroupDeletedEventsRef = useRef<Set<string>>(new Set());
   const [modal, setModal] = useState<boolean>(false);
   const [members, setMembers] = useState<NewMember[]>([]);
   const currentMemberRole = members.find(
@@ -65,9 +65,9 @@ export const GroupSettingsPage = () => {
   useEffect(() => {
     if (!id) return;
 
-    const socket = connectPostSocket({
+    const disconnect = connectPostSocket({
       onOpen: () => {
-        joinPostGroup(socket, id);
+        joinPostGroup(id);
       },
       onMessage: (message) => {
         if (!("type" in message)) return;
@@ -143,17 +143,26 @@ export const GroupSettingsPage = () => {
 
         if (message.type === "groupDeleted") {
           if (message.data.groupId !== id) return;
+
+          if (recentGroupDeletedEventsRef.current.has(message.data.groupId)) {
+            return;
+          }
+
+          recentGroupDeletedEventsRef.current.add(message.data.groupId);
+          window.setTimeout(() => {
+            recentGroupDeletedEventsRef.current.delete(message.data.groupId);
+          }, 5000);
+
           navigate("/groups", { replace: true });
-          toast.error(message.message ?? "Group deleted");
+          toast.error(message.message ?? "Group deleted", {
+            id: `group-deleted-${message.data.groupId}`,
+          });
         }
       },
     });
 
-    socketRef.current = socket;
-
     return () => {
-      socketRef.current?.close();
-      socketRef.current = null;
+      disconnect();
     };
   }, [id]);
 
@@ -503,7 +512,17 @@ export const GroupSettingsPage = () => {
               onClose={() => setModal(false)}
               onSuccess={(newMember: NewMember) => {
                 setModal(false);
-                setMembers((prev) => [...prev, newMember]);
+                setMembers((prev) => {
+                  if (
+                    prev.some(
+                      (member) => member.display_id === newMember.display_id,
+                    )
+                  ) {
+                    return prev;
+                  }
+
+                  return [...prev, newMember];
+                });
               }}
             />
           )}

@@ -2,6 +2,7 @@ import { useAuthContext } from "@/providers/AuthContext";
 import {
   connectPostSocket,
   fetchMessages,
+  isPostSocketConnected,
   joinPostGroup,
   sendDeletePostMessage,
   sendEditPostMessage,
@@ -21,7 +22,7 @@ export const usePosts = (groupId: string): GetPostsState => {
   const { deleteGroupInList } = useGroupContext();
   const [posts, setPosts] = useState<PostDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const socketRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<(() => void) | null>(null);
   const optimisticQueueRef = useRef<string[]>([]);
   const wasKickedRef = useRef(false);
   const deleteGroupInListRef = useRef(deleteGroupInList);
@@ -33,6 +34,18 @@ export const usePosts = (groupId: string): GetPostsState => {
 
   useEffect(() => {
     let isDisposed = false;
+    const handleSelfRemovedFromGroup = (
+      messageText: string,
+      isError = true,
+    ) => {
+      navigate("/groups", { replace: true });
+      deleteGroupInListRef.current(groupId);
+      if (isError) {
+        toast.error(messageText);
+      } else {
+        toast.success(messageText);
+      }
+    };
 
     const normalizePost = (post: Partial<PostDetails>): PostDetails => {
       const fallbackUsername = user?.username ?? "Unknown user";
@@ -62,121 +75,125 @@ export const usePosts = (groupId: string): GetPostsState => {
 
       if (!("type" in message)) return;
 
-      if (message.type === "error") {
-        if (wasKickedRef.current) {
+      switch (message.type) {
+        case "error": {
+          if (wasKickedRef.current) return;
+
+          const nextOptimisticId = optimisticQueueRef.current.shift();
+          if (nextOptimisticId) {
+            setPosts((prev) =>
+              prev.filter((post) => post.id !== nextOptimisticId),
+            );
+          }
+
+          toast.error(
+            message.message ?? message.payload ?? "Failed to send message",
+          );
           return;
         }
 
-        const nextOptimisticId = optimisticQueueRef.current.shift();
-        if (nextOptimisticId) {
-          setPosts((prev) =>
-            prev.filter((post) => post.id !== nextOptimisticId),
-          );
+        case "newMessage": {
+          const incomingPost = normalizePost(message.data);
+
+          setPosts((prev) => {
+            const existingIndex = prev.findIndex(
+              (post) => post.id === incomingPost.id,
+            );
+            if (existingIndex >= 0) {
+              const copy = [...prev];
+              copy[existingIndex] = incomingPost;
+              return copy;
+            }
+
+            const nextOptimisticId = optimisticQueueRef.current[0];
+            const optimisticIndex = nextOptimisticId
+              ? prev.findIndex((post) => post.id === nextOptimisticId)
+              : -1;
+
+            const fallbackOptimisticIndex =
+              optimisticIndex >= 0
+                ? optimisticIndex
+                : prev.findIndex((post) => {
+                    const isOptimistic = post.user_id.startsWith("optimistic-");
+                    if (!isOptimistic) return false;
+
+                    return (
+                      post.group_id === incomingPost.group_id &&
+                      post.title === incomingPost.title &&
+                      post.body === incomingPost.body
+                    );
+                  });
+
+            if (fallbackOptimisticIndex < 0) {
+              return [...prev, incomingPost];
+            }
+
+            const copy = [...prev];
+            const replacedOptimisticId = copy[fallbackOptimisticIndex]?.id;
+            copy[fallbackOptimisticIndex] = incomingPost;
+            if (replacedOptimisticId) {
+              optimisticQueueRef.current = optimisticQueueRef.current.filter(
+                (id) => id !== replacedOptimisticId,
+              );
+            }
+            return copy;
+          });
+          return;
         }
 
-        toast.error(
-          message.message ?? message.payload ?? "Failed to send message",
-        );
-        return;
-      }
-
-      if (message.type === "newMessage") {
-        const incomingPost = normalizePost(message.data);
-
-        setPosts((prev) => {
-          const existingIndex = prev.findIndex(
-            (post) => post.id === incomingPost.id,
+        case "postEdited": {
+          setPosts((prev) =>
+            prev.map((post) =>
+              post.id === message.data.id
+                ? {
+                    ...post,
+                    ...message.data,
+                    updated_at: new Date(),
+                  }
+                : post,
+            ),
           );
-          if (existingIndex >= 0) {
-            const copy = [...prev];
-            copy[existingIndex] = incomingPost;
-            return copy;
-          }
+          return;
+        }
 
-          const nextOptimisticId = optimisticQueueRef.current[0];
-          const optimisticIndex = nextOptimisticId
-            ? prev.findIndex((post) => post.id === nextOptimisticId)
-            : -1;
+        case "postDeleted": {
+          setPosts((prev) =>
+            prev.filter((post) => post.id !== message.data.postId),
+          );
+          return;
+        }
 
-          const fallbackOptimisticIndex =
-            optimisticIndex >= 0
-              ? optimisticIndex
-              : prev.findIndex((post) => {
-                  const isOptimistic = post.user_id.startsWith("optimistic-");
-                  if (!isOptimistic) return false;
-
-                  return (
-                    post.group_id === incomingPost.group_id &&
-                    post.title === incomingPost.title &&
-                    post.body === incomingPost.body
-                  );
-                });
-
-          if (fallbackOptimisticIndex < 0) {
-            return [...prev, incomingPost];
-          }
-
-          const copy = [...prev];
-          const replacedOptimisticId = copy[fallbackOptimisticIndex]?.id;
-          copy[fallbackOptimisticIndex] = incomingPost;
-          if (replacedOptimisticId) {
-            optimisticQueueRef.current = optimisticQueueRef.current.filter(
-              (id) => id !== replacedOptimisticId,
+        case "memberKicked": {
+          if (message.data.displayId === user?.display_id) {
+            wasKickedRef.current = true;
+            handleSelfRemovedFromGroup(
+              message.message ?? "You have been removed from the group",
             );
           }
-          return copy;
-        });
-        return;
-      }
-
-      if (message.type === "postEdited") {
-        setPosts((prev) =>
-          prev.map((post) =>
-            post.id === message.data.id
-              ? {
-                  ...post,
-                  ...message.data,
-                  updated_at: new Date(),
-                }
-              : post,
-          ),
-        );
-        return;
-      }
-
-      if (message.type === "postDeleted") {
-        setPosts((prev) =>
-          prev.filter((post) => post.id !== message.data.postId),
-        );
-      }
-
-      if (message.type === "memberKicked") {
-        if (message.data.displayId === user?.display_id) {
-          wasKickedRef.current = true;
-          navigate("/groups", { replace: true });
-          deleteGroupInListRef.current(groupId);
-          toast.error(
-            message.message ?? "You have been removed from the group",
-          );
+          return;
         }
-        return;
-      }
 
-      if (message.type === "groupLeft") {
-        if (message.data.displayId === user?.display_id) {
-          navigate("/groups", { replace: true });
-          deleteGroupInListRef.current(groupId);
-          toast.success(message.message ?? "You left the group");
+        case "groupLeft": {
+          if (message.data.displayId === user?.display_id) {
+            handleSelfRemovedFromGroup(
+              message.message ?? "You left the group",
+              false,
+            );
+          }
+          return;
         }
-        return;
-      }
 
-      if (message.type === "groupDeleted") {
-        if (message.data.groupId === groupId) {
-          navigate("/groups", { replace: true });
-          deleteGroupInListRef.current(groupId);
-          toast.error(message.message ?? "This group has been deleted");
+        case "groupDeleted": {
+          if (message.data.groupId === groupId) {
+            handleSelfRemovedFromGroup(
+              message.message ?? "This group has been deleted",
+            );
+          }
+          return;
         }
+
+        default:
+          return;
       }
     };
 
@@ -208,7 +225,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       const socket = connectPostSocket({
         onOpen: () => {
           opened = true;
-          joinPostGroup(socket, groupId);
+          joinPostGroup(groupId);
         },
         onMessage: (message) => {
           handleIncomingChatMessage(message);
@@ -229,7 +246,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       optimisticQueueRef.current = [];
       const socket = socketRef.current;
       socketRef.current = null;
-      socket?.close();
+      socket?.();
     };
   }, [groupId, user?.display_id, user?.username, navigate]);
 
@@ -255,13 +272,11 @@ export const usePosts = (groupId: string): GetPostsState => {
     optimisticQueueRef.current.push(optimisticPost.id);
 
     try {
-      const socket = socketRef.current;
-
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
+      if (!socketRef.current || !isPostSocketConnected()) {
         throw new Error("Chat connection is not ready");
       }
 
-      sendPostMessage(socket, {
+      sendPostMessage({
         body: post,
         title,
       });
@@ -280,14 +295,12 @@ export const usePosts = (groupId: string): GetPostsState => {
     body: string,
     title: string,
   ) => {
-    const socket = socketRef.current;
-
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socketRef.current || !isPostSocketConnected()) {
       toast.error("Chat connection is not ready");
       return;
     }
 
-    sendEditPostMessage(socket, {
+    sendEditPostMessage({
       postId,
       body,
       title,
@@ -295,14 +308,12 @@ export const usePosts = (groupId: string): GetPostsState => {
   };
 
   const handleDeletePost = async (postId: string) => {
-    const socket = socketRef.current;
-
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (!socketRef.current || !isPostSocketConnected()) {
       toast.error("Chat connection is not ready");
       return;
     }
 
-    sendDeletePostMessage(socket, { postId });
+    sendDeletePostMessage({ postId });
   };
 
   return { posts, loading, handleCreatePost, handleEditPost, handleDeletePost };

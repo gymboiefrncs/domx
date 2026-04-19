@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type JSX,
 } from "react";
@@ -23,6 +24,7 @@ export function GroupProvider({
   const [groups, setGroups] = useState<GroupDetail[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { user } = useAuthContext();
+  const recentMemberAddedEventsRef = useRef<Set<string>>(new Set());
 
   const addGroup = (data: GroupDetail) => {
     setGroups((prev) => {
@@ -94,74 +96,90 @@ export function GroupProvider({
     const socket = connectPostSocket({
       onOpen: () => {
         groups.forEach((g) => {
-          joinPostGroup(socket, g.group_id);
+          joinPostGroup(g.group_id);
         });
       },
       onMessage: (message) => {
         if (!("type" in message)) return;
 
-        if (message.type === "memberAdded") {
-          if (message.data.display_id === user.display_id) {
-            void fetchMyGroups()
-              .then((updatedGroups) => {
-                setGroups(updatedGroups);
-                joinPostGroup(socket, message.data.group_id);
-              })
-              .catch((err) => {
-                toast.error(getErrorMessage(err), { duration: 2000 });
+        switch (message.type) {
+          case "memberAdded": {
+            const dedupeKey = `${message.data.group_id}:${message.data.display_id}`;
+            if (recentMemberAddedEventsRef.current.has(dedupeKey)) {
+              return;
+            }
+
+            recentMemberAddedEventsRef.current.add(dedupeKey);
+            window.setTimeout(() => {
+              recentMemberAddedEventsRef.current.delete(dedupeKey);
+            }, 5000);
+
+            if (message.data.display_id === user.display_id) {
+              void fetchMyGroups()
+                .then((updatedGroups) => {
+                  setGroups(updatedGroups);
+                  joinPostGroup(message.data.group_id);
+                })
+                .catch((err) => {
+                  toast.error(getErrorMessage(err), { duration: 2000 });
+                });
+              toast.success("You have been added to the group", {
+                duration: 2000,
               });
-            toast.success("You have been added to the group", {
-              duration: 2000,
-            });
+              return;
+            }
+
+            incrementMemberCount(message.data.group_id);
             return;
           }
 
-          incrementMemberCount(message.data.group_id);
-          return;
-        }
+          case "memberKicked": {
+            if (message.data.displayId === user.display_id) {
+              deleteGroupInList(message.data.groupId);
+            } else {
+              decrementMemberCount(message.data.groupId);
+            }
+            return;
+          }
 
-        if (message.type === "memberKicked") {
-          if (message.data.displayId === user.display_id) {
-            deleteGroupInList(message.data.groupId);
-          } else {
+          case "memberPromoted": {
+            if (message.data.displayId === user.display_id) {
+              setGroupRoleInList(message.data.groupId, "admin");
+              toast.success("You have been promoted", { duration: 2000 });
+            }
+            return;
+          }
+
+          case "memberDemoted": {
+            if (message.data.displayId === user.display_id) {
+              setGroupRoleInList(message.data.groupId, "member");
+              toast.success("You have been demoted", { duration: 2000 });
+            }
+            return;
+          }
+
+          case "groupLeft": {
+            if (message.data.displayId === user.display_id) {
+              deleteGroupInList(message.data.groupId);
+              return;
+            }
+
             decrementMemberCount(message.data.groupId);
+            return;
           }
-          return;
-        }
 
-        if (message.type === "memberPromoted") {
-          if (message.data.displayId === user.display_id) {
-            setGroupRoleInList(message.data.groupId, "admin");
-            toast.success("You have been promoted", { duration: 2000 });
-          }
-          return;
-        }
-
-        if (message.type === "memberDemoted") {
-          if (message.data.displayId === user.display_id) {
-            setGroupRoleInList(message.data.groupId, "member");
-            toast.success("You have been demoted", { duration: 2000 });
-          }
-          return;
-        }
-
-        if (message.type === "groupLeft") {
-          if (message.data.displayId === user.display_id) {
+          case "groupDeleted": {
             deleteGroupInList(message.data.groupId);
             return;
           }
 
-          decrementMemberCount(message.data.groupId);
-          return;
-        }
-
-        if (message.type === "groupDeleted") {
-          deleteGroupInList(message.data.groupId);
+          default:
+            return;
         }
       },
       onError: () => {},
     });
-    return () => socket.close();
+    return () => socket();
   }, [groups, user]);
 
   // fetch groups on mount

@@ -1,90 +1,99 @@
-import { API_BASE_URL } from "@/shared/config";
+import { wsClient, type WsOutgoingMessage } from "@/shared/lib/ws/wsClient";
 import type { NewMember } from "@domx/shared";
 
-type GroupWsOutgoingMessage =
-  | {
-      type: "addMember" | "promoteMember" | "demoteMember" | "kickMember";
-      payload: { groupId: string; displayId: string };
-    }
-  | { type: "leaveGroup" | "deleteGroup"; payload: { groupId: string } };
+type GroupWsOutgoingMessage = Extract<
+  WsOutgoingMessage,
+  | { type: "addMember" }
+  | { type: "promoteMember" }
+  | { type: "demoteMember" }
+  | { type: "kickMember" }
+  | { type: "leaveGroup" }
+  | { type: "deleteGroup" }
+>;
 
 type GroupWsIncomingMessage =
   | { type: "memberAdded"; message?: string; data: NewMember }
-  | { type: "memberPromoted"; message?: string }
-  | { type: "memberDemoted"; message?: string }
-  | { type: "memberKicked"; message?: string }
-  | { type: "groupLeft"; message?: string }
-  | { type: "groupDeleted"; message?: string }
+  | {
+      type: "memberPromoted";
+      message?: string;
+      data: { groupId: string; displayId: string };
+    }
+  | {
+      type: "memberDemoted";
+      message?: string;
+      data: { groupId: string; displayId: string };
+    }
+  | {
+      type: "memberKicked";
+      message?: string;
+      data: { groupId: string; displayId: string };
+    }
+  | {
+      type: "groupLeft";
+      message?: string;
+      data: { groupId: string; displayId?: string };
+    }
+  | { type: "groupDeleted"; message?: string; data: { groupId: string } }
   | { type: "error"; message?: string; payload?: string }
-  | { message: string };
+  | { message: string }
+  | { type: string };
 
-const getApiHttpBase = (): string => {
-  const baseUrl = new URL(API_BASE_URL);
-  return baseUrl.origin;
-};
+type GroupWsSuccessType =
+  | "memberAdded"
+  | "memberPromoted"
+  | "memberDemoted"
+  | "memberKicked"
+  | "groupLeft"
+  | "groupDeleted";
 
-const getGroupsWsUrl = (): string => {
-  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const url = new URL(getApiHttpBase());
-  url.protocol = wsProtocol;
-  return url.toString();
-};
-
-const safeParseGroupWsMessage = (
-  raw: unknown,
-): GroupWsIncomingMessage | null => {
-  if (typeof raw !== "string") return null;
-
-  try {
-    return JSON.parse(raw) as GroupWsIncomingMessage;
-  } catch {
-    return null;
-  }
-};
-
-const sendGroupWsRequest = async (
+const sendGroupWsRequest = async <TSuccess extends GroupWsSuccessType, T>(
   message: GroupWsOutgoingMessage,
-  successType:
-    | "memberAdded"
-    | "memberPromoted"
-    | "memberDemoted"
-    | "memberKicked"
-    | "groupLeft"
-    | "groupDeleted",
-): Promise<void> =>
+  successType: TSuccess,
+  onSuccess: (
+    message: Extract<GroupWsIncomingMessage, { type: TSuccess }>,
+  ) => T,
+  matcher?: (
+    message: Extract<GroupWsIncomingMessage, { type: TSuccess }>,
+  ) => boolean,
+): Promise<T> =>
   new Promise((resolve, reject) => {
-    const socket = new WebSocket(getGroupsWsUrl());
-
-    socket.addEventListener("open", () => {
-      socket.send(JSON.stringify(message));
-    });
-
-    socket.addEventListener("message", (event) => {
-      const parsed = safeParseGroupWsMessage(event.data);
-      if (!parsed) return;
-
-      if ("type" in parsed && parsed.type === successType) {
-        socket.close();
-        resolve();
+    const release = wsClient.acquire();
+    const unsubscribe = wsClient.subscribe((parsed) => {
+      if (!("type" in parsed)) {
+        if ("message" in parsed && typeof parsed.message === "string") {
+          unsubscribe();
+          release();
+          reject(new Error(parsed.message));
+        }
         return;
       }
 
-      if ("type" in parsed && parsed.type === "error") {
-        socket.close();
+      if (parsed.type === "error") {
+        unsubscribe();
+        release();
         reject(new Error(parsed.message ?? parsed.payload ?? "Request failed"));
         return;
       }
 
-      if ("message" in parsed && typeof parsed.message === "string") {
-        socket.close();
-        reject(new Error(parsed.message));
+      if (parsed.type !== successType) {
+        return;
       }
+
+      const successMessage = parsed as Extract<
+        GroupWsIncomingMessage,
+        { type: TSuccess }
+      >;
+
+      if (matcher && !matcher(successMessage)) {
+        return;
+      }
+
+      unsubscribe();
+      release();
+      resolve(onSuccess(successMessage));
     });
 
-    socket.addEventListener("error", () => {
-      socket.close();
-      reject(new Error("WebSocket request failed"));
-    });
+    wsClient.send(message);
   });
 
 export const promoteMemberInGroup = async (
@@ -97,6 +106,9 @@ export const promoteMemberInGroup = async (
       payload: { groupId, displayId },
     },
     "memberPromoted",
+    () => undefined,
+    (message) =>
+      message.data.groupId === groupId && message.data.displayId === displayId,
   );
 };
 
@@ -104,45 +116,17 @@ export const addMemberInGroup = async (
   groupId: string,
   displayId: string,
 ): Promise<NewMember> =>
-  new Promise((resolve, reject) => {
-    const socket = new WebSocket(getGroupsWsUrl());
-
-    socket.addEventListener("open", () => {
-      socket.send(
-        JSON.stringify({
-          type: "addMember",
-          payload: { groupId, displayId },
-        }),
-      );
-    });
-
-    socket.addEventListener("message", (event) => {
-      const parsed = safeParseGroupWsMessage(event.data);
-      if (!parsed) return;
-
-      if ("type" in parsed && parsed.type === "memberAdded") {
-        socket.close();
-        resolve(parsed.data);
-        return;
-      }
-
-      if ("type" in parsed && parsed.type === "error") {
-        socket.close();
-        reject(new Error(parsed.message ?? parsed.payload ?? "Request failed"));
-        return;
-      }
-
-      if ("message" in parsed && typeof parsed.message === "string") {
-        socket.close();
-        reject(new Error(parsed.message));
-      }
-    });
-
-    socket.addEventListener("error", () => {
-      socket.close();
-      reject(new Error("WebSocket request failed"));
-    });
-  });
+  sendGroupWsRequest(
+    {
+      type: "addMember",
+      payload: { groupId, displayId },
+    },
+    "memberAdded",
+    (message) => message.data,
+    (message) =>
+      message.data.group_id === groupId &&
+      message.data.display_id === displayId,
+  );
 
 export const demoteMemberInGroup = async (
   groupId: string,
@@ -154,6 +138,9 @@ export const demoteMemberInGroup = async (
       payload: { groupId, displayId },
     },
     "memberDemoted",
+    () => undefined,
+    (message) =>
+      message.data.groupId === groupId && message.data.displayId === displayId,
   );
 };
 
@@ -167,6 +154,9 @@ export const kickMemberFromGroup = async (
       payload: { groupId, displayId },
     },
     "memberKicked",
+    () => undefined,
+    (message) =>
+      message.data.groupId === groupId && message.data.displayId === displayId,
   );
 };
 
@@ -177,6 +167,8 @@ export const leaveGroupById = async (groupId: string) => {
       payload: { groupId },
     },
     "groupLeft",
+    () => undefined,
+    (message) => message.data.groupId === groupId,
   );
 };
 
@@ -187,5 +179,7 @@ export const deleteGroupByIdWs = async (groupId: string) => {
       payload: { groupId },
     },
     "groupDeleted",
+    () => undefined,
+    (message) => message.data.groupId === groupId,
   );
 };

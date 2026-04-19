@@ -15,6 +15,7 @@ import { useGroupContext } from "@/providers/GroupContext";
 import type { NewMember } from "@domx/shared";
 
 export const useGroups = () => {
+  const TOAST_DURATION = 2000;
   const {
     groups,
     addGroup,
@@ -24,12 +25,16 @@ export const useGroups = () => {
     clearUnreadCount,
   } = useGroupContext();
 
+  const notifyError = (error: unknown) => {
+    toast.error(getErrorMessage(error), { duration: TOAST_DURATION });
+  };
+
   const renameGroup = async (groupId: string, newName: string) => {
     try {
       await changeGroupName(groupId, newName);
       renameGroupInList(groupId, newName);
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
     }
   };
 
@@ -39,7 +44,7 @@ export const useGroups = () => {
       deleteGroupInList(groupId);
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -50,10 +55,10 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await promoteMemberInGroup(groupId, displayId);
-      toast.success("Member has been promoted", { duration: 2000 });
+      toast.success("Member has been promoted", { duration: TOAST_DURATION });
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -64,10 +69,10 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await demoteMemberInGroup(groupId, displayId);
-      toast.success("Member has been demoted", { duration: 2000 });
+      toast.success("Member has been demoted", { duration: TOAST_DURATION });
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -78,10 +83,10 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await kickMemberFromGroup(groupId, displayId);
-      toast.success("Member removed", { duration: 2000 });
+      toast.success("Member removed", { duration: TOAST_DURATION });
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -90,10 +95,10 @@ export const useGroups = () => {
     try {
       await leaveGroupById(groupId);
       deleteGroupInList(groupId);
-      toast.success("You left the group", { duration: 2000 });
+      toast.success("You left the group", { duration: TOAST_DURATION });
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -104,7 +109,7 @@ export const useGroups = () => {
       addGroup(data);
       return true;
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
       return false;
     }
   };
@@ -116,11 +121,11 @@ export const useGroups = () => {
   ): Promise<void> => {
     try {
       const newMember = await addMemberInGroup(groupId, displayId);
-      toast.success("Member added", { duration: 2000 });
+      toast.success("Member added", { duration: TOAST_DURATION });
 
       onSuccess(newMember);
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
     }
   };
 
@@ -129,7 +134,7 @@ export const useGroups = () => {
     try {
       await markGroupAsSeen(groupId);
     } catch (error) {
-      toast.error(getErrorMessage(error), { duration: 2000 });
+      notifyError(error);
     }
   };
 

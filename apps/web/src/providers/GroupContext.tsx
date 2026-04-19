@@ -38,6 +38,12 @@ export function GroupProvider({
     setGroups((prev) => prev.filter((g) => g.group_id !== groupId));
   };
 
+  const setGroupRoleInList = (groupId: string, role: GroupDetail["role"]) => {
+    setGroups((prev) =>
+      prev.map((g) => (g.group_id === groupId ? { ...g, role } : g)),
+    );
+  };
+
   const incrementMemberCount = (groupId: string) => {
     setGroups((prev) =>
       prev.map((g) =>
@@ -111,6 +117,20 @@ export function GroupProvider({
             toast.error(
               message.message ?? "You have been removed from the group",
             );
+          }
+          return;
+        }
+
+        if (message.type === "memberPromoted") {
+          if (message.data.displayId === user.display_id) {
+            setGroupRoleInList(message.data.groupId, "admin");
+          }
+          return;
+        }
+
+        if (message.type === "memberDemoted") {
+          if (message.data.displayId === user.display_id) {
+            setGroupRoleInList(message.data.groupId, "member");
           }
         }
       },

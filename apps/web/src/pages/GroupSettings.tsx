@@ -34,6 +34,12 @@ export const GroupSettingsPage = () => {
   const [pendingKickDisplayId, setPendingKickDisplayId] = useState<
     string | null
   >(null);
+  const [pendingPromoteDisplayId, setPendingPromoteDisplayId] = useState<
+    string | null
+  >(null);
+  const [pendingDemoteDisplayId, setPendingDemoteDisplayId] = useState<
+    string | null
+  >(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const [modal, setModal] = useState<boolean>(false);
@@ -181,6 +187,8 @@ export const GroupSettingsPage = () => {
     const promoted = await promoteMember(id, displayId);
     if (!promoted) return;
 
+    setPendingPromoteDisplayId(null);
+
     setMembers((prev) =>
       prev.map((member) =>
         member.display_id === displayId ? { ...member, role: "admin" } : member,
@@ -196,6 +204,8 @@ export const GroupSettingsPage = () => {
     }
     const demoted = await demoteMember(id, displayId);
     if (!demoted) return;
+
+    setPendingDemoteDisplayId(null);
 
     setMembers((prev) =>
       prev.map((member) =>
@@ -229,11 +239,33 @@ export const GroupSettingsPage = () => {
   };
 
   const requestKickMember = (displayId: string) => {
+    setPendingPromoteDisplayId(null);
+    setPendingDemoteDisplayId(null);
     setPendingKickDisplayId(displayId);
   };
 
   const cancelKickMember = () => {
     setPendingKickDisplayId(null);
+  };
+
+  const requestPromoteMember = (displayId: string) => {
+    setPendingKickDisplayId(null);
+    setPendingDemoteDisplayId(null);
+    setPendingPromoteDisplayId(displayId);
+  };
+
+  const cancelPromoteMember = () => {
+    setPendingPromoteDisplayId(null);
+  };
+
+  const requestDemoteMember = (displayId: string) => {
+    setPendingKickDisplayId(null);
+    setPendingPromoteDisplayId(null);
+    setPendingDemoteDisplayId(displayId);
+  };
+
+  const cancelDemoteMember = () => {
+    setPendingDemoteDisplayId(null);
   };
 
   return (
@@ -339,12 +371,50 @@ export const GroupSettingsPage = () => {
 
                   {canManageMembers && (
                     <div className="ml-auto flex items-center gap-2">
-                      {member.display_id === user?.display_id ? (
-                        member.role === "admin" ? (
+                      {pendingPromoteDisplayId === member.display_id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handlePromoteMember(member.display_id)
+                            }
+                            className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
+                          >
+                            Confirm Promote
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelPromoteMember}
+                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : pendingDemoteDisplayId === member.display_id ? (
+                        <>
                           <button
                             type="button"
                             onClick={() =>
                               void handleDemoteMember(member.display_id)
+                            }
+                            className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
+                          >
+                            Confirm Demote
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelDemoteMember}
+                            className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : member.display_id === user?.display_id ? (
+                        member.role === "admin" ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              requestDemoteMember(member.display_id)
                             }
                             className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
                           >
@@ -376,7 +446,7 @@ export const GroupSettingsPage = () => {
                             <button
                               type="button"
                               onClick={() =>
-                                void handlePromoteMember(member.display_id)
+                                requestPromoteMember(member.display_id)
                               }
                               className="rounded-md border border-primary/30 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/10"
                             >
@@ -386,7 +456,7 @@ export const GroupSettingsPage = () => {
                             <button
                               type="button"
                               onClick={() =>
-                                void handleDemoteMember(member.display_id)
+                                requestDemoteMember(member.display_id)
                               }
                               className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors hover:bg-bg-subtle"
                             >

@@ -10,6 +10,8 @@ import type { GroupContextType } from "@/features/groups/types";
 import { fetchMyGroups } from "@/features/groups/index";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
+import { useAuthContext } from "./AuthContext";
+import { connectPostSocket, joinPostGroup } from "@/features/posts";
 
 const GroupContext = createContext<GroupContextType | null>(null);
 
@@ -20,6 +22,7 @@ export function GroupProvider({
 }): JSX.Element {
   const [groups, setGroups] = useState<GroupDetail[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const { user } = useAuthContext();
 
   const addGroup = (data: GroupDetail) => {
     setGroups((prev) => [data, ...prev]);
@@ -69,6 +72,29 @@ export function GroupProvider({
       return changed ? next : prev;
     });
   };
+
+  useEffect(() => {
+    if (!groups.length || !user) return;
+
+    const socket = connectPostSocket({
+      onOpen: () => {
+        groups.forEach((g) => {
+          joinPostGroup(socket, g.group_id);
+        });
+      },
+      onMessage: (message) => {
+        if (!("type" in message)) return;
+        if (message.type === "memberKicked") {
+          if (message.data.displayId === user.display_id) {
+            deleteGroupInList(message.data.groupId);
+            toast.error(
+              message.message ?? "You have been removed from the group",
+            );
+          }
+        }
+      },
+    });
+  });
 
   // fetch groups on mount
   useEffect(() => {

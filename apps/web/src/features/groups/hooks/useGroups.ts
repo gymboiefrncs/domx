@@ -1,6 +1,6 @@
 import {
   changeGroupName,
-  deleteGroup,
+  deleteGroupByIdWs,
   createGroup,
   addMemberInGroup,
   markGroupAsSeen,
@@ -35,7 +35,7 @@ export const useGroups = () => {
 
   const removeGroup = async (groupId: string): Promise<boolean> => {
     try {
-      await deleteGroup(groupId);
+      await deleteGroupByIdWs(groupId);
       deleteGroupInList(groupId);
       return true;
     } catch (error) {

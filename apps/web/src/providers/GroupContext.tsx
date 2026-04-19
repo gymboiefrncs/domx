@@ -152,6 +152,11 @@ export function GroupProvider({
           }
 
           decrementMemberCount(message.data.groupId);
+          return;
+        }
+
+        if (message.type === "groupDeleted") {
+          deleteGroupInList(message.data.groupId);
         }
       },
       onError: () => {},

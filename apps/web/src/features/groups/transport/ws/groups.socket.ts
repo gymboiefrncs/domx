@@ -6,7 +6,7 @@ type GroupWsOutgoingMessage =
       type: "addMember" | "promoteMember" | "demoteMember" | "kickMember";
       payload: { groupId: string; displayId: string };
     }
-  | { type: "leaveGroup"; payload: { groupId: string } };
+  | { type: "leaveGroup" | "deleteGroup"; payload: { groupId: string } };
 
 type GroupWsIncomingMessage =
   | { type: "memberAdded"; message?: string; data: NewMember }
@@ -14,6 +14,7 @@ type GroupWsIncomingMessage =
   | { type: "memberDemoted"; message?: string }
   | { type: "memberKicked"; message?: string }
   | { type: "groupLeft"; message?: string }
+  | { type: "groupDeleted"; message?: string }
   | { type: "error"; message?: string; payload?: string }
   | { message: string };
 
@@ -48,7 +49,8 @@ const sendGroupWsRequest = async (
     | "memberPromoted"
     | "memberDemoted"
     | "memberKicked"
-    | "groupLeft",
+    | "groupLeft"
+    | "groupDeleted",
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     const socket = new WebSocket(getGroupsWsUrl());
@@ -175,5 +177,15 @@ export const leaveGroupById = async (groupId: string) => {
       payload: { groupId },
     },
     "groupLeft",
+  );
+};
+
+export const deleteGroupByIdWs = async (groupId: string) => {
+  await sendGroupWsRequest(
+    {
+      type: "deleteGroup",
+      payload: { groupId },
+    },
+    "groupDeleted",
   );
 };

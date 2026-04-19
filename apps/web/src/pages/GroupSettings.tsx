@@ -30,6 +30,7 @@ export const GroupSettingsPage = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(group?.name ?? "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [pendingKickDisplayId, setPendingKickDisplayId] = useState<
     string | null
@@ -137,6 +138,13 @@ export const GroupSettingsPage = () => {
             .catch((error) => {
               toast.error(getErrorMessage(error));
             });
+          return;
+        }
+
+        if (message.type === "groupDeleted") {
+          if (message.data.groupId !== id) return;
+          navigate("/groups", { replace: true });
+          toast.error(message.message ?? "Group deleted");
         }
       },
     });
@@ -185,6 +193,7 @@ export const GroupSettingsPage = () => {
   const handleDeleteGroupCB = async (groupId: string) => {
     const removed = await removeGroup(groupId);
     if (!removed) return;
+    setDeleteConfirmText("");
     navigate("/groups");
   };
 
@@ -536,12 +545,22 @@ export const GroupSettingsPage = () => {
 
           {canManageMembers && showDeleteConfirm ? (
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-text md:text-base">
-                Are you sure? This can't be undone.
+              <p className="text-sm font-semibold text-error md:text-base">
+                Warning: This will permanently delete the group for all members.
               </p>
+              <p className="text-sm text-text md:text-base">
+                This action cannot be undone. Type DELETE to confirm.
+              </p>
+              <input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                className="w-full rounded border border-error/30 bg-bg px-3 py-2 text-sm text-text outline-none"
+              />
               <div className="flex gap-2">
                 <button
-                  className="flex-1 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
+                  className="flex-1 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={deleteConfirmText.trim() !== "DELETE"}
                   onClick={() => {
                     void handleDeleteGroupCB(group.group_id);
                   }}
@@ -550,7 +569,10 @@ export const GroupSettingsPage = () => {
                 </button>
                 <button
                   className="flex-1 py-2 text-sm text-text-muted border border-border rounded hover:bg-bg-subtle transition-colors"
-                  onClick={() => setShowDeleteConfirm(false)}
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmText("");
+                  }}
                 >
                   Cancel
                 </button>

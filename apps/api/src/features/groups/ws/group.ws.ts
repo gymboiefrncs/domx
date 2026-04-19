@@ -1,5 +1,6 @@
 import {
   handleAddMember,
+  handleDeleteGroup,
   handleDemoteMember,
   handleKickMember,
   handleLeaveGroup,
@@ -18,6 +19,7 @@ const GROUP_WS_ACTIONS = new Set([
   "demoteMember",
   "kickMember",
   "leaveGroup",
+  "deleteGroup",
 ]);
 
 const messageHandlers: Record<string, WsMessageHandler> = {
@@ -40,6 +42,10 @@ const messageHandlers: Record<string, WsMessageHandler> = {
   leaveGroup: {
     schema: GroupParamsSchema,
     handler: handleLeaveGroup,
+  },
+  deleteGroup: {
+    schema: GroupParamsSchema,
+    handler: handleDeleteGroup,
   },
 };
 

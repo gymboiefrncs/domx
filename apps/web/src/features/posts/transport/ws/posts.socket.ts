@@ -26,6 +26,11 @@ export type ChatIncomingMessage =
       message?: string;
     }
   | {
+      type: "groupDeleted";
+      data: { groupId: string };
+      message?: string;
+    }
+  | {
       type: "error";
       message?: string;
       payload?: string;

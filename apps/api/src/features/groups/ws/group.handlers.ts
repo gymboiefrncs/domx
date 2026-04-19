@@ -1,5 +1,6 @@
 import {
   addMember,
+  deleteGroupById,
   demoteMember,
   kickMember,
   leaveMember,
@@ -99,6 +100,24 @@ export const handleLeaveGroup = async (
     message: result.message,
     data: { groupId, displayId: profile.display_id },
   });
+  socket.send(payload);
+  broadcastToGroup(rooms, groupId, payload);
+};
+
+export const handleDeleteGroup = async (
+  data: unknown,
+  socket: ChatSocket,
+  rooms: Map<string, Set<ChatSocket>>,
+) => {
+  const { groupId } = data as { groupId: string };
+  const result = await deleteGroupById(groupId, socket.userId);
+
+  const payload = JSON.stringify({
+    type: "groupDeleted",
+    message: result.message,
+    data: { groupId },
+  });
+
   socket.send(payload);
   broadcastToGroup(rooms, groupId, payload);
 };

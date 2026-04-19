@@ -168,6 +168,15 @@ export const usePosts = (groupId: string): GetPostsState => {
           deleteGroupInListRef.current(groupId);
           toast.success(message.message ?? "You left the group");
         }
+        return;
+      }
+
+      if (message.type === "groupDeleted") {
+        if (message.data.groupId === groupId) {
+          navigate("/groups", { replace: true });
+          deleteGroupInListRef.current(groupId);
+          toast.error(message.message ?? "This group has been deleted");
+        }
       }
     };
 

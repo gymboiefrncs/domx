@@ -101,7 +101,7 @@ export function GroupProvider({
               .catch((err) => {
                 toast.error(getErrorMessage(err), { duration: 2000 });
               });
-            toast.success(message.message ?? "You were added to a group", {
+            toast.success("You have been added to the group", {
               duration: 2000,
             });
             return;
@@ -126,6 +126,7 @@ export function GroupProvider({
         if (message.type === "memberPromoted") {
           if (message.data.displayId === user.display_id) {
             setGroupRoleInList(message.data.groupId, "admin");
+            toast.success("You have been promoted", { duration: 2000 });
           }
           return;
         }
@@ -133,6 +134,7 @@ export function GroupProvider({
         if (message.type === "memberDemoted") {
           if (message.data.displayId === user.display_id) {
             setGroupRoleInList(message.data.groupId, "member");
+            toast.success("You have been demoted", { duration: 2000 });
           }
           return;
         }

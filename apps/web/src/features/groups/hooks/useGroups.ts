@@ -52,7 +52,7 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await promoteMemberInGroup(groupId, displayId);
-      toast.success("Member promoted", { duration: 2000 });
+      toast.success("Member has been promoted", { duration: 2000 });
       return true;
     } catch (error) {
       toast.error(getErrorMessage(error), { duration: 2000 });
@@ -66,7 +66,7 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await demoteMemberInGroup(groupId, displayId);
-      toast.success("Member demoted", { duration: 2000 });
+      toast.success("Member has been demoted", { duration: 2000 });
       return true;
     } catch (error) {
       toast.error(getErrorMessage(error), { duration: 2000 });
@@ -119,6 +119,7 @@ export const useGroups = () => {
     try {
       const newMember = await addMemberInGroup(groupId, displayId);
       incrementMemberCount(groupId);
+      toast.success("Member added", { duration: 2000 });
 
       onSuccess(newMember);
     } catch (error) {

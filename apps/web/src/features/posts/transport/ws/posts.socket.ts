@@ -22,7 +22,7 @@ export type ChatIncomingMessage =
     }
   | {
       type: "groupLeft";
-      data: { groupId: string };
+      data: { groupId: string; displayId?: string };
       message?: string;
     }
   | {

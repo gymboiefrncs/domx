@@ -117,6 +117,8 @@ export function GroupProvider({
             toast.error(
               message.message ?? "You have been removed from the group",
             );
+          } else {
+            decrementMemberCount(message.data.groupId);
           }
           return;
         }
@@ -132,6 +134,16 @@ export function GroupProvider({
           if (message.data.displayId === user.display_id) {
             setGroupRoleInList(message.data.groupId, "member");
           }
+          return;
+        }
+
+        if (message.type === "groupLeft") {
+          if (message.data.displayId === user.display_id) {
+            deleteGroupInList(message.data.groupId);
+            return;
+          }
+
+          decrementMemberCount(message.data.groupId);
         }
       },
       onError: () => {},

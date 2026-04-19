@@ -122,6 +122,16 @@ export const GroupSettingsPage = () => {
 
         if (message.type === "groupLeft") {
           if (message.data.groupId !== id) return;
+
+          if (message.data.displayId) {
+            setMembers((prev) =>
+              prev.filter(
+                (member) => member.display_id !== message.data.displayId,
+              ),
+            );
+            return;
+          }
+
           void fetchGroupMembers(id)
             .then(setMembers)
             .catch((error) => {

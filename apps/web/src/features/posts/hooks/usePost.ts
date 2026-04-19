@@ -147,6 +147,15 @@ export const usePosts = (groupId: string): GetPostsState => {
             message.message ?? "You have been removed from the group",
           );
         }
+        return;
+      }
+
+      if (message.type === "groupLeft") {
+        if (message.data.displayId === user?.display_id) {
+          navigate("/groups", { replace: true });
+          deleteGroupInList(groupId);
+          toast.success(message.message ?? "You left the group");
+        }
       }
     };
 

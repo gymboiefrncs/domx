@@ -74,7 +74,7 @@ export function GroupProvider({
   };
 
   useEffect(() => {
-    if (!groups.length || !user) return;
+    if (!user) return;
 
     const socket = connectPostSocket({
       onOpen: () => {
@@ -84,6 +84,27 @@ export function GroupProvider({
       },
       onMessage: (message) => {
         if (!("type" in message)) return;
+
+        if (message.type === "memberAdded") {
+          if (message.data.display_id === user.display_id) {
+            void fetchMyGroups()
+              .then((updatedGroups) => {
+                setGroups(updatedGroups);
+                joinPostGroup(socket, message.data.group_id);
+              })
+              .catch((err) => {
+                toast.error(getErrorMessage(err), { duration: 2000 });
+              });
+            toast.success(message.message ?? "You were added to a group", {
+              duration: 2000,
+            });
+            return;
+          }
+
+          incrementMemberCount(message.data.group_id);
+          return;
+        }
+
         if (message.type === "memberKicked") {
           if (message.data.displayId === user.display_id) {
             deleteGroupInList(message.data.groupId);

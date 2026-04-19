@@ -13,6 +13,10 @@ import {
   getRetryAfterSeconds,
   wsConnectionLimiter,
 } from "./shared/middlewares/rateLimit.js";
+import {
+  registerUserSocket,
+  unregisterUserSocket,
+} from "./shared/ws/socketRegistry.js";
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -37,6 +41,8 @@ wss.on("connection", async (socket: ChatSocket, req) => {
 
   const authenticate = await authenticateWs(socket, req);
   if (!authenticate) return socket.terminate();
+
+  registerUserSocket(socket);
 
   socket.on("message", async (data) => {
     let parsed: { type: string; payload: unknown };
@@ -67,6 +73,8 @@ wss.on("connection", async (socket: ChatSocket, req) => {
     }
   });
   socket.on("close", () => {
+    unregisterUserSocket(socket);
+
     if (socket.groupId) {
       rooms.get(socket.groupId)?.delete(socket);
     }

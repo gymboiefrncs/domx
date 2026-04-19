@@ -64,6 +64,22 @@ export const GroupSettingsPage = () => {
       },
       onMessage: (message) => {
         if (!("type" in message)) return;
+        if (message.type === "memberAdded") {
+          if (message.data.group_id !== id) return;
+          setMembers((prev) => {
+            if (
+              prev.some(
+                (member) => member.display_id === message.data.display_id,
+              )
+            ) {
+              return prev;
+            }
+
+            return [...prev, message.data];
+          });
+          return;
+        }
+
         if (message.type === "memberPromoted") {
           if (message.data.groupId !== id) return;
           setMembers((prev) =>

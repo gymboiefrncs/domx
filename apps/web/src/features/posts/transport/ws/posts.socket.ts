@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/shared/config";
-import type { Post, PostDetails } from "@domx/shared";
+import type { NewMember, Post, PostDetails } from "@domx/shared";
 
 type ChatOutgoingMessage =
   | { type: "joinGroup"; payload: { groupId: string } }
@@ -14,6 +14,7 @@ export type ChatIncomingMessage =
   | { type: "newMessage"; data: Post | PostDetails }
   | { type: "postEdited"; data: Partial<PostDetails> & { id: string } }
   | { type: "postDeleted"; data: { postId: string } }
+  | { type: "memberAdded"; data: NewMember; message?: string }
   | {
       type: "memberPromoted" | "memberDemoted" | "memberKicked";
       data: { groupId: string; displayId: string };

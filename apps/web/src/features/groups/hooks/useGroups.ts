@@ -2,7 +2,7 @@ import {
   changeGroupName,
   deleteGroup,
   createGroup,
-  addMemberToGroup,
+  addMemberInGroup,
   markGroupAsSeen,
   promoteMemberInGroup,
   demoteMemberInGroup,
@@ -117,7 +117,7 @@ export const useGroups = () => {
     displayId: string,
   ): Promise<void> => {
     try {
-      const newMember = await addMemberToGroup(groupId, displayId);
+      const newMember = await addMemberInGroup(groupId, displayId);
       incrementMemberCount(groupId);
 
       onSuccess(newMember);

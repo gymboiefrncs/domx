@@ -1,4 +1,5 @@
 import {
+  handleAddMember,
   handleDemoteMember,
   handleKickMember,
   handleLeaveGroup,
@@ -12,6 +13,7 @@ import {
 } from "@api/shared/middlewares/rateLimit.js";
 
 const GROUP_WS_ACTIONS = new Set([
+  "addMember",
   "promoteMember",
   "demoteMember",
   "kickMember",
@@ -19,6 +21,10 @@ const GROUP_WS_ACTIONS = new Set([
 ]);
 
 const messageHandlers: Record<string, WsMessageHandler> = {
+  addMember: {
+    schema: ManageMemberSchema,
+    handler: handleAddMember,
+  },
   promoteMember: {
     schema: ManageMemberSchema,
     handler: handlePromoteMember,

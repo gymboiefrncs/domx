@@ -1,6 +1,39 @@
-import { demoteMember, kickMember, promoteMember } from "../group.services.js";
+import {
+  addMember,
+  demoteMember,
+  kickMember,
+  promoteMember,
+} from "../group.services.js";
 import type { ChatSocket } from "@api/shared/types/ws.js";
+import { fetchUserByDisplayId } from "../group.repositories.js";
 import { broadcastToGroup } from "../group-helper.js";
+import { sendToUserSockets } from "@api/shared/ws/socketRegistry.js";
+
+export const handleAddMember = async (
+  data: unknown,
+  socket: ChatSocket,
+  rooms: Map<string, Set<ChatSocket>>,
+) => {
+  const { groupId, displayId } = data as { groupId: string; displayId: string };
+  const result = await addMember(groupId, displayId, socket.userId);
+  if (!result.ok) {
+    throw new Error(result.message);
+  }
+
+  const payload = JSON.stringify({
+    type: "memberAdded",
+    message: result.message,
+    data: result.data,
+  });
+
+  socket.send(payload);
+  broadcastToGroup(rooms, groupId, payload);
+
+  const targetUserId = await fetchUserByDisplayId(displayId);
+  if (targetUserId) {
+    sendToUserSockets(targetUserId, payload);
+  }
+};
 
 export const handlePromoteMember = async (
   data: unknown,

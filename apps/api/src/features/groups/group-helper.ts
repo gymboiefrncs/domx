@@ -45,3 +45,21 @@ export const broadcastToGroup = (
     client.send(payload);
   });
 };
+
+export const sendToUserFromRooms = (
+  rooms: Map<string, Set<ChatSocket>>,
+  userId: string,
+  payload: string,
+): void => {
+  const sentSockets = new Set<ChatSocket>();
+
+  rooms.forEach((room) => {
+    room.forEach((client) => {
+      if (client.userId !== userId || sentSockets.has(client)) return;
+      if (client.readyState !== client.OPEN) return;
+
+      client.send(payload);
+      sentSockets.add(client);
+    });
+  });
+};

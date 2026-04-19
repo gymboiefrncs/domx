@@ -1,13 +1,15 @@
 import { API_BASE_URL } from "@/shared/config";
+import type { NewMember } from "@domx/shared";
 
 type GroupWsOutgoingMessage =
   | {
-      type: "promoteMember" | "demoteMember" | "kickMember";
+      type: "addMember" | "promoteMember" | "demoteMember" | "kickMember";
       payload: { groupId: string; displayId: string };
     }
   | { type: "leaveGroup"; payload: { groupId: string } };
 
 type GroupWsIncomingMessage =
+  | { type: "memberAdded"; message?: string; data: NewMember }
   | { type: "memberPromoted"; message?: string }
   | { type: "memberDemoted"; message?: string }
   | { type: "memberKicked"; message?: string }
@@ -42,6 +44,7 @@ const safeParseGroupWsMessage = (
 const sendGroupWsRequest = async (
   message: GroupWsOutgoingMessage,
   successType:
+    | "memberAdded"
     | "memberPromoted"
     | "memberDemoted"
     | "memberKicked"
@@ -94,6 +97,50 @@ export const promoteMemberInGroup = async (
     "memberPromoted",
   );
 };
+
+export const addMemberInGroup = async (
+  groupId: string,
+  displayId: string,
+): Promise<NewMember> =>
+  new Promise((resolve, reject) => {
+    const socket = new WebSocket(getGroupsWsUrl());
+
+    socket.addEventListener("open", () => {
+      socket.send(
+        JSON.stringify({
+          type: "addMember",
+          payload: { groupId, displayId },
+        }),
+      );
+    });
+
+    socket.addEventListener("message", (event) => {
+      const parsed = safeParseGroupWsMessage(event.data);
+      if (!parsed) return;
+
+      if ("type" in parsed && parsed.type === "memberAdded") {
+        socket.close();
+        resolve(parsed.data);
+        return;
+      }
+
+      if ("type" in parsed && parsed.type === "error") {
+        socket.close();
+        reject(new Error(parsed.message ?? parsed.payload ?? "Request failed"));
+        return;
+      }
+
+      if ("message" in parsed && typeof parsed.message === "string") {
+        socket.close();
+        reject(new Error(parsed.message));
+      }
+    });
+
+    socket.addEventListener("error", () => {
+      socket.close();
+      reject(new Error("WebSocket request failed"));
+    });
+  });
 
 export const demoteMemberInGroup = async (
   groupId: string,

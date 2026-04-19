@@ -93,8 +93,10 @@ export function GroupProvider({
           }
         }
       },
+      onError: () => {},
     });
-  });
+    return () => socket.close();
+  }, [groups, user]);
 
   // fetch groups on mount
   useEffect(() => {

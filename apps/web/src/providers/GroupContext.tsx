@@ -25,7 +25,16 @@ export function GroupProvider({
   const { user } = useAuthContext();
 
   const addGroup = (data: GroupDetail) => {
-    setGroups((prev) => [data, ...prev]);
+    setGroups((prev) => {
+      const existingIndex = prev.findIndex((g) => g.group_id === data.group_id);
+      if (existingIndex >= 0) {
+        const next = [...prev];
+        next[existingIndex] = { ...next[existingIndex], ...data };
+        return next;
+      }
+
+      return [data, ...prev];
+    });
   };
 
   const renameGroupInList = (groupId: string, newName: string) => {

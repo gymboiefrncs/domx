@@ -4,12 +4,25 @@ import { useGroups } from "../hooks/useGroups";
 
 export const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
   const [name, setName] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { loading, buildGroup } = useGroups();
+
+  const handleCreate = async (): Promise<void> => {
+    if (!name.trim() || loading || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const created = await buildGroup(name);
+    setIsSubmitting(false);
+
+    if (created) {
+      onClose();
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter" && name.trim() && !loading) {
       e.preventDefault();
-      buildGroup(name, onClose);
+      void handleCreate();
     }
   };
 
@@ -44,10 +57,10 @@ export const CreateGroupModal = ({ onClose }: CreateGroupModalProps) => {
           </button>
           <button
             className="btn btn-primary"
-            onClick={(): Promise<void> => buildGroup(name, onClose)}
-            disabled={!name.trim() || loading}
+            onClick={(): Promise<void> => handleCreate()}
+            disabled={!name.trim() || loading || isSubmitting}
           >
-            {loading ? "Creating..." : "Create"}
+            {loading || isSubmitting ? "Creating..." : "Create"}
           </button>
         </div>
       </div>

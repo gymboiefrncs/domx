@@ -28,6 +28,7 @@ export const handleAddMember = async (
     data: result.data,
   });
 
+  socket.send(payload);
   broadcastToGroup(rooms, groupId, payload);
 
   const targetUserId = await fetchUserByDisplayId(displayId);

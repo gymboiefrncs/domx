@@ -21,8 +21,6 @@ export const useGroups = () => {
     renameGroupInList,
     deleteGroupInList,
     loading,
-    incrementMemberCount,
-    decrementMemberCount,
     clearUnreadCount,
   } = useGroupContext();
 
@@ -80,7 +78,6 @@ export const useGroups = () => {
   ): Promise<boolean> => {
     try {
       await kickMemberFromGroup(groupId, displayId);
-      decrementMemberCount(groupId);
       toast.success("Member removed", { duration: 2000 });
       return true;
     } catch (error) {
@@ -101,13 +98,14 @@ export const useGroups = () => {
     }
   };
 
-  const buildGroup = async (name: string, onSuccess: () => void) => {
+  const buildGroup = async (name: string): Promise<boolean> => {
     try {
       const data = await createGroup(name);
       addGroup(data);
-      onSuccess(); // closes the modal after creating the group
+      return true;
     } catch (error) {
       toast.error(getErrorMessage(error), { duration: 2000 });
+      return false;
     }
   };
 
@@ -118,7 +116,6 @@ export const useGroups = () => {
   ): Promise<void> => {
     try {
       const newMember = await addMemberInGroup(groupId, displayId);
-      incrementMemberCount(groupId);
       toast.success("Member added", { duration: 2000 });
 
       onSuccess(newMember);

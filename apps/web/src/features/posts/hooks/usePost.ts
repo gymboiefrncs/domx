@@ -18,12 +18,18 @@ import { useGroupContext } from "@/providers/GroupContext";
 
 export const usePosts = (groupId: string): GetPostsState => {
   const { user } = useAuthContext();
+  const { deleteGroupInList } = useGroupContext();
   const [posts, setPosts] = useState<PostDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<WebSocket | null>(null);
   const optimisticQueueRef = useRef<string[]>([]);
+  const wasKickedRef = useRef(false);
+  const deleteGroupInListRef = useRef(deleteGroupInList);
   const navigate = useNavigate();
-  const { deleteGroupInList } = useGroupContext();
+
+  useEffect(() => {
+    deleteGroupInListRef.current = deleteGroupInList;
+  }, [deleteGroupInList]);
 
   useEffect(() => {
     let isDisposed = false;
@@ -48,6 +54,7 @@ export const usePosts = (groupId: string): GetPostsState => {
     const handleIncomingChatMessage = (message: ChatIncomingMessage) => {
       if (!("type" in message)) {
         if ("message" in message && typeof message.message === "string") {
+          if (wasKickedRef.current) return;
           toast.error(message.message);
           return;
         }
@@ -56,6 +63,10 @@ export const usePosts = (groupId: string): GetPostsState => {
       if (!("type" in message)) return;
 
       if (message.type === "error") {
+        if (wasKickedRef.current) {
+          return;
+        }
+
         const nextOptimisticId = optimisticQueueRef.current.shift();
         if (nextOptimisticId) {
           setPosts((prev) =>
@@ -141,8 +152,9 @@ export const usePosts = (groupId: string): GetPostsState => {
 
       if (message.type === "memberKicked") {
         if (message.data.displayId === user?.display_id) {
+          wasKickedRef.current = true;
           navigate("/groups", { replace: true });
-          deleteGroupInList(groupId);
+          deleteGroupInListRef.current(groupId);
           toast.error(
             message.message ?? "You have been removed from the group",
           );
@@ -153,7 +165,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       if (message.type === "groupLeft") {
         if (message.data.displayId === user?.display_id) {
           navigate("/groups", { replace: true });
-          deleteGroupInList(groupId);
+          deleteGroupInListRef.current(groupId);
           toast.success(message.message ?? "You left the group");
         }
       }
@@ -168,6 +180,7 @@ export const usePosts = (groupId: string): GetPostsState => {
         return true;
       } catch (error) {
         if (isDisposed) return false;
+        if (wasKickedRef.current) return false;
         toast.error(getErrorMessage(error));
         return false;
       } finally {
@@ -203,12 +216,13 @@ export const usePosts = (groupId: string): GetPostsState => {
 
     return () => {
       isDisposed = true;
+      wasKickedRef.current = false;
       optimisticQueueRef.current = [];
       const socket = socketRef.current;
       socketRef.current = null;
       socket?.close();
     };
-  }, [groupId, user?.display_id, user?.username, deleteGroupInList, navigate]);
+  }, [groupId, user?.display_id, user?.username, navigate]);
 
   const handleCreatePost = async (
     groupId: string,

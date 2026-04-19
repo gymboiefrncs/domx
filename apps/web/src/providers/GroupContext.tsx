@@ -123,9 +123,6 @@ export function GroupProvider({
         if (message.type === "memberKicked") {
           if (message.data.displayId === user.display_id) {
             deleteGroupInList(message.data.groupId);
-            toast.error(
-              message.message ?? "You have been removed from the group",
-            );
           } else {
             decrementMemberCount(message.data.groupId);
           }

@@ -90,6 +90,21 @@ export function GroupProvider({
     });
   };
 
+  const incrementUnreadCount = (groupId: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.group_id === groupId
+          ? { ...g, unread_count: Math.max(0, g.unread_count + 1) }
+          : g,
+      ),
+    );
+  };
+
+  const isGroupOpenInCurrentRoute = (groupId: string): boolean => {
+    if (typeof window === "undefined") return false;
+    return window.location.pathname === `/groups/${groupId}`;
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -103,6 +118,25 @@ export function GroupProvider({
         if (!("type" in message)) return;
 
         switch (message.type) {
+          case "newMessage": {
+            const groupId = message.data.group_id;
+            if (!groupId) return;
+
+            if (
+              "display_id" in message.data &&
+              message.data.display_id === user.display_id
+            ) {
+              return;
+            }
+
+            if (isGroupOpenInCurrentRoute(groupId)) {
+              return;
+            }
+
+            incrementUnreadCount(groupId);
+            return;
+          }
+
           case "memberAdded": {
             const dedupeKey = `${message.data.group_id}:${message.data.display_id}`;
             if (recentMemberAddedEventsRef.current.has(dedupeKey)) {

@@ -255,10 +255,18 @@ export const usePosts = (groupId: string): GetPostsState => {
     post: string,
     title: string,
   ) => {
+    const normalizedTitle = title.trim();
+    const normalizedBody = post.trim();
+
+    if (!normalizedTitle || !normalizedBody) {
+      toast.error("Title and body are required");
+      return;
+    }
+
     const optimisticPost: PostDetails = {
       id: crypto.randomUUID(),
-      body: post,
-      title: title,
+      body: normalizedBody,
+      title: normalizedTitle,
       user_id: `optimistic-${crypto.randomUUID()}`,
       group_id: groupId,
       username: user?.username ?? "",
@@ -277,8 +285,8 @@ export const usePosts = (groupId: string): GetPostsState => {
       }
 
       sendPostMessage({
-        body: post,
-        title,
+        body: normalizedBody,
+        title: normalizedTitle,
       });
       toast.success("Message sent!", { duration: 2000 });
     } catch (error) {

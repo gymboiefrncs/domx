@@ -65,7 +65,11 @@ export const GroupChatPage = () => {
   };
 
   const handleSend = (): void => {
-    if (!post.trim()) return;
+    if (!title.trim() || !post.trim()) {
+      toast.error("Title and body are required");
+      return;
+    }
+
     handleCreatePost(id!, post.trim(), title.trim());
     setPost("");
     setTitle("");

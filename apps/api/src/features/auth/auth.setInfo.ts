@@ -10,14 +10,13 @@ import {
 } from "./auth.repositories.js";
 import bcrypt from "bcrypt";
 import type { UserInfo } from "./auth.types.js";
-import type { Role } from "@domx/shared";
 import { config } from "@api/shared/config.js";
 
 export const setInfo = async ({
   userId,
   username,
   password,
-}: UserInfo): Promise<Result<Role>> => {
+}: UserInfo): Promise<Result> => {
   const hashedPassword = await bcrypt.hash(
     password,
     config.server.nodeEnv === "production" ? 12 : 10,
@@ -36,14 +35,13 @@ export const setInfo = async ({
       client,
     );
     const updateUsernameReuslt = await updateUsername(userId, username, client);
-    const role = await createDisplayId(userId, displayId, client);
+    const displayIdCreated = await createDisplayId(userId, displayId, client);
 
-    if (updatePasswordResult && updateUsernameReuslt && role)
+    if (updatePasswordResult && updateUsernameReuslt && displayIdCreated)
       return {
         ok: true,
         reason: "INFO_SET_SUCCESS",
         message: "Information set successfully",
-        data: { role },
       };
 
     return {
@@ -54,6 +52,6 @@ export const setInfo = async ({
   });
 
   if (result.reason === "INFO_SET_SUCCESS")
-    return { ok: true, message: result.message, data: result.data.role };
+    return { ok: true, message: result.message };
   return { ok: false, message: result.message };
 };

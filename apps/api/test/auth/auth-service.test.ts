@@ -47,7 +47,6 @@ describe("Auth integration - Signup", () => {
     expect(user).toMatchObject({
       email: signupData.email,
       is_verified: false,
-      role: "user",
     });
   });
 
@@ -231,7 +230,6 @@ describe("Auth integration - Set Info", () => {
     expect(result).toEqual({
       ok: true,
       message: INFO_SET_SUCCESS_MESSAGE,
-      data: "user",
     });
 
     const user = await pool.query(

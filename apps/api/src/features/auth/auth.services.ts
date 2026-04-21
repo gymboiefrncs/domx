@@ -134,7 +134,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
     throw new UnauthorizedError("Invalid credentials");
   }
 
-  return generateSession(user.id, user.role);
+  return generateSession(user.id);
 };
 
 export const rotateTokens = async (
@@ -160,11 +160,7 @@ export const rotateTokens = async (
 
   const newJti = crypto.randomUUID();
 
-  const { accessToken, refreshToken } = await generateTokens(
-    userId,
-    user.role,
-    newJti,
-  );
+  const { accessToken, refreshToken } = await generateTokens(userId, newJti);
 
   const hashedNewRefreshToken = crypto
     .createHash("sha256")

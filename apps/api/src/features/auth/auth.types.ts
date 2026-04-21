@@ -1,12 +1,9 @@
-import type { Role } from "@domx/shared";
-
 /** Raw `users` table row. */
 type UserRow = {
   id: string;
   username: string | null;
   email: string;
   password: string | null;
-  role: Role;
   created_at: Date;
   is_verified: boolean;
 };
@@ -22,11 +19,11 @@ export type SignupUser = Pick<
 
 export type LoginUser = Pick<
   UserRow,
-  "id" | "email" | "password" | "is_verified" | "role"
+  "id" | "email" | "password" | "is_verified"
 >;
 
-/** Used for JWT payload construction */
-export type UserRole = Pick<UserRow, "role">;
+/** Minimal user identity for refresh-session checks */
+export type UserIdentity = Pick<UserRow, "id">;
 
 export type UserInfo = {
   userId: string;
@@ -59,7 +56,6 @@ export type SetInfoResult =
       ok: true;
       reason: "INFO_SET_SUCCESS";
       message: string;
-      data: { role: Role };
     }
   | { ok: false; reason: "INFO_SET_FAILED"; message: string };
 

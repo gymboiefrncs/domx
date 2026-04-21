@@ -1,16 +1,12 @@
 import type { Tokens } from "../auth.types.js";
 import { createToken } from "../auth.repositories.js";
-import type { Role } from "@domx/shared";
 import { generateTokens, getRefreshTokenExpiry } from "./generateToken.js";
 import crypto from "crypto";
 
-export const generateSession = async (
-  userId: string,
-  role: Role,
-): Promise<Tokens> => {
+export const generateSession = async (userId: string): Promise<Tokens> => {
   const jti = crypto.randomUUID();
 
-  const { accessToken, refreshToken } = await generateTokens(userId, role, jti);
+  const { accessToken, refreshToken } = await generateTokens(userId, jti);
 
   const hashedToken = crypto
     .createHash("sha256")

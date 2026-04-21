@@ -10,7 +10,6 @@ import { clearCookieOptions, setCookies } from "./auth-helpers/setCookies.js";
 import { UnauthorizedError } from "@api/shared/error.js";
 import { AUTH_TOKEN } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
-import type { Role } from "@domx/shared";
 import { config } from "@api/shared/config.js";
 
 export const signupHandler = async (
@@ -110,10 +109,7 @@ export const setInfoHandler = async (
       return;
     }
 
-    const { refreshToken, accessToken } = await generateSession(
-      userId,
-      result.data as Role,
-    );
+    const { refreshToken, accessToken } = await generateSession(userId);
     setCookies(refreshToken, accessToken, res);
 
     res.clearCookie("setInfoToken", clearCookieOptions);

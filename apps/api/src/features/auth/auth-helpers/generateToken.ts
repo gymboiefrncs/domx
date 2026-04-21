@@ -1,5 +1,4 @@
 import * as jose from "jose";
-import type { Role } from "@domx/shared";
 import type { Tokens } from "../auth.types.js";
 import { config } from "@api/shared/config.js";
 
@@ -17,12 +16,10 @@ export const getRefreshTokenExpiry = (): Date =>
 
 export const generateTokens = async (
   userId: string,
-  role: Role,
   jti: string,
 ): Promise<Tokens> => {
   const accessToken = await new jose.SignJWT({
     userId,
-    role,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

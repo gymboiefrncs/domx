@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
 import * as jose from "jose";
-import type { Role } from "@domx/shared";
 import { UnauthorizedError } from "../error.js";
 import { config } from "../config.js";
 
@@ -21,12 +20,11 @@ export const jwtHandler = async (
     const { payload } = await jose.jwtVerify(token, accessSecret);
 
     const userId = payload.userId;
-    const role = payload.role;
-    if (typeof userId !== "string" || typeof role !== "string") {
+    if (typeof userId !== "string") {
       throw new UnauthorizedError("Invalid token payload");
     }
 
-    req.user = { userId, role: role as Role };
+    req.user = { userId };
     next();
   } catch (error) {
     next(error);

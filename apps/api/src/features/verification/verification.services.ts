@@ -73,20 +73,10 @@ export const validateOtp = async ({
           client,
         );
 
-        if (!newRetryCount) {
-          return {
-            ok: false as const,
-            errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
-          };
+        if (!newRetryCount || newRetryCount >= 5) {
+          await deleteOtp(otpRecord.user_id, client);
         }
 
-        if (newRetryCount >= 5) {
-          await deleteOtp(otpRecord.user_id, client);
-          return {
-            ok: false as const,
-            errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,
-          };
-        }
         return {
           ok: false as const,
           errMessage: VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED,

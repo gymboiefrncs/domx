@@ -7,11 +7,11 @@ export const handleGetProfile = async (
   res: Response,
 ): Promise<void> => {
   const userId = req.user!.userId;
-  const result = await fetchProfile(userId);
+  const profile = await fetchProfile(userId);
   res.status(200).json({
-    success: result.ok,
-    message: result.message,
-    data: result.ok ? result.data : null,
+    success: true,
+    message: "Profile fetched successfnully",
+    data: profile,
   });
 };
 
@@ -21,12 +21,12 @@ export const handleDeleteProfile = async (
 ): Promise<void> => {
   const userId = req.user!.userId;
 
-  const result = await removeProfile(userId);
+  await removeProfile(userId);
   res.clearCookie("refreshToken", clearCookieOptions);
   res.clearCookie("accessToken", clearCookieOptions);
 
   res.status(200).json({
-    success: result.ok,
-    message: result.message,
+    success: true,
+    message: "Profile deleted successfully.",
   });
 };

@@ -11,7 +11,6 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "@api/shared/error.js";
 import type { RegistrationResult, Tokens } from "./auth.types.js";
-import type { Result } from "@api/shared/types/types.js";
 import {
   loginFailedEmail,
   sendAlreadyRegisteredEmail,
@@ -186,7 +185,7 @@ export const rotateTokens = async (
   return { accessToken, refreshToken };
 };
 
-export const logoutUser = async (refreshToken: string): Promise<Result> => {
+export const logoutUser = async (refreshToken: string): Promise<void> => {
   try {
     const refreshSecret = new TextEncoder().encode(
       config.jwt.refreshTokenSecret,
@@ -201,5 +200,4 @@ export const logoutUser = async (refreshToken: string): Promise<Result> => {
   } catch (_error) {
     // Ignore errors and allow logout to succeed
   }
-  return { ok: true, message: "You have been logged out successfully." };
 };

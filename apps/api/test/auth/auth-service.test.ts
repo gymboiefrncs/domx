@@ -9,7 +9,6 @@ import {
 import { setInfo } from "@api/features/auth/auth.setInfo.js";
 import bcrypt from "bcrypt";
 
-const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
 const INFO_SET_FAILED_MESSAGE = "Failed to set information";
 const EMAIL_MESSAGE = VERIFICATION_SUCCESS.EMAIL_SENT;
 const COOLDOWN_MESSAGE = VERIFICATION_ERROR.COOLDOWN_ACTIVE;
@@ -221,15 +220,10 @@ describe("Auth integration - Set Info", () => {
   it("should update password, username, and create display_id for a verified user", async () => {
     const userId = await createVerifiedUser();
 
-    const result = await setInfo({
+    await setInfo({
       userId,
       username: TEST_USERNAME,
       password: TEST_PASSWORD,
-    });
-
-    expect(result).toEqual({
-      ok: true,
-      message: INFO_SET_SUCCESS_MESSAGE,
     });
 
     const user = await pool.query(
@@ -256,16 +250,13 @@ describe("Auth integration - Set Info", () => {
       password: TEST_PASSWORD,
     });
 
-    const result = await setInfo({
-      userId,
-      username: "anotheruser",
-      password: "AnotherPass456_",
-    });
-
-    expect(result).toEqual({
-      ok: false,
-      message: INFO_SET_FAILED_MESSAGE,
-    });
+    await expect(
+      setInfo({
+        userId,
+        username: "anotheruser",
+        password: "AnotherPass456_",
+      }),
+    ).rejects.toThrow(INFO_SET_FAILED_MESSAGE);
 
     const user = await pool.query(
       "SELECT password, username FROM users WHERE id = $1",
@@ -285,16 +276,13 @@ describe("Auth integration - Set Info", () => {
     );
     const userId = unverified.rows[0]!.id;
 
-    const result = await setInfo({
-      userId,
-      username: TEST_USERNAME,
-      password: TEST_PASSWORD,
-    });
-
-    expect(result).toEqual({
-      ok: false,
-      message: INFO_SET_FAILED_MESSAGE,
-    });
+    await expect(
+      setInfo({
+        userId,
+        username: TEST_USERNAME,
+        password: TEST_PASSWORD,
+      }),
+    ).rejects.toThrow(INFO_SET_FAILED_MESSAGE);
 
     const user = await pool.query("SELECT password FROM users WHERE id = $1", [
       userId,

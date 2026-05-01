@@ -220,8 +220,7 @@ describe("Auth API", () => {
         message: INFO_SET_SUCCESS_MESSAGE,
       });
       expect(messages).toContainEqual({
-        success: false,
-        message: INFO_SET_FAILED_MESSAGE,
+        errors: [{ message: INFO_SET_FAILED_MESSAGE }],
       });
     });
   });

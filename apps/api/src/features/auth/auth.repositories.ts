@@ -81,37 +81,25 @@ export const deleteOldRefreshToken = async (
   await con.query(query, value);
 };
 
-export const updateUserPassword = async (
+export const setUserInfoOnce = async (
   userId: string,
+  username: string,
   hashedPassword: string,
-  client: PoolClient,
-): Promise<boolean> => {
-  const query = `
-      UPDATE users 
-      SET password = $1 
-      WHERE id = $2 
-      AND is_verified = true 
-      AND password IS NULL
-    `;
-
-  const value = [hashedPassword, userId];
-  const result = await client.query(query, value);
-
-  return (result.rowCount ?? 0) > 0;
-};
-
-export const createDisplayId = async (
-  userId: string,
   displayId: string,
-  client: PoolClient,
 ): Promise<boolean> => {
   const query = `
-    UPDATE users 
-    SET display_id = $1
-    WHERE id = $2
+    UPDATE users
+    SET password = $1,
+        username = $2,
+        display_id = $3
+    WHERE id = $4
+      AND is_verified = true
+      AND password IS NULL
+    RETURNING id
   `;
-  const values = [displayId, userId];
-  const result = await client.query(query, values);
+
+  const values = [hashedPassword, username, displayId, userId];
+  const result = await pool.query(query, values);
 
   return (result.rowCount ?? 0) > 0;
 };
@@ -130,19 +118,4 @@ export const fetchUserForSignup = async (
 
   const result = await client.query<SignupUser>(query, values);
   return result.rows[0];
-};
-
-export const updateUsername = async (
-  userId: string,
-  username: string,
-  client: PoolClient,
-): Promise<boolean> => {
-  const query = `
-    UPDATE users SET username=$1 
-    WHERE id=$2
-  `;
-  const values = [username, userId];
-  const result = await client.query(query, values);
-
-  return (result.rowCount ?? 0) > 0;
 };

@@ -26,6 +26,10 @@ export class ValidationError extends AppError {
   readonly statusCode = 422;
 }
 
+export class BadRequestError extends AppError {
+  readonly statusCode = 400;
+}
+
 export class NotFoundError extends AppError {
   readonly statusCode = 404;
 }

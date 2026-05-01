@@ -24,6 +24,7 @@ export const signupHandler = async (
       sameSite: "strict",
       maxAge: AUTH_TOKEN.INCOMPLETE_SIGNUP_MAX_AGE_MS,
     });
+    // message is used by frontend to jump straight into the right step of the signup flow
     res.status(200).json({
       success: true,
       message: result.reason,
@@ -64,12 +65,12 @@ export const logoutHandler = async (
   res: Response,
 ): Promise<void> => {
   const refreshToken = req.cookies.refreshToken;
-  const result = await logoutUser(refreshToken);
+  await logoutUser(refreshToken);
   res.clearCookie("refreshToken", clearCookieOptions);
   res.clearCookie("accessToken", clearCookieOptions);
   res.status(200).json({
-    success: result.ok,
-    message: result.ok ? result.message : "Logout failed",
+    success: true,
+    message: "You have been logged out successfully.",
   });
 };
 
@@ -81,19 +82,15 @@ export const setInfoHandler = async (
   const userId = req.setInfo?.sub;
   if (!userId) throw new UnauthorizedError("Invalid token payload");
 
-  const result = await setInfo({ userId, password, username });
-  if (!result.ok) {
-    res.status(400).json({ success: false, message: result.message });
-    return;
-  }
+  await setInfo({ userId, password, username });
 
   const { refreshToken, accessToken } = await generateSession(userId);
   setCookies(refreshToken, accessToken, res);
 
   res.clearCookie("setInfoToken", clearCookieOptions);
 
-  res.status(result.ok ? 200 : 400).json({
-    success: result.ok,
-    message: result.message,
+  res.status(200).json({
+    success: true,
+    message: "Information set successfully",
   });
 };

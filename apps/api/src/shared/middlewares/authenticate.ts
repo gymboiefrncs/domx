@@ -11,46 +11,37 @@ export const jwtHandler = async (
   _res: Response,
   next: NextFunction,
 ) => {
-  try {
-    const token: string | undefined = req.cookies.accessToken;
-    if (!token) {
-      throw new UnauthorizedError("Invalid or expired token");
-    }
-
-    const { payload } = await jose.jwtVerify(token, accessSecret);
-
-    const userId = payload.userId;
-    if (typeof userId !== "string") {
-      throw new UnauthorizedError("Invalid token payload");
-    }
-
-    req.user = { userId };
-    next();
-  } catch (error) {
-    next(error);
+  const token: string | undefined = req.cookies.accessToken;
+  if (!token) {
+    throw new UnauthorizedError("Invalid or expired token");
   }
-};
 
+  const { payload } = await jose.jwtVerify(token, accessSecret);
+
+  const userId = payload.userId;
+  if (typeof userId !== "string") {
+    throw new UnauthorizedError("Invalid token payload");
+  }
+
+  req.user = { userId };
+  next();
+};
 export const verifySetInfoToken = async (
   req: Request,
   _res: Response,
   next: NextFunction,
 ) => {
-  try {
-    const token: string | undefined = req.cookies.setInfoToken;
-    if (!token) {
-      throw new UnauthorizedError("Invalid or expired token");
-    }
-    const { payload } = await jose.jwtVerify(token, setInfoSecret);
-    const userId = payload.sub;
-
-    if (typeof userId !== "string" || payload.purpose !== "set-info") {
-      throw new UnauthorizedError("Invalid token payload");
-    }
-
-    req.setInfo = { sub: userId, purpose: "set-info" };
-    next();
-  } catch (error) {
-    next(error);
+  const token: string | undefined = req.cookies.setInfoToken;
+  if (!token) {
+    throw new UnauthorizedError("Invalid or expired token");
   }
+  const { payload } = await jose.jwtVerify(token, setInfoSecret);
+  const userId = payload.sub;
+
+  if (typeof userId !== "string" || payload.purpose !== "set-info") {
+    throw new UnauthorizedError("Invalid token payload");
+  }
+
+  req.setInfo = { sub: userId, purpose: "set-info" };
+  next();
 };

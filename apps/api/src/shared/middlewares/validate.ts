@@ -10,13 +10,10 @@ export const validateBody =
     const validation = schema.safeParse(req.body);
 
     if (!validation.success) {
-      next(
-        new ValidationError("Invalid data", true, {
-          source: "body",
-          fields: validation.error.flatten().fieldErrors,
-        }),
-      );
-      return;
+      throw new ValidationError("Invalid data", true, {
+        source: "body",
+        fields: validation.error.flatten().fieldErrors,
+      });
     }
 
     req.body = validation.data;
@@ -30,13 +27,10 @@ export const validateParams =
     const validation = schema.safeParse(req.params);
 
     if (!validation.success) {
-      next(
-        new ValidationError("Invalid data", true, {
-          source: "params",
-          fields: validation.error.flatten().fieldErrors,
-        }),
-      );
-      return;
+      throw new ValidationError("Invalid data", true, {
+        source: "params",
+        fields: validation.error.flatten().fieldErrors,
+      });
     }
 
     req.params = validation.data as ParamsDictionary;

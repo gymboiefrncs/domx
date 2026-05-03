@@ -8,7 +8,7 @@ export const incrementRetries = async (
   userId: string,
   id: string,
   client: PoolClient,
-): Promise<number | undefined> => {
+): Promise<number | null> => {
   const query = `
     UPDATE email_verification 
     SET retries = retries + 1 
@@ -18,13 +18,13 @@ export const incrementRetries = async (
 
   const values = [userId, id];
   const result = await client.query<{ retries: number }>(query, values);
-  return result.rows[0]?.retries;
+  return result.rows[0]?.retries ?? null;
 };
 
 export const fetchOtp = async (
   email: string,
   client: PoolClient,
-): Promise<UserVerificationStatus | undefined> => {
+): Promise<UserVerificationStatus | null> => {
   const query = `
     SELECT ev.id, ev.user_id, ev.expires_at, ev.otp_hash, ev.used_at, ev.retries, u.is_verified
     FROM email_verification ev 
@@ -38,7 +38,7 @@ export const fetchOtp = async (
 
   const value = [email];
   const result = await client.query<UserVerificationStatus>(query, value);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const createSignupOtp = async (
@@ -72,7 +72,7 @@ export const deleteOtp = async (
 export const getLatestOTP = async (
   userId: string,
   client: PoolClient,
-): Promise<EmailVerification | undefined> => {
+): Promise<EmailVerification | null> => {
   const query = `
     SELECT * FROM email_verification 
     WHERE user_id = $1 
@@ -84,7 +84,7 @@ export const getLatestOTP = async (
 
   const value = [userId];
   const result = await client.query<EmailVerification>(query, value);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const markUserAsVerified = async (

@@ -22,16 +22,17 @@ import { generateOTP } from "@api/features/auth/auth-helpers/generateOTP.js";
 import { generateSetInfoToken } from "./verification-helpers/generateSetInfoToken.js";
 import { withTransaction } from "@api/shared/db/transaction.js";
 import type {
-  OtpPayload,
+  VerificationRequest,
   ResendOtpResult,
   TransactionResult,
   ValidateOtpResult,
+  ResendOtpRequest,
 } from "./verification.types.js";
 
 export const validateOtp = async ({
   email,
   otp,
-}: OtpPayload): Promise<ValidateOtpResult> => {
+}: VerificationRequest): Promise<ValidateOtpResult> => {
   const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
   /**
@@ -106,7 +107,9 @@ export const validateOtp = async ({
   return result;
 };
 
-export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
+export const resendOtp = async (
+  data: ResendOtpRequest,
+): Promise<ResendOtpResult> => {
   const { otp, hashedOTP, expiresAt } = generateOTP();
 
   const result = await withTransaction(pool, async (client) => {
@@ -116,7 +119,7 @@ export const resendOtp = async (email: string): Promise<ResendOtpResult> => {
      * the response is with a generic message and status.
      */
 
-    const user = await fetchUserForSignup(email, client);
+    const user = await fetchUserForSignup(data.email, client);
 
     if (!user)
       return {

@@ -34,7 +34,9 @@ export const handleUnverifiedUser = async (
   },
   client: PoolClient,
 ): Promise<RegistrationResult> => {
-  const latestOTP = await getLatestOTP(user.id, client);
+  const { email, id } = user;
+  const { hashedOTP, expiresAt } = otpData;
+  const latestOTP = await getLatestOTP(id, client);
 
   /**
    * Enforce a cooldown to prevent spamming OTP request
@@ -54,13 +56,13 @@ export const handleUnverifiedUser = async (
   }
 
   // Ensures only one valid OTP is active at a time
-  await deleteOtp(user.id, client);
-  await createSignupOtp(user.id, otpData.hashedOTP, otpData.expiresAt, client);
+  await deleteOtp(id, client);
+  await createSignupOtp(id, hashedOTP, expiresAt, client);
 
   return {
     ok: true as const,
     reason: "RESENT_OTP" as const,
-    email: user.email,
+    email: email,
     message: VERIFICATION_SUCCESS.EMAIL_SENT,
   };
 };

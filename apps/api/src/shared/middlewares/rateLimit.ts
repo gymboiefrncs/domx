@@ -1,4 +1,4 @@
-import type { NextFunction, Request, RequestHandler, Response } from "express";
+import type { RequestHandler } from "express";
 import { RateLimiterMemory, type RateLimiterRes } from "rate-limiter-flexible";
 import { config } from "../config.js";
 
@@ -26,11 +26,7 @@ const createLimiter = (options: LimiterOptions): RequestHandler => {
     duration: Math.ceil(options.windowMs / 1000),
   });
 
-  return async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  return async (req, res, next) => {
     const key = req.user?.userId ?? req.ip ?? "unknown";
 
     try {

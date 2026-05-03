@@ -37,6 +37,3 @@ export const loginSchema = z.object({
     .toLowerCase(),
   password: z.string().min(1, "Password is required"),
 });
-
-export type SignupSchema = z.infer<typeof signupSchema>;
-export type LoginSchema = z.infer<typeof loginSchema>;

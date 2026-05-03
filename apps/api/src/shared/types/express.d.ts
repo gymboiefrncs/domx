@@ -1,5 +1,4 @@
-import "express";
-declare module "express" {
+declare module "express-serve-static-core" {
   interface Request {
     user?: {
       userId: string;
@@ -10,3 +9,5 @@ declare module "express" {
     };
   }
 }
+
+export {};

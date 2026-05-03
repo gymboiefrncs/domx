@@ -1,5 +1,5 @@
 import type { PoolClient } from "pg";
-import type { SignupSchema } from "../auth.schemas.js";
+import type { NewUser, SignupRequest } from "../auth.types.js";
 import { createUser } from "../auth.repositories.js";
 import {
   createSignupOtp,
@@ -13,11 +13,13 @@ import type { RegistrationResult } from "../auth.types.js";
  * it will return undefined. In that case, we treat it as a success and step aside.
  */
 export const handleNewUser = async (
-  data: SignupSchema,
+  data: SignupRequest,
   otpData: { hashedOTP: string; expiresAt: Date; otp: string },
   client: PoolClient,
 ): Promise<RegistrationResult> => {
-  const newUser = await createUser(data, client);
+  const { hashedOTP, expiresAt } = otpData;
+
+  const newUser: NewUser | null = await createUser(data, client);
 
   if (!newUser) {
     /**
@@ -31,12 +33,7 @@ export const handleNewUser = async (
     };
   }
 
-  await createSignupOtp(
-    newUser.id,
-    otpData.hashedOTP,
-    otpData.expiresAt,
-    client,
-  );
+  await createSignupOtp(newUser.id, hashedOTP, expiresAt, client);
 
   return {
     ok: true as const,

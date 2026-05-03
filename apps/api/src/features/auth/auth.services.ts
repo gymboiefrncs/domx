@@ -6,7 +6,7 @@ import {
   createToken,
   fetchUserForSignup,
 } from "./auth.repositories.js";
-import type { SignupSchema, LoginSchema } from "./auth.schemas.js";
+import type { SignupRequest, LoginRequest, SignupUser } from "./auth.types.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { UnauthorizedError } from "@api/shared/error.js";
@@ -30,9 +30,10 @@ import { withTransaction } from "@api/shared/db/transaction.js";
 import { handleIncompleteSignup } from "./auth-helpers/handleIncompleteSignup.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import { config } from "@api/shared/config.js";
+import type { PoolClient } from "pg";
 
 export const registerUser = async (
-  data: SignupSchema,
+  data: SignupRequest,
 ): Promise<RegistrationResult> => {
   /**
    * Intentionally returns a unified response shape for all cases to prevent user enumeration attacks.
@@ -52,29 +53,35 @@ export const registerUser = async (
    * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
    * Inside: return to commit, throw to rollback.
    */
-  const result = await withTransaction(pool, async (client) => {
-    const user = await fetchUserForSignup(data.email, client);
 
-    if (user?.is_verified && user?.password && user?.username) {
-      return handleVerifiedUser(data.email);
-    }
+  const result: RegistrationResult = await withTransaction(
+    pool,
+    async (client: PoolClient) => {
+      const { email } = data;
 
-    if (user?.is_verified && (!user.password || !user.username)) {
-      /**
-       * This case is hit when a user completes email verification but
-       * fails to complete the rest of the signup flow (e.g. due to network issues or closing the tab).
-       *
-       * We treat this as an incomplete signup and allow them to restart the signup flow by generating a new set info token.
-       */
-      return await handleIncompleteSignup(user.id);
-    }
+      const user: SignupUser | null = await fetchUserForSignup(email, client);
 
-    if (user && !user.is_verified) {
-      return await handleUnverifiedUser(user, otpData, client);
-    }
+      if (user?.is_verified && user?.password && user?.username) {
+        return handleVerifiedUser(email);
+      }
 
-    return await handleNewUser(data, otpData, client);
-  });
+      if (user?.is_verified && (!user.password || !user.username)) {
+        /**
+         * This case is hit when a user completes email verification but
+         * fails to complete the rest of the signup flow (e.g. due to network issues or closing the tab).
+         *
+         * We treat this as an incomplete signup and allow them to restart the signup flow by generating a new set info token.
+         */
+        return await handleIncompleteSignup(user.id);
+      }
+
+      if (user && !user.is_verified) {
+        return await handleUnverifiedUser(user, otpData, client);
+      }
+
+      return await handleNewUser(data, otpData, client);
+    },
+  );
 
   /**
    * Side effects are deliberately kept OUTSIDE the transaction.
@@ -107,8 +114,9 @@ export const registerUser = async (
   return result;
 };
 
-export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
-  const user = await fetchUserByEmail(data.email);
+export const loginUser = async (data: LoginRequest): Promise<Tokens> => {
+  const { email, password } = data;
+  const user = await fetchUserByEmail(email);
 
   /**
    * Intentionally compare the password BEFORE checking if user exists or is verified.
@@ -118,7 +126,7 @@ export const loginUser = async (data: LoginSchema): Promise<Tokens> => {
    * If user doesn't exist, we compare against a dummy hash to simulate the same workload
    */
   const passwordMatch = await bcrypt.compare(
-    data.password,
+    password,
     user?.password ?? config.auth.dummyHash,
   );
 

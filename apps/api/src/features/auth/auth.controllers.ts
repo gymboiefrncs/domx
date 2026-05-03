@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { RequestHandler } from "express";
 import {
   registerUser,
   loginUser,
@@ -11,11 +11,18 @@ import { UnauthorizedError } from "@api/shared/error.js";
 import { AUTH_TOKEN } from "./auth.constants.js";
 import { generateSession } from "./auth-helpers/generateSession.js";
 import { config } from "@api/shared/config.js";
+import type {
+  AuthResponse,
+  LoginRequest,
+  SetInfoRequest,
+  SignupRequest,
+} from "./auth.types.js";
 
-export const signupHandler = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const signupHandler: RequestHandler<
+  Record<string, never>,
+  AuthResponse,
+  SignupRequest
+> = async (req, res) => {
   const result = await registerUser(req.body);
   if (result.reason === "INCOMPLETE_SIGNUP") {
     res.cookie("setInfoToken", result.data.setInfoToken, {
@@ -33,26 +40,27 @@ export const signupHandler = async (
   }
 
   res.status(201).json({
-    success: result.ok,
+    success: true,
     message: result.message,
   });
 };
 
-export const loginHandler = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const loginHandler: RequestHandler<
+  Record<string, never>,
+  AuthResponse,
+  LoginRequest
+> = async (req, res) => {
   const { refreshToken, accessToken } = await loginUser(req.body);
   setCookies(refreshToken, accessToken, res);
 
   res.status(200).json({ success: true, message: "Login successful" });
 };
 
-export const rotateTokensHandler = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  const oldRefreshToken = req.cookies.refreshToken;
+export const rotateTokensHandler: RequestHandler<
+  Record<string, never>,
+  AuthResponse
+> = async (req, res) => {
+  const oldRefreshToken = req.cookies.refreshToken as string | undefined;
   if (!oldRefreshToken) throw new UnauthorizedError("Invalid refresh token");
   const { accessToken, refreshToken } = await rotateTokens(oldRefreshToken);
   setCookies(refreshToken, accessToken, res);
@@ -60,10 +68,10 @@ export const rotateTokensHandler = async (
   res.status(200).json({ success: true, message: "Token refreshed" });
 };
 
-export const logoutHandler = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const logoutHandler: RequestHandler<
+  Record<string, never>,
+  AuthResponse
+> = async (req, res): Promise<void> => {
   const refreshToken = req.cookies.refreshToken;
   await logoutUser(refreshToken);
   res.clearCookie("refreshToken", clearCookieOptions);
@@ -74,10 +82,11 @@ export const logoutHandler = async (
   });
 };
 
-export const setInfoHandler = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const setInfoHandler: RequestHandler<
+  Record<string, never>,
+  AuthResponse,
+  SetInfoRequest
+> = async (req, res): Promise<void> => {
   const { password, username } = req.body;
   const userId = req.setInfo?.sub;
   if (!userId) throw new UnauthorizedError("Invalid token payload");

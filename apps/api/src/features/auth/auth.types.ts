@@ -1,35 +1,32 @@
+import type z from "zod";
+import type { infoSchema, loginSchema, signupSchema } from "./auth.schemas.js";
+
 /** Raw `users` table row. */
-type UserRow = {
+interface UserRow {
   id: string;
   username: string | null;
   email: string;
   password: string | null;
   created_at: Date;
   is_verified: boolean;
-};
+}
 
-/** Returned after creating a user */
 export type NewUser = Pick<UserRow, "id" | "email">;
-
-/** Used during signup to check user state */
 export type SignupUser = Pick<
   UserRow,
   "id" | "is_verified" | "email" | "username" | "password"
 >;
-
 export type LoginUser = Pick<
   UserRow,
   "id" | "email" | "password" | "is_verified"
 >;
-
-/** Minimal user identity for refresh-session checks */
 export type UserIdentity = Pick<UserRow, "id">;
 
-export type UserInfo = {
+export interface UserInfo {
   userId: string;
   username: string;
   password: string;
-};
+}
 
 /**
  * `reason` is a machine-readable discriminant used for control flow (e.g. determining which email to send).
@@ -50,7 +47,6 @@ export type RegistrationResult =
       message: string;
       data: { setInfoToken: string };
     };
-
 export type SetInfoResult =
   | {
       ok: true;
@@ -59,7 +55,15 @@ export type SetInfoResult =
     }
   | { ok: false; reason: "INFO_SET_FAILED"; message: string };
 
-export type Tokens = {
+export interface Tokens {
   accessToken: string;
   refreshToken: string;
-};
+}
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+}
+
+export type SignupRequest = z.infer<typeof signupSchema>;
+export type LoginRequest = z.infer<typeof loginSchema>;
+export type SetInfoRequest = z.infer<typeof infoSchema>;

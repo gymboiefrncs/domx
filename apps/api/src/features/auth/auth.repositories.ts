@@ -1,4 +1,4 @@
-import type { SignupSchema } from "./auth.schemas.js";
+import type { SignupRequest } from "./auth.types.js";
 import { pool } from "@api/shared/db/db.js";
 import type {
   UserIdentity,
@@ -9,9 +9,9 @@ import type {
 import type { Pool, PoolClient } from "pg";
 
 export const createUser = async (
-  data: SignupSchema,
+  data: SignupRequest,
   client: PoolClient,
-): Promise<NewUser | undefined> => {
+): Promise<NewUser | null> => {
   const { email } = data;
 
   const query = `
@@ -23,28 +23,28 @@ export const createUser = async (
 
   const values = [email];
   const result = await client.query<NewUser>(query, values);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const fetchUserByEmail = async (
   email: string,
-): Promise<LoginUser | undefined> => {
+): Promise<LoginUser | null> => {
   const query =
     "SELECT id, email,password, is_verified FROM users WHERE email = $1";
   const values = [email];
 
   const result = await pool.query<LoginUser>(query, values);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const fetchUserById = async (
   id: string,
-): Promise<UserIdentity | undefined> => {
+): Promise<UserIdentity | null> => {
   const query = "SELECT id FROM users WHERE id = $1";
   const values = [id];
 
   const result = await pool.query<UserIdentity>(query, values);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const createToken = async (
@@ -64,7 +64,7 @@ export const createToken = async (
 };
 
 export const tokenExists = async (jti: string): Promise<boolean> => {
-  const query = `SELECT 1 FROM refresh_token WHERE jti = $1`;
+  const query = "SELECT 1 FROM refresh_token WHERE jti = $1";
 
   const value = [jti];
   const result = await pool.query(query, value);
@@ -107,7 +107,7 @@ export const setUserInfoOnce = async (
 export const fetchUserForSignup = async (
   email: string,
   client: PoolClient,
-): Promise<SignupUser | undefined> => {
+): Promise<SignupUser | null> => {
   const query = `
     SELECT id, is_verified, email, username, password
     FROM users 
@@ -117,5 +117,5 @@ export const fetchUserForSignup = async (
   const values = [email];
 
   const result = await client.query<SignupUser>(query, values);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };

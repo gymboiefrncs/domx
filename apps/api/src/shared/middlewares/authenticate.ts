@@ -1,16 +1,12 @@
-import type { NextFunction, Request, Response } from "express";
 import * as jose from "jose";
 import { UnauthorizedError } from "../error.js";
 import { config } from "../config.js";
+import type { RequestHandler } from "express-serve-static-core";
 
 const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
 const setInfoSecret = new TextEncoder().encode(config.jwt.setInfoTokenSecret);
 
-export const jwtHandler = async (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-) => {
+export const jwtHandler: RequestHandler = async (req, _res, next) => {
   const token: string | undefined = req.cookies.accessToken;
   if (!token) {
     throw new UnauthorizedError("Invalid or expired token");
@@ -26,11 +22,7 @@ export const jwtHandler = async (
   req.user = { userId };
   next();
 };
-export const verifySetInfoToken = async (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-) => {
+export const verifySetInfoToken: RequestHandler = async (req, _res, next) => {
   const token: string | undefined = req.cookies.setInfoToken;
   if (!token) {
     throw new UnauthorizedError("Invalid or expired token");

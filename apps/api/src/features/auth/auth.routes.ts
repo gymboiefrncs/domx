@@ -15,20 +15,26 @@ import {
   refreshLimiter,
 } from "@api/shared/middlewares/rateLimit.js";
 
-const loginValidator = validateBody(loginSchema);
-const signupValidator = validateBody(signupSchema);
-const infoValidator = validateBody(infoSchema);
-
 export const authRouter: Router = express.Router();
 
-authRouter.post("/auth/signup", signupLimiter, signupValidator, signupHandler);
-authRouter.post("/auth/login", loginLimiter, loginValidator, loginHandler);
+authRouter.post(
+  "/auth/signup",
+  signupLimiter,
+  validateBody(signupSchema),
+  signupHandler,
+);
+authRouter.post(
+  "/auth/login",
+  loginLimiter,
+  validateBody(loginSchema),
+  loginHandler,
+);
 authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post("/auth/logout", logoutHandler);
 
 authRouter.post(
   "/auth/set-info",
-  infoValidator,
+  validateBody(infoSchema),
   verifySetInfoToken,
   setInfoHandler,
 );

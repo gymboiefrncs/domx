@@ -13,15 +13,6 @@ import {
   wsWritePostLimiter,
 } from "@api/shared/middlewares/rateLimit.js";
 
-const GROUP_WS_ACTIONS = new Set([
-  "addMember",
-  "promoteMember",
-  "demoteMember",
-  "kickMember",
-  "leaveGroup",
-  "deleteGroup",
-]);
-
 const messageHandlers: Record<string, WsMessageHandler> = {
   addMember: {
     schema: ManageMemberSchema,
@@ -49,8 +40,7 @@ const messageHandlers: Record<string, WsMessageHandler> = {
   },
 };
 
-export const isGroupWsAction = (type: string): boolean =>
-  GROUP_WS_ACTIONS.has(type);
+export const isGroupWsAction = (type: string): boolean => Object.hasOwn(messageHandlers, type);
 
 export const handleGroupWsMessage = async (
   type: string,

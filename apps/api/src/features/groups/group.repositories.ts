@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from "pg";
-import type { CreateGroup, NewMember } from "@domx/shared";
-import type { GroupDetail, GroupRole } from "@domx/shared";
+import type { CreateGroup, Member } from "@domx/shared";
+import type { Group, GroupRole } from "@domx/shared";
 import { pool } from "@api/shared/db/db.js";
 
 export const insertGroup = async (
@@ -9,8 +9,8 @@ export const insertGroup = async (
 ): Promise<CreateGroup> => {
   const query = `INSERT INTO groups (name) VALUES ($1) returning group_id`;
   const values = [groupName];
-  const result = await client.query(query, values);
-  return result.rows[0];
+  const result = await client.query<CreateGroup>(query, values);
+  return result.rows[0] as CreateGroup;
 };
 
 export const updateGroupName = async (
@@ -28,7 +28,7 @@ export const insertMember = async (
   userId: string,
   role: GroupRole = "member",
   con: Pool | PoolClient = pool,
-): Promise<NewMember> => {
+): Promise<Member> => {
   const query = `
     WITH inserted AS (
       INSERT INTO group_members (group_id, user_id, role)
@@ -40,17 +40,17 @@ export const insertMember = async (
     JOIN users u ON u.id = i.user_id
   `;
   const values = [groupId, userId, role];
-  const result = await con.query(query, values);
-  return result.rows[0];
+  const result = await con.query<Member>(query, values);
+  return result.rows[0] as Member;
 };
 
 export const fetchGroupById = async (
   groupId: string,
-): Promise<{ group_id: string } | undefined> => {
+): Promise<{ group_id: string } | null> => {
   const query = `SELECT group_id FROM groups WHERE group_id = $1`;
   const values = [groupId];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  const result = await pool.query<{ group_id: string }>(query, values);
+  return result.rows[0] ?? null;
 };
 
 export const fetchMemberRole = async (
@@ -58,20 +58,20 @@ export const fetchMemberRole = async (
   userId: string,
   con: Pool | PoolClient = pool,
   forUpdate = false,
-): Promise<GroupRole | undefined> => {
+): Promise<GroupRole | null> => {
   const query = `SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2${forUpdate ? " FOR UPDATE" : ""}`;
   const values = [groupId, userId];
-  const result = await con.query(query, values);
-  return result.rows[0]?.role;
+  const result = await con.query<{ role: GroupRole }>(query, values);
+  return result.rows[0]?.role ?? null;
 };
 
 export const fetchUserByDisplayId = async (
   displayId: string,
-): Promise<string | undefined> => {
+): Promise<string | null> => {
   const query = `SELECT id FROM users WHERE display_id = $1`;
   const values = [displayId];
-  const result = await pool.query(query, values);
-  return result.rows[0]?.id;
+  const result = await pool.query<{ id: string }>(query, values);
+  return result.rows[0]?.id ?? null;
 };
 
 export const deleteMember = async (
@@ -121,8 +121,8 @@ export const countMembers = async (
   );
   const query = `SELECT COUNT(*)::int AS total FROM group_members WHERE group_id = $1`;
   const values = [groupId];
-  const result = await client.query(query, values);
-  return result.rows[0].total;
+  const result = await client.query<{ total: number }>(query, values);
+  return result.rows[0]!.total;
 };
 
 export const deleteGroup = async (
@@ -135,9 +135,7 @@ export const deleteGroup = async (
   return (result.rowCount ?? 0) > 0;
 };
 
-export const fetchUserGroups = async (
-  userId: string,
-): Promise<GroupDetail[]> => {
+export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
   const query = `
     SELECT 
     g.group_id, 
@@ -155,20 +153,18 @@ export const fetchUserGroups = async (
   `;
 
   const values = [userId];
-  const result = await pool.query(query, values);
+  const result = await pool.query<Group>(query, values);
   return result.rows;
 };
 
-export const fetchGroupMembers = async (
-  groupId: string,
-): Promise<NewMember[]> => {
+export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
   const query = `SELECT gm.role, u.display_id, u.username
   FROM group_members gm
   JOIN users u on u.id = gm.user_id
   WHERE gm.group_id = $1
   `;
   const values = [groupId];
-  const result = await pool.query(query, values);
+  const result = await pool.query<Member>(query, values);
   return result.rows;
 };
 

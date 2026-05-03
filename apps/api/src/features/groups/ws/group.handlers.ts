@@ -18,15 +18,14 @@ export const handleAddMember = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId, displayId } = data as { groupId: string; displayId: string };
-  const result = await addMember(groupId, displayId, socket.userId);
-  if (!result.ok) {
-    throw new Error(result.message);
+  const newMember = await addMember(groupId, displayId, socket.userId);
+  if (!newMember) {
+    throw new Error("Failed to add member");
   }
 
   const payload = JSON.stringify({
     type: "memberAdded",
-    message: result.message,
-    data: result.data,
+    data: newMember,
   });
 
   socket.send(payload);
@@ -44,10 +43,9 @@ export const handlePromoteMember = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId, displayId } = data as { groupId: string; displayId: string };
-  const result = await promoteMember(groupId, displayId, socket.userId);
+  await promoteMember(groupId, displayId, socket.userId);
   const payload = JSON.stringify({
     type: "memberPromoted",
-    message: result.message,
     data: { groupId, displayId },
   });
   socket.send(payload);
@@ -60,10 +58,9 @@ export const handleDemoteMember = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId, displayId } = data as { groupId: string; displayId: string };
-  const result = await demoteMember(groupId, displayId, socket.userId);
+  await demoteMember(groupId, displayId, socket.userId);
   const payload = JSON.stringify({
     type: "memberDemoted",
-    message: result.message,
     data: { groupId, displayId },
   });
   socket.send(payload);
@@ -76,10 +73,9 @@ export const handleKickMember = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId, displayId } = data as { groupId: string; displayId: string };
-  const result = await kickMember(groupId, displayId, socket.userId);
+  await kickMember(groupId, displayId, socket.userId);
   const payload = JSON.stringify({
     type: "memberKicked",
-    message: result.message,
     data: { groupId, displayId },
   });
   socket.send(payload);
@@ -92,12 +88,11 @@ export const handleLeaveGroup = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId } = data as { groupId: string };
-  const result = await leaveMember(groupId, socket.userId);
+  await leaveMember(groupId, socket.userId);
   const profile = await getProfile(socket.userId);
 
   const payload = JSON.stringify({
     type: "groupLeft",
-    message: result.message,
     data: { groupId, displayId: profile.display_id },
   });
   socket.send(payload);
@@ -110,11 +105,10 @@ export const handleDeleteGroup = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { groupId } = data as { groupId: string };
-  const result = await deleteGroupById(groupId, socket.userId);
+  await deleteGroupById(groupId, socket.userId);
 
   const payload = JSON.stringify({
     type: "groupDeleted",
-    message: result.message,
     data: { groupId },
   });
 

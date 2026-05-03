@@ -16,46 +16,37 @@ import {
   fetchGroupById,
 } from "./group.repositories.js";
 import { pool } from "@api/shared/db/db.js";
-import { GROUP_ERROR, GROUP_SUCCESS } from "./group.constants.js";
+import { GROUP_ERROR } from "./group.constants.js";
 import { PROFILE_ERROR } from "@api/features/profile/index.js";
-import type { Result } from "@api/shared/types/types.js";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup, GroupDetail, NewMember } from "@domx/shared";
+import type { CreateGroup, Group, Member } from "@domx/shared";
 
 export const getGroupMembers = async (
   groupId: string,
   requesterId: string,
-): Promise<Result<NewMember[]>> => {
+): Promise<Member[]> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
   const requesterRole = await fetchMemberRole(groupId, requesterId);
   if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
 
-  const members = await fetchGroupMembers(groupId);
-  return {
-    ok: true,
-    message: "Group members fetched successfully.",
-    data: members,
-  };
+  return fetchGroupMembers(groupId);
 };
 
-export const getUserGroups = async (
-  userId: string,
-): Promise<Result<GroupDetail[]>> => {
-  const groups = await fetchUserGroups(userId);
-  return { ok: true, message: "Groups fetched successfully.", data: groups };
+export const getUserGroups = (userId: string): Promise<Group[]> => {
+  return fetchUserGroups(userId);
 };
 
 export const updateLastSeen = async (
   groupId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -63,14 +54,12 @@ export const updateLastSeen = async (
   if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
 
   await updateSeen(groupId, requesterId);
-
-  return { ok: true, message: "Last seen updated." };
 };
 
 export const createGroup = async (
   groupName: string,
   userId: string,
-): Promise<Result<GroupDetail>> => {
+): Promise<Group> => {
   /**
    * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
    * Inside: return to commit, throw to rollback.
@@ -88,7 +77,7 @@ export const createGroup = async (
   );
 
   // for optimistic update on client side
-  const groupDetail: GroupDetail = {
+  const newGroup: Group = {
     group_id: result.group_id,
     name: groupName,
     member_count: 1,
@@ -97,18 +86,14 @@ export const createGroup = async (
     last_seen_at: new Date(),
   };
 
-  return {
-    ok: true,
-    data: groupDetail,
-    message: "Group created successfully.",
-  };
+  return newGroup;
 };
 
 export const changeGroupName = async (
   groupId: string,
   groupName: string,
   requester: string,
-): Promise<Result> => {
+): Promise<void> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -118,8 +103,6 @@ export const changeGroupName = async (
     throw new ForbiddenError("Only admins can change the group name");
 
   await updateGroupName(groupId, groupName);
-
-  return { ok: true, message: "Group name updated successfully." };
 };
 
 /**
@@ -132,7 +115,7 @@ export const addMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Result<NewMember>> => {
+): Promise<Member> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -141,7 +124,6 @@ export const addMember = async (
 
   const targetUserId = await fetchUserByDisplayId(displayId);
   if (!targetUserId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-  let data: NewMember;
   try {
     /**
      * insertMember may throw a unique constraint violation if the user
@@ -150,7 +132,7 @@ export const addMember = async (
      * the global error handler. Any other error is re-thrown as-is.
      */
 
-    data = await insertMember(groupId, targetUserId);
+    return await insertMember(groupId, targetUserId);
   } catch (error: unknown) {
     if (
       typeof error === "object" &&
@@ -164,8 +146,6 @@ export const addMember = async (
     }
     throw error;
   }
-
-  return { ok: true, data, message: "Member added to the group." };
 };
 
 /**
@@ -178,7 +158,7 @@ export const kickMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const { userId } = await resolveGroupAction(
     groupId,
     displayId,
@@ -197,8 +177,6 @@ export const kickMember = async (
 
   const deleted = await deleteMember(userId, groupId);
   if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-
-  return { ok: true, message: "You have been removed from the group." };
 };
 
 /**
@@ -217,7 +195,7 @@ export const kickMember = async (
 export const leaveMember = async (
   groupId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -245,10 +223,6 @@ export const leaveMember = async (
     if (memberCount === 1) {
       await deleteMember(requesterId, groupId, client);
       await deleteGroup(groupId, client);
-      return {
-        ok: true,
-        message: GROUP_SUCCESS.LEFT_GROUP,
-      };
     }
 
     // Admin with other members: ensure at least one other admin remains
@@ -271,8 +245,6 @@ export const leaveMember = async (
     // Regular members (or admins with co-admins) can leave freely
     const deleted = await deleteMember(requesterId, groupId, client);
     if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-
-    return { ok: true, message: GROUP_SUCCESS.LEFT_GROUP };
   });
 };
 
@@ -280,7 +252,7 @@ export const promoteMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const { userId } = await resolveGroupAction(
     groupId,
     displayId,
@@ -295,8 +267,6 @@ export const promoteMember = async (
 
   const promoted = await updateRole("admin", userId, groupId);
   if (!promoted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-
-  return { ok: true, message: "Member has been promoted to admin." };
 };
 
 /**
@@ -312,7 +282,7 @@ export const demoteMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const { userId } = await resolveGroupAction(
     groupId,
     displayId,
@@ -338,18 +308,14 @@ export const demoteMember = async (
     const demoted = await updateRole("member", userId, groupId, client);
     if (!demoted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
   });
-
-  return { ok: true, message: "Member has been demoted to regular member." };
 };
 
 export const deleteGroupById = async (
   groupId: string,
   requesterId: string,
-): Promise<Result> => {
+): Promise<void> => {
   const group = await fetchGroupById(groupId);
-  if (!group) {
-    return { ok: true, message: "Group already deleted." };
-  }
+  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
   const requesterRole = await fetchMemberRole(groupId, requesterId);
   if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
@@ -357,5 +323,4 @@ export const deleteGroupById = async (
     throw new ForbiddenError("Only admins can delete the group");
 
   await deleteGroup(groupId);
-  return { ok: true, message: "Group deleted successfully." };
 };

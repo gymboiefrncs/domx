@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { RequestHandler } from "express";
 import {
   addMember,
   changeGroupName,
@@ -8,100 +8,78 @@ import {
   updateLastSeen,
   deleteGroupById,
 } from "../group.services.js";
-import type { Params } from "../group.types.js";
+import type { GroupResponse, Params } from "../group.types.js";
+import type { Group, Member } from "@domx/shared";
 
-export const handleGetMembers = async (
-  req: Request<Params>,
-  res: Response,
-): Promise<void> => {
+export const handleGetMembers: RequestHandler<
+  Params,
+  GroupResponse<Member[]>
+> = async (req, res) => {
   const userId = req.user!.userId;
   const { groupId } = req.params;
-  const result = await getGroupMembers(groupId, userId);
+  const members = await getGroupMembers(groupId, userId);
   res.status(200).json({
-    success: result.ok,
-    message: result.message,
-    data: result.ok ? result.data : null,
+    data: members,
   });
 };
 
-export const handleGetGroups = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const handleGetGroups: RequestHandler<
+  Record<string, never>,
+  GroupResponse<Group[]>
+> = async (req, res) => {
   const userId = req.user!.userId;
-  const result = await getUserGroups(userId);
+  const groups = await getUserGroups(userId);
   res.status(200).json({
-    success: result.ok,
-    message: result.message,
-    data: result.ok ? result.data : null,
+    data: groups,
   });
 };
 
-export const handleUpdateSeen = async (
-  req: Request<Params>,
-  res: Response,
-): Promise<void> => {
+export const handleUpdateSeen: RequestHandler<Params> = async (req, res) => {
   const userId = req.user!.userId;
   const { groupId } = req.params;
-  const result = await updateLastSeen(groupId, userId);
-  res.status(200).json({
-    success: result.ok,
-    message: result.message,
-  });
+  await updateLastSeen(groupId, userId);
+  res.status(204).send();
 };
 
-export const handleCreateGroup = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const handleCreateGroup: RequestHandler<
+  Record<string, never>,
+  GroupResponse<Group>
+> = async (req, res) => {
   const userId = req.user!.userId;
-  const result = await createGroup(req.body.groupName, userId);
+  const newGroup = await createGroup(req.body.groupName, userId);
   res.status(201).json({
-    success: result.ok,
-    message: result.message,
-    data: result.ok ? result.data : null,
+    data: newGroup,
   });
 };
 
-export const handleChangeGroupName = async (
-  req: Request<Params>,
-  res: Response,
-): Promise<void> => {
+export const handleChangeGroupName: RequestHandler<Params> = async (
+  req,
+  res,
+) => {
   const { groupId } = req.params;
   const { groupName } = req.body;
   const requesterId = req.user!.userId;
 
-  const result = await changeGroupName(groupId, groupName, requesterId);
-  res.status(200).json({
-    success: result.ok,
-    message: result.message,
-  });
+  await changeGroupName(groupId, groupName, requesterId);
+  res.status(204).send();
 };
 
-export const handleAddMember = async (
-  req: Request<Params>,
-  res: Response,
-): Promise<void> => {
+export const handleAddMember: RequestHandler<
+  Params,
+  GroupResponse<Member>
+> = async (req, res) => {
   const { displayId, groupId } = req.params;
   const requesterId = req.user!.userId;
 
-  const result = await addMember(groupId, displayId, requesterId);
-  res.status(200).json({
-    success: result.ok,
-    message: result.message,
-    data: result.ok ? result.data : null,
+  const newMember = await addMember(groupId, displayId, requesterId);
+  res.status(201).json({
+    data: newMember,
   });
 };
 
-export const handleDeleteGroup = async (
-  req: Request<Params>,
-  res: Response,
-): Promise<void> => {
+export const handleDeleteGroup: RequestHandler<Params> = async (req, res) => {
   const { groupId } = req.params;
   const requesterId = req.user!.userId;
-  const result = await deleteGroupById(groupId, requesterId);
-  res.status(200).json({
-    success: result.ok,
-    message: result.message,
-  });
+  await deleteGroupById(groupId, requesterId);
+  res.status(204).send();
 };

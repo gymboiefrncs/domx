@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import type { NewMember } from "@domx/shared";
+import type { Member } from "@domx/shared";
 import {
   fetchGroupMembers,
   AddMemberModal,
@@ -44,7 +44,7 @@ export const GroupSettingsPage = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const recentGroupDeletedEventsRef = useRef<Set<string>>(new Set());
   const [modal, setModal] = useState<boolean>(false);
-  const [members, setMembers] = useState<NewMember[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const currentMemberRole = members.find(
     (member) => member.display_id === user?.display_id,
   )?.role;
@@ -510,7 +510,7 @@ export const GroupSettingsPage = () => {
           {modal && (
             <AddMemberModal
               onClose={() => setModal(false)}
-              onSuccess={(newMember: NewMember) => {
+              onSuccess={(newMember: Member) => {
                 setModal(false);
                 setMembers((prev) => {
                   if (

@@ -6,7 +6,7 @@ import {
   useState,
   type JSX,
 } from "react";
-import type { GroupDetail } from "@domx/shared";
+import type { Group } from "@domx/shared";
 import type { GroupContextType } from "@/features/groups/types";
 import { fetchMyGroups } from "@/features/groups/index";
 import { toast } from "sonner";
@@ -21,12 +21,12 @@ export function GroupProvider({
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const [groups, setGroups] = useState<GroupDetail[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { user } = useAuthContext();
   const recentMemberAddedEventsRef = useRef<Set<string>>(new Set());
 
-  const addGroup = (data: GroupDetail) => {
+  const addGroup = (data: Group) => {
     setGroups((prev) => {
       const existingIndex = prev.findIndex((g) => g.group_id === data.group_id);
       if (existingIndex >= 0) {
@@ -49,7 +49,7 @@ export function GroupProvider({
     setGroups((prev) => prev.filter((g) => g.group_id !== groupId));
   };
 
-  const setGroupRoleInList = (groupId: string, role: GroupDetail["role"]) => {
+  const setGroupRoleInList = (groupId: string, role: Group["role"]) => {
     setGroups((prev) =>
       prev.map((g) => (g.group_id === groupId ? { ...g, role } : g)),
     );

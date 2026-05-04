@@ -1,9 +1,9 @@
-import type { GroupDetail, NewMember } from "@domx/shared";
+import type { Group, Member } from "@domx/shared";
 
 export type GroupContextType = {
-  groups: GroupDetail[];
+  groups: Group[];
   loading: boolean;
-  addGroup: (data: GroupDetail) => void;
+  addGroup: (data: Group) => void;
   renameGroupInList: (groupId: string, newName: string) => void;
   deleteGroupInList: (groupId: string) => void;
   incrementMemberCount: (groupId: string) => void;
@@ -17,10 +17,10 @@ export type CreateGroupModalProps = {
 
 export type AddMemberProps = {
   onClose: () => void;
-  onSuccess: (newMember: NewMember) => void;
+  onSuccess: (newMember: Member) => void;
 };
 
 export type GroupCardProps = {
-  group: GroupDetail;
+  group: Group;
   onClick: (groupId: string) => void;
 };

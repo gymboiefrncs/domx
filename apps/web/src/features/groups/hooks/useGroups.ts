@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import { useGroupContext } from "@/providers/GroupContext";
-import type { NewMember } from "@domx/shared";
+import type { Member } from "@domx/shared";
 
 export const useGroups = () => {
   const TOAST_DURATION = 2000;
@@ -115,7 +115,7 @@ export const useGroups = () => {
   };
 
   const addMember = async (
-    onSuccess: (newMember: NewMember) => void,
+    onSuccess: (newMember: Member) => void,
     groupId: string,
     displayId: string,
   ): Promise<void> => {

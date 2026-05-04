@@ -1,9 +1,9 @@
 import { fetchWithAuth } from "@/shared/lib/fetchWithAuth";
-import type { GroupDetail, NewMember } from "@domx/shared";
+import type { Group, Member } from "@domx/shared";
 import { API_BASE_URL } from "@/shared/config";
 import { getApiErrorMessage } from "@/shared/lib/errors";
 
-export const createGroup = async (name: string): Promise<GroupDetail> => {
+export const createGroup = async (name: string): Promise<Group> => {
   const res = await fetchWithAuth(`${API_BASE_URL}/groups`, {
     method: "POST",
     headers: {
@@ -31,7 +31,7 @@ export const changeGroupName = async (groupId: string, newName: string) => {
   return data;
 };
 
-export const fetchMyGroups = async (): Promise<GroupDetail[]> => {
+export const fetchMyGroups = async (): Promise<Group[]> => {
   const res = await fetchWithAuth(`${API_BASE_URL}/groups`, {
     method: "GET",
     credentials: "include",
@@ -45,7 +45,7 @@ export const fetchMyGroups = async (): Promise<GroupDetail[]> => {
 export const addMemberToGroup = async (
   groupId: string,
   displayId: string,
-): Promise<NewMember> => {
+): Promise<Member> => {
   const res = await fetchWithAuth(
     `${API_BASE_URL}/groups/${groupId}/add/${displayId}`,
     {

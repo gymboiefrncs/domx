@@ -1,5 +1,5 @@
 import { wsClient, type WsOutgoingMessage } from "@/shared/lib/ws/wsClient";
-import type { NewMember } from "@domx/shared";
+import type { Member } from "@domx/shared";
 
 type GroupWsOutgoingMessage = Extract<
   WsOutgoingMessage,
@@ -12,7 +12,7 @@ type GroupWsOutgoingMessage = Extract<
 >;
 
 type GroupWsIncomingMessage =
-  | { type: "memberAdded"; message?: string; data: NewMember }
+  | { type: "memberAdded"; message?: string; data: Member }
   | {
       type: "memberPromoted";
       message?: string;
@@ -115,7 +115,7 @@ export const promoteMemberInGroup = async (
 export const addMemberInGroup = async (
   groupId: string,
   displayId: string,
-): Promise<NewMember> =>
+): Promise<Member> =>
   sendGroupWsRequest(
     {
       type: "addMember",

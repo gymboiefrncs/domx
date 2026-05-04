@@ -5,7 +5,7 @@ import {
   GroupCard,
 } from "@/features/groups/index";
 import { useNavigate } from "react-router-dom";
-import type { GroupDetail } from "@domx/shared";
+import type { Group } from "@domx/shared";
 import { useLogout } from "@/features/auth/index";
 import { PageLoader } from "@/shared/components/PageLoader";
 
@@ -55,7 +55,7 @@ export const GroupPage = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 items-stretch gap-2.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
-          {groups.map((group: GroupDetail) => (
+          {groups.map((group: Group) => (
             <GroupCard
               key={group.group_id}
               group={group}

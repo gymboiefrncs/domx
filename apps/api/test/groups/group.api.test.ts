@@ -7,9 +7,7 @@ import crypto from "crypto";
 
 const ALREADY_A_MEMBER = "User is already a member of this group.";
 const GROUP_NOT_FOUND = GROUP_ERROR.NOT_FOUND;
-const MEMBER_ADDED = "Member added to the group.";
 const NOT_A_GROUP_MEMBER = GROUP_ERROR.NOT_A_MEMBER;
-const SUCCESSFULLY_CREATED_GROUP_MESSAGE = "Group created successfully.";
 const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
@@ -95,8 +93,6 @@ describe("Group API", () => {
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual({
-        success: true,
-        message: SUCCESSFULLY_CREATED_GROUP_MESSAGE,
         data: expect.objectContaining({
           group_id: expect.any(String),
           last_seen_at: expect.any(String),
@@ -194,16 +190,14 @@ describe("Group API", () => {
         .post(`/api/v1/groups/${groupId}/add/${targetDisplayId}`)
         .set("Cookie", memberCookies as string[]);
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(201);
       expect(res.body).toEqual({
-        success: true,
         data: expect.objectContaining({
           display_id: targetDisplayId,
           group_id: expect.any(String),
           role: "member",
           username: "targetuser",
         }),
-        message: MEMBER_ADDED,
       });
 
       const members = await pool.query(

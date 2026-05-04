@@ -193,7 +193,7 @@ describe("Verification Service", () => {
 
   describe("Resend OTP", () => {
     it("resends OTP to an unverified user", async () => {
-      const res = await resendOtp(TEST_EMAIL);
+      const res = await resendOtp({ email: TEST_EMAIL });
       expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
 
@@ -206,9 +206,9 @@ describe("Verification Service", () => {
     });
 
     it("prevents resending OTP too soon (cooldown)", async () => {
-      await resendOtp(TEST_EMAIL);
+      await resendOtp({ email: TEST_EMAIL });
 
-      const res = await resendOtp(TEST_EMAIL);
+      const res = await resendOtp({ email: TEST_EMAIL });
       expect(res.ok).toBe(true);
       expect(res.message).toBe(COOLDOWN_MESSAGE);
     });
@@ -218,13 +218,13 @@ describe("Verification Service", () => {
         userId,
       ]);
 
-      const res = await resendOtp(TEST_EMAIL);
+      const res = await resendOtp({ email: TEST_EMAIL });
       expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
     });
 
     it("returns success even if email does not exist", async () => {
-      const res = await resendOtp("unknown@example.com");
+      const res = await resendOtp({ email: "unknown@example.com" });
       expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
     });

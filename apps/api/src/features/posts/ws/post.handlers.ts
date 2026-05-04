@@ -30,17 +30,11 @@ export const handleCreatePost = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { title, body } = data as { title: string; body: string };
-  const result = await createPost(title, body, socket.userId, socket.groupId);
-
-  if (!result.ok) {
-    return socket.send(
-      JSON.stringify({ type: "error", message: result.message }),
-    );
-  }
+  const post = await createPost(title, body, socket.userId, socket.groupId);
 
   const room = rooms.get(socket.groupId);
   room?.forEach((client) => {
-    client.send(JSON.stringify({ type: "newMessage", data: result.data }));
+    client.send(JSON.stringify({ type: "newMessage", data: post }));
   });
 };
 
@@ -54,7 +48,7 @@ export const handleEditPost = async (
     title: string;
     body: string;
   };
-  const result = await editPost(
+  const updatedPost = await editPost(
     title,
     body,
     socket.userId,
@@ -62,15 +56,9 @@ export const handleEditPost = async (
     postId,
   );
 
-  if (!result.ok) {
-    return socket.send(
-      JSON.stringify({ type: "error", message: result.message }),
-    );
-  }
-
   const room = rooms.get(socket.groupId);
   room?.forEach((client) => {
-    client.send(JSON.stringify({ type: "postEdited", data: result.data }));
+    client.send(JSON.stringify({ type: "postEdited", data: updatedPost }));
   });
 };
 
@@ -80,12 +68,8 @@ export const handleDeletePost = async (
   rooms: Map<string, Set<ChatSocket>>,
 ) => {
   const { postId } = data as { postId: string };
-  const result = await removePost(postId, socket.groupId, socket.userId);
-  if (!result.ok) {
-    return socket.send(
-      JSON.stringify({ type: "error", message: result.message }),
-    );
-  }
+  await removePost(postId, socket.groupId, socket.userId);
+
   const room = rooms.get(socket.groupId);
   room?.forEach((client) => {
     client.send(JSON.stringify({ type: "postDeleted", data: { postId } }));

@@ -13,7 +13,7 @@ export const fetchAllPostsByGroupId = async (
   WHERE p.group_id = $1`;
   const values = [groupId];
 
-  const result = await pool.query(query, values);
+  const result = await pool.query<PostDetails>(query, values);
   return result.rows;
 };
 
@@ -33,26 +33,26 @@ export const insertPost = async (
   FROM inserted_post p
   JOIN users u ON p.user_id = u.id`;
   const values = [title, body, userId, groupId];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  const result = await pool.query<PostDetails>(query, values);
+  return result.rows[0] as PostDetails;
 };
 
 export const fetchPostById = async (
   postId: string,
   groupId: string,
-): Promise<EditPost | undefined> => {
+): Promise<EditPost | null> => {
   const query = `SELECT id, user_id FROM posts WHERE id = $1 AND group_id = $2`;
   const values = [postId, groupId];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  const result = await pool.query<EditPost>(query, values);
+  return result.rows[0] ?? null;
 };
 
 export const updatePost = async (
-  title: string,
-  body: string,
   postId: string,
   groupId: string,
-): Promise<PostDetails> => {
+  title?: string,
+  body?: string,
+): Promise<PostDetails | null> => {
   const query = `
   WITH updated_post AS (
     UPDATE posts
@@ -66,8 +66,8 @@ export const updatePost = async (
   FROM updated_post p
   JOIN users u ON p.user_id = u.id`;
   const values = [title, body, postId, groupId];
-  const result = await pool.query(query, values);
-  return result.rows[0];
+  const result = await pool.query<PostDetails>(query, values);
+  return result.rows[0] ?? null;
 };
 
 export const deletePost = async (

@@ -1,8 +1,8 @@
 import type { Post } from "@domx/shared";
 
-export type PostParams = { groupId: string; postId: string };
+export type PostParams = { groupId: string };
 export type EditPost = Pick<Post, "id" | "user_id">;
-export type Message = {
+export interface Message {
   id: string;
   groupId: string;
   userId: string;
@@ -11,10 +11,14 @@ export type Message = {
   username: string;
   displayId: string;
   createdAt: string;
-};
+}
 
-export type ChatPayload = {
+export interface ChatPayload {
   groupId: string;
   title: string;
   body: string;
-};
+}
+
+export interface PostResponse<T> {
+  data: T;
+}

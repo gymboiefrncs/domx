@@ -22,13 +22,11 @@ export const verificationHandler: RequestHandler<
       maxAge: AUTH_TOKEN.INCOMPLETE_SIGNUP_MAX_AGE_MS,
     });
     res.status(200).json({
-      success: true,
       message: result.message,
     });
     return;
   }
   res.status(400).json({
-    success: false,
     message: result.errMessage,
   });
 };
@@ -40,7 +38,6 @@ export const resendOtpHandler: RequestHandler<
 > = async (req, res) => {
   const result = await resendOtp(req.body);
   res.status(200).json({
-    success: result.ok,
     message: result.message,
   });
 };

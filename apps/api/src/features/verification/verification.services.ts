@@ -123,13 +123,11 @@ export const resendOtp = async (
 
     if (!user)
       return {
-        ok: true as const,
         reason: "USER_NOT_FOUND" as const,
         message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
     if (user.is_verified)
       return {
-        ok: true as const,
         reason: "ALREADY_VERIFIED" as const,
         email: user.email,
         message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
@@ -146,7 +144,6 @@ export const resendOtp = async (
         VERIFICATION_POLICY.OTP_COOLDOWN_MS;
     if (isTooSoon) {
       return {
-        ok: true as const,
         reason: "COOLDOWN" as const,
         message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
       };
@@ -156,7 +153,6 @@ export const resendOtp = async (
     await createSignupOtp(user.id, hashedOTP, expiresAt, client);
 
     return {
-      ok: true as const,
       reason: "RESENT_OTP" as const,
       email: user.email,
       message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,

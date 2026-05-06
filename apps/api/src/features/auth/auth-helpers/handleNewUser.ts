@@ -27,7 +27,6 @@ export const handleNewUser = async (
      * Intentionally return success and step aside.
      */
     return {
-      ok: true as const,
       reason: "UNIQUE_EMAIL_VIOLATION" as const,
       message: VERIFICATION_SUCCESS.EMAIL_SENT,
     };
@@ -36,7 +35,6 @@ export const handleNewUser = async (
   await createSignupOtp(newUser.id, hashedOTP, expiresAt, client);
 
   return {
-    ok: true as const,
     reason: "NEW_USER" as const,
     email: newUser.email,
     message: VERIFICATION_SUCCESS.EMAIL_SENT,

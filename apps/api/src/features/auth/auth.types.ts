@@ -36,13 +36,12 @@ export interface UserInfo {
  * without risking breaking any control flow logic.
  */
 export type RegistrationResult =
-  | { ok: true; reason: "NEW_USER"; email: string; message: string }
-  | { ok: true; reason: "UNIQUE_EMAIL_VIOLATION"; message: string }
-  | { ok: true; reason: "RESENT_OTP"; email: string; message: string }
-  | { ok: true; reason: "ALREADY_VERIFIED"; email: string; message: string }
-  | { ok: true; reason: "COOLDOWN"; message: string }
+  | { reason: "NEW_USER"; email: string; message: string }
+  | { reason: "UNIQUE_EMAIL_VIOLATION"; message: string }
+  | { reason: "RESENT_OTP"; email: string; message: string }
+  | { reason: "ALREADY_VERIFIED"; email: string; message: string }
+  | { reason: "COOLDOWN"; message: string }
   | {
-      ok: true;
       reason: "INCOMPLETE_SIGNUP";
       message: string;
       data: { setInfoToken: string };
@@ -60,7 +59,6 @@ export interface Tokens {
   refreshToken: string;
 }
 export interface AuthResponse {
-  success: boolean;
   message: string;
 }
 

@@ -33,14 +33,12 @@ export const signupHandler: RequestHandler<
     });
     // message is used by frontend to jump straight into the right step of the signup flow
     res.status(200).json({
-      success: true,
       message: result.reason,
     });
     return;
   }
 
   res.status(201).json({
-    success: true,
     message: result.message,
   });
 };
@@ -53,7 +51,7 @@ export const loginHandler: RequestHandler<
   const { refreshToken, accessToken } = await loginUser(req.body);
   setCookies(refreshToken, accessToken, res);
 
-  res.status(200).json({ success: true, message: "Login successful" });
+  res.status(204).send();
 };
 
 export const rotateTokensHandler: RequestHandler<
@@ -65,7 +63,7 @@ export const rotateTokensHandler: RequestHandler<
   const { accessToken, refreshToken } = await rotateTokens(oldRefreshToken);
   setCookies(refreshToken, accessToken, res);
 
-  res.status(200).json({ success: true, message: "Token refreshed" });
+  res.status(204).send();
 };
 
 export const logoutHandler: RequestHandler<
@@ -76,10 +74,7 @@ export const logoutHandler: RequestHandler<
   await logoutUser(refreshToken);
   res.clearCookie("refreshToken", clearCookieOptions);
   res.clearCookie("accessToken", clearCookieOptions);
-  res.status(200).json({
-    success: true,
-    message: "You have been logged out successfully.",
-  });
+  res.status(204).send();
 };
 
 export const setInfoHandler: RequestHandler<
@@ -98,8 +93,5 @@ export const setInfoHandler: RequestHandler<
 
   res.clearCookie("setInfoToken", clearCookieOptions);
 
-  res.status(200).json({
-    success: true,
-    message: "Information set successfully",
-  });
+  res.status(204).send();
 };

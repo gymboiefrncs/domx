@@ -49,7 +49,6 @@ export const handleUnverifiedUser = async (
 
   if (isTooSoon) {
     return {
-      ok: true as const,
       reason: "COOLDOWN" as const,
       message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
     };
@@ -60,7 +59,6 @@ export const handleUnverifiedUser = async (
   await createSignupOtp(id, hashedOTP, expiresAt, client);
 
   return {
-    ok: true as const,
     reason: "RESENT_OTP" as const,
     email: email,
     message: VERIFICATION_SUCCESS.EMAIL_SENT,

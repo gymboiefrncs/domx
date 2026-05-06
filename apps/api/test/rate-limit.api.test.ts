@@ -103,7 +103,7 @@ describe("Rate limits across all API modules", () => {
     await runLimiterUntilBlocked(
       verificationLimiter,
       2,
-      "Too many requests, please try again after 3 minutes",
+      "Too many requests, please try again after 2 minutes",
       "verification-user",
     );
   });

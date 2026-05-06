@@ -2,7 +2,6 @@ import {
   getLatestOTP,
   deleteOtp,
   createSignupOtp,
-  VERIFICATION_ERROR,
   VERIFICATION_POLICY,
   VERIFICATION_SUCCESS,
 } from "@api/features/verification/index.js";
@@ -49,8 +48,7 @@ export const handleUnverifiedUser = async (
 
   if (isTooSoon) {
     return {
-      reason: "COOLDOWN" as const,
-      message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
+      message: VERIFICATION_SUCCESS.EMAIL_SENT,
     };
   }
 

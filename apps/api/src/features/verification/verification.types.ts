@@ -28,8 +28,7 @@ export type TransactionResult =
 export type ResendOtpResult =
   | { reason: "ALREADY_VERIFIED"; email: string; message: string }
   | { reason: "RESENT_OTP"; email: string; message: string }
-  | { reason: "COOLDOWN"; message: string }
-  | { reason: "USER_NOT_FOUND"; message: string };
+  | { message: string };
 
 export interface VerificationResponse {
   message: string;

@@ -24,7 +24,7 @@ export const signupHandler: RequestHandler<
   SignupRequest
 > = async (req, res) => {
   const result = await registerUser(req.body);
-  if (result.reason === "INCOMPLETE_SIGNUP") {
+  if ("reason" in result && result.reason === "INCOMPLETE_SIGNUP") {
     res.cookie("setInfoToken", result.data.setInfoToken, {
       httpOnly: true,
       secure: config.server.nodeEnv === "production",

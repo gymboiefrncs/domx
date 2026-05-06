@@ -2,16 +2,12 @@ import { describe, vi, it, expect, beforeEach } from "vitest";
 import { registerUser } from "@api/features/auth/auth.services.js";
 import { pool } from "@api/shared/db/db.js";
 import { fetchUserByEmail } from "@api/features/auth/auth.repositories.js";
-import {
-  VERIFICATION_ERROR,
-  VERIFICATION_SUCCESS,
-} from "@api/features/verification/verification.constants.js";
+import { VERIFICATION_SUCCESS } from "@api/features/verification/verification.constants.js";
 import { setInfo } from "@api/features/auth/auth.setInfo.js";
 import bcrypt from "bcrypt";
 
 const INFO_SET_FAILED_MESSAGE = "Failed to set information";
 const EMAIL_MESSAGE = VERIFICATION_SUCCESS.EMAIL_SENT;
-const COOLDOWN_MESSAGE = VERIFICATION_ERROR.COOLDOWN_ACTIVE;
 
 vi.mock("@api/shared/mailer/sendEmail.js", () => ({
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
@@ -37,7 +33,6 @@ describe("Auth integration - Signup", () => {
     );
 
     expect(result).toEqual({
-      ok: true,
       reason: "NEW_USER",
       email: signupData.email,
       message: EMAIL_MESSAGE,
@@ -92,9 +87,7 @@ describe("Auth integration - Signup", () => {
     );
 
     expect(result).toEqual({
-      ok: true,
-      reason: "COOLDOWN",
-      message: COOLDOWN_MESSAGE,
+      message: EMAIL_MESSAGE,
     });
     expect(currentOtp.rows[0].id).toBe(firstOtp.rows[0].id);
     expect(currentOtp.rows[0].created_at).toEqual(firstOtp.rows[0].created_at);
@@ -125,7 +118,6 @@ describe("Auth integration - Signup", () => {
     );
 
     expect(result).toEqual({
-      ok: true,
       reason: "RESENT_OTP",
       email: signupData.email,
       message: EMAIL_MESSAGE,
@@ -155,7 +147,9 @@ describe("Auth integration - Signup", () => {
       registerUser(signupData),
     ]);
 
-    const reasons = [result1.reason, result2.reason];
+    const reasons = [result1, result2].flatMap((result) =>
+      "reason" in result ? [result.reason] : [],
+    );
     const { rows } = await pool.query(
       "SELECT * FROM email_verification WHERE user_id = $1 AND used_at IS NULL",
       [user?.id],
@@ -164,7 +158,7 @@ describe("Auth integration - Signup", () => {
     // The FOR UPDATE lock in fetchUserForSignup serializes these requests.
     // One will rotate the OTP, the other will hit the cooldown guard.
     expect(reasons).toContain("RESENT_OTP");
-    expect(reasons).toContain("COOLDOWN");
+    expect(reasons).toHaveLength(1);
     expect(rows).toHaveLength(1);
   });
 
@@ -187,13 +181,13 @@ describe("Auth integration - Signup", () => {
     // System invariants: exactly one user, exactly one OTP, no errors.
     // The exact reason per call depends on scheduling:
     //   - If both fetch null → both take handleNewUser → both return NEW_USER
-    //   - If Request A commits before Request B fetches → Request B sees the user → COOLDOWN
+    //   - If Request A commits before Request B fetches → Request B sees the user → generic ack
     expect(users.rows).toHaveLength(1);
     expect(otp.rows).toHaveLength(1);
-    expect(result1.ok).toBe(true);
-    expect(result2.ok).toBe(true);
 
-    const reasons = [result1.reason, result2.reason];
+    const reasons = [result1, result2].flatMap((result) =>
+      "reason" in result ? [result.reason] : [],
+    );
     expect(reasons).toContain("NEW_USER");
     expect(reasons).toContain("UNIQUE_EMAIL_VIOLATION");
   });

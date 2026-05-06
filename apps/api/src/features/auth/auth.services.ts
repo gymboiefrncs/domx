@@ -89,7 +89,10 @@ export const registerUser = async (
    * before the transaction is committed, which could lead to
    * confusion if ever the transaction rolls back after the email is sent
    */
-  if (result.reason === "NEW_USER" || result.reason === "RESENT_OTP") {
+  if (
+    "reason" in result &&
+    (result.reason === "NEW_USER" || result.reason === "RESENT_OTP")
+  ) {
     if (config.server.nodeEnv === "development") {
       console.log(`Verification OTP for ${result.email}: ${otpData.otp})`);
     } else {
@@ -99,7 +102,7 @@ export const registerUser = async (
     }
   }
 
-  if (result.reason === "ALREADY_VERIFIED") {
+  if ("reason" in result && result.reason === "ALREADY_VERIFIED") {
     if (config.server.nodeEnv === "development") {
       console.log(
         `Attempt to register already verified email ${result.email}. Sent "already registered" email.`,

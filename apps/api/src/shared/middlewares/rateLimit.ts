@@ -147,6 +147,6 @@ export const profileLimiter: RequestHandler = createLimiter({
 export const verificationLimiter: RequestHandler = createLimiter({
   keyPrefix: "verification",
   prodMax: 2,
-  windowMs: 3 * 60 * 1000,
-  message: "Too many requests, please try again after 3 minutes",
+  windowMs: 2 * 60 * 1000,
+  message: "Too many requests, please try again after 2 minutes",
 });

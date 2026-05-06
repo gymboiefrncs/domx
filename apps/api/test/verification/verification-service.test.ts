@@ -10,7 +10,6 @@ import {
   VERIFICATION_SUCCESS,
 } from "@api/features/verification/verification.constants.js";
 
-const COOLDOWN_MESSAGE = VERIFICATION_ERROR.COOLDOWN_ACTIVE;
 const OTP_MESSAGE_FAIL = VERIFICATION_ERROR.OTP_INVALID_OR_EXPIRED;
 const OTP_MESSAGE_SUCCESS = VERIFICATION_SUCCESS.OTP_VERIFIED;
 const RESEND_OTP_MESSAGE = VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED;
@@ -194,7 +193,6 @@ describe("Verification Service", () => {
   describe("Resend OTP", () => {
     it("resends OTP to an unverified user", async () => {
       const res = await resendOtp({ email: TEST_EMAIL });
-      expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
 
       const otpRow = await pool.query(
@@ -209,8 +207,7 @@ describe("Verification Service", () => {
       await resendOtp({ email: TEST_EMAIL });
 
       const res = await resendOtp({ email: TEST_EMAIL });
-      expect(res.ok).toBe(true);
-      expect(res.message).toBe(COOLDOWN_MESSAGE);
+      expect(res.message).toBe(RESEND_OTP_MESSAGE);
     });
 
     it("does not resend OTP if user is already verified", async () => {
@@ -219,13 +216,11 @@ describe("Verification Service", () => {
       ]);
 
       const res = await resendOtp({ email: TEST_EMAIL });
-      expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
     });
 
     it("returns success even if email does not exist", async () => {
       const res = await resendOtp({ email: "unknown@example.com" });
-      expect(res.ok).toBe(true);
       expect(res.message).toBe(RESEND_OTP_MESSAGE);
     });
   });

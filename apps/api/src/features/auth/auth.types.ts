@@ -40,7 +40,7 @@ export type RegistrationResult =
   | { reason: "UNIQUE_EMAIL_VIOLATION"; message: string }
   | { reason: "RESENT_OTP"; email: string; message: string }
   | { reason: "ALREADY_VERIFIED"; email: string; message: string }
-  | { reason: "COOLDOWN"; message: string }
+  | { message: string }
   | {
       reason: "INCOMPLETE_SIGNUP";
       message: string;

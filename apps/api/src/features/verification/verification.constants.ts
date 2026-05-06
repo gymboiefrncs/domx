@@ -13,5 +13,4 @@ export const VERIFICATION_SUCCESS = {
 
 export const VERIFICATION_ERROR = {
   OTP_INVALID_OR_EXPIRED: "OTP is invalid or expired",
-  COOLDOWN_ACTIVE: "Please wait before requesting another code.",
 } as const;

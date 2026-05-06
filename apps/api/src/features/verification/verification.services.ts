@@ -123,7 +123,6 @@ export const resendOtp = async (
 
     if (!user)
       return {
-        reason: "USER_NOT_FOUND" as const,
         message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
     if (user.is_verified)
@@ -144,8 +143,7 @@ export const resendOtp = async (
         VERIFICATION_POLICY.OTP_COOLDOWN_MS;
     if (isTooSoon) {
       return {
-        reason: "COOLDOWN" as const,
-        message: VERIFICATION_ERROR.COOLDOWN_ACTIVE,
+        message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
     }
 
@@ -165,12 +163,12 @@ export const resendOtp = async (
    * before the transaction is committed, which could lead to
    * confusion if ever the transaction rolls back after the email is sent
    */
-  if (result.reason === "RESENT_OTP") {
+  if ("reason" in result && result.reason === "RESENT_OTP") {
     sendVerificationEmail(result.email, otp).catch((err) => {
       console.error("Failed to send verification email:", err);
     });
   }
-  if (result.reason === "ALREADY_VERIFIED") {
+  if ("reason" in result && result.reason === "ALREADY_VERIFIED") {
     sendAlreadyRegisteredEmail(result.email).catch((err) => {
       console.error("Failed to send already registered email:", err);
     });

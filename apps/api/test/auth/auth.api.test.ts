@@ -8,7 +8,6 @@ const TEST_OTP = "123456";
 const TEST_PASSWORD = "Newpassword123_";
 const TEST_USERNAME = "testuser";
 const signupData = { email: "test@example.com" };
-const INFO_SET_SUCCESS_MESSAGE = "Information set successfully";
 const INFO_SET_FAILED_MESSAGE = "Failed to set information";
 const EMAIL_MESSAGE = VERIFICATION_SUCCESS.EMAIL_SENT;
 const OTP_MESSAGE_SUCCESS = VERIFICATION_SUCCESS.OTP_VERIFIED;
@@ -83,7 +82,7 @@ describe("Auth API", () => {
         .send(signupData);
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual({ success: true, message: EMAIL_MESSAGE });
+      expect(res.body).toEqual({ message: EMAIL_MESSAGE });
     });
 
     it("verifies email with correct OTP", async () => {
@@ -94,7 +93,6 @@ describe("Auth API", () => {
         .send({ email: signupData.email, otp: TEST_OTP });
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
       expect(res.body.message).toBe(OTP_MESSAGE_SUCCESS);
       expect(Array.isArray(res.headers["set-cookie"])).toBe(true);
     });
@@ -115,11 +113,7 @@ describe("Auth API", () => {
         .post("/api/v1/auth/set-info")
         .set("Cookie", verifyCookies)
         .send({ password: TEST_PASSWORD, username: TEST_USERNAME });
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual({
-        success: true,
-        message: INFO_SET_SUCCESS_MESSAGE,
-      });
+      expect(res.status).toBe(204);
     });
 
     it("logs in and sets HttpOnly cookies", async () => {
@@ -129,11 +123,7 @@ describe("Auth API", () => {
         .post("/api/v1/auth/login")
         .send({ email: signupData.email, password: TEST_PASSWORD });
 
-      expect(loginRes.status).toBe(200);
-      expect(loginRes.body).toEqual({
-        success: true,
-        message: "Login successful",
-      });
+      expect(loginRes.status).toBe(204);
 
       const cookies = loginRes.headers["set-cookie"];
       if (Array.isArray(cookies)) {
@@ -211,14 +201,10 @@ describe("Auth API", () => {
 
       const statuses = [res1.status, res2.status];
 
-      expect(statuses).toContain(200);
+      expect(statuses).toContain(204);
       expect(statuses).toContain(400);
 
       const messages = [res1.body, res2.body];
-      expect(messages).toContainEqual({
-        success: true,
-        message: INFO_SET_SUCCESS_MESSAGE,
-      });
       expect(messages).toContainEqual({
         errors: [{ message: INFO_SET_FAILED_MESSAGE }],
       });
@@ -292,8 +278,7 @@ describe("Auth API", () => {
         .post("/api/v1/auth/refresh")
         .set("Cookie", cookies);
 
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual({ success: true, message: "Token refreshed" });
+      expect(res.status).toBe(204);
 
       const newCookies = res.headers["set-cookie"];
       if (Array.isArray(newCookies)) {

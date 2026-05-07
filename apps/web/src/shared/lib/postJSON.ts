@@ -4,8 +4,8 @@ import { getApiErrorMessage } from "@/shared/lib/errors";
 
 export const postJSON = async (
   path: string,
-  data: object,
-): Promise<ApiResponse> => {
+  data?: object,
+): Promise<ApiResponse | undefined> => {
   const result = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
@@ -14,10 +14,13 @@ export const postJSON = async (
     credentials: "include",
     body: JSON.stringify(data),
   });
+
+  if (result.status === 204) return;
+
   const resultData = await result.json();
   if (!result.ok) {
     throw new Error(getApiErrorMessage(resultData));
   }
 
-  return resultData;
+  return resultData as ApiResponse;
 };

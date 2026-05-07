@@ -7,7 +7,6 @@ export const handleIncompleteSignup = async (
 ): Promise<RegistrationResult> => {
   const setInfoToken = await generateSetInfoToken(userId);
   return {
-    ok: true,
     message:
       "Incomplete signup. Please set your username and password to complete the registration.",
     reason: "INCOMPLETE_SIGNUP",

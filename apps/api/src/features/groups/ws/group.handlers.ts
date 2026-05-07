@@ -10,7 +10,7 @@ import type { ChatSocket } from "@api/shared/types/ws.js";
 import { fetchUserByDisplayId } from "../group.repositories.js";
 import { broadcastToGroup } from "../group-helper.js";
 import { sendToUserSockets } from "@api/shared/ws/socketRegistry.js";
-import { getProfile } from "@api/features/profile/profile.repositories.js";
+import { fetchProfile } from "@api/features/profile/index.js";
 
 export const handleAddMember = async (
   data: unknown,
@@ -89,7 +89,7 @@ export const handleLeaveGroup = async (
 ) => {
   const { groupId } = data as { groupId: string };
   await leaveMember(groupId, socket.userId);
-  const profile = await getProfile(socket.userId);
+  const profile = await fetchProfile(socket.userId);
 
   const payload = JSON.stringify({
     type: "groupLeft",

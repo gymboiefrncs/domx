@@ -65,7 +65,7 @@ export const useSignup = (): SignupState => {
     setLoading(true);
     try {
       const result = await signup(email);
-      if (result.success && result.message === "INCOMPLETE_SIGNUP") {
+      if (result && result.message === "INCOMPLETE_SIGNUP") {
         navigate("/setup-profile", { replace: true });
         return;
       }
@@ -92,7 +92,9 @@ export const useResendOTP = (): ResendOTPState => {
     setLoading(true);
     try {
       const response = await resendOTP(email);
-      toast.success(response.message || "OTP resent successfully");
+      toast.success(
+        (response && response.message) || "OTP resent successfully",
+      );
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {

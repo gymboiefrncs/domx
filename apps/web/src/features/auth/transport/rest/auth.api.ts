@@ -1,43 +1,29 @@
-import { fetchWithAuth } from "@/shared/lib/fetchWithAuth";
 import { postJSON } from "@/shared/lib/postJSON";
 import type { ApiResponse } from "@/shared/types";
-import { API_BASE_URL } from "@/shared/config";
-import { getApiErrorMessage } from "@/shared/lib/errors";
 
-export const login = async (email: string, password: string) => {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data;
-};
+export const login = (
+  email: string,
+  password: string,
+): Promise<ApiResponse | undefined> =>
+  postJSON("/auth/login", { email, password });
 
-export const logout = async () => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data;
-};
+export const logout = (): Promise<ApiResponse | undefined> =>
+  postJSON("/auth/logout");
 
-export const signup = (email: string): Promise<ApiResponse> =>
+export const signup = (email: string): Promise<ApiResponse | undefined> =>
   postJSON("/auth/signup", { email });
 
-export const verifyOTP = (email: string, otp: string): Promise<ApiResponse> =>
+export const verifyOTP = (
+  email: string,
+  otp: string,
+): Promise<ApiResponse | undefined> =>
   postJSON("/verify-email", { email, otp });
 
-export const resendOTP = (email: string): Promise<ApiResponse> =>
+export const resendOTP = (email: string): Promise<ApiResponse | undefined> =>
   postJSON("/resend-otp", { email });
 
 export const setInfo = (
   username: string,
   password: string,
-): Promise<ApiResponse> => postJSON("/auth/set-info", { username, password });
+): Promise<ApiResponse | undefined> =>
+  postJSON("/auth/set-info", { username, password });

@@ -22,7 +22,10 @@ export const useLogin = (): LoginState => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  async function handleLogin(email: string, password: string): Promise<void> {
+  const handleLogin = async (
+    email: string,
+    password: string,
+  ): Promise<void> => {
     setLoading(true);
     try {
       await login(email, password);
@@ -33,14 +36,14 @@ export const useLogin = (): LoginState => {
     } finally {
       setLoading(false);
     }
-  }
+  };
   return { handleLogin, loading };
 };
 
 export const useLogout = () => {
   const [loadingLogout, setLoading] = useState(false);
 
-  async function handleLogout() {
+  const handleLogout = async () => {
     setLoading(true);
     try {
       await logout();
@@ -49,7 +52,7 @@ export const useLogout = () => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return { loadingLogout, handleLogout };
 };
@@ -58,7 +61,7 @@ export const useSignup = (): SignupState => {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  async function handleSignup(email: string): Promise<void> {
+  const handleSignup = async (email: string): Promise<void> => {
     setLoading(true);
     try {
       const result = await signup(email);
@@ -78,7 +81,7 @@ export const useSignup = (): SignupState => {
     } finally {
       setLoading(false);
     }
-  }
+  };
   return { handleSignup, loading };
 };
 

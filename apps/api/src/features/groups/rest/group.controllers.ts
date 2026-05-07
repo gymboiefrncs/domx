@@ -34,7 +34,10 @@ export const handleGetGroups: RequestHandler<
   });
 };
 
-export const handleUpdateSeen: RequestHandler<Params> = async (req, res) => {
+export const handleUpdateSeen: RequestHandler<Params, never> = async (
+  req,
+  res,
+) => {
   const userId = req.user!.userId;
   const { groupId } = req.params;
   await updateLastSeen(groupId, userId);
@@ -52,7 +55,7 @@ export const handleCreateGroup: RequestHandler<
   });
 };
 
-export const handleChangeGroupName: RequestHandler<Params> = async (
+export const handleChangeGroupName: RequestHandler<Params, never> = async (
   req,
   res,
 ) => {
@@ -77,7 +80,10 @@ export const handleAddMember: RequestHandler<
   });
 };
 
-export const handleDeleteGroup: RequestHandler<Params> = async (req, res) => {
+export const handleDeleteGroup: RequestHandler<Params, never> = async (
+  req,
+  res,
+) => {
   const { groupId } = req.params;
   const requesterId = req.user!.userId;
   await deleteGroupById(groupId, requesterId);

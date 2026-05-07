@@ -45,7 +45,7 @@ export const signupHandler: RequestHandler<
 
 export const loginHandler: RequestHandler<
   Record<string, never>,
-  AuthResponse,
+  never,
   LoginRequest
 > = async (req, res) => {
   const { refreshToken, accessToken } = await loginUser(req.body);
@@ -56,7 +56,7 @@ export const loginHandler: RequestHandler<
 
 export const rotateTokensHandler: RequestHandler<
   Record<string, never>,
-  AuthResponse
+  never
 > = async (req, res) => {
   const oldRefreshToken = req.cookies.refreshToken as string | undefined;
   if (!oldRefreshToken) throw new UnauthorizedError("Invalid refresh token");
@@ -68,8 +68,8 @@ export const rotateTokensHandler: RequestHandler<
 
 export const logoutHandler: RequestHandler<
   Record<string, never>,
-  AuthResponse
-> = async (req, res): Promise<void> => {
+  never
+> = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   await logoutUser(refreshToken);
   res.clearCookie("refreshToken", clearCookieOptions);
@@ -79,7 +79,7 @@ export const logoutHandler: RequestHandler<
 
 export const setInfoHandler: RequestHandler<
   Record<string, never>,
-  AuthResponse,
+  never,
   SetInfoRequest
 > = async (req, res): Promise<void> => {
   const { password, username } = req.body;

@@ -6,7 +6,7 @@ import type { PostDetails } from "@domx/shared";
 export const handleGetPosts: RequestHandler<
   PostParams,
   PostResponse<PostDetails[]>
-> = async (req, res): Promise<void> => {
+> = async (req, res) => {
   const { groupId } = req.params;
   const requesterId = req.user!.userId;
 

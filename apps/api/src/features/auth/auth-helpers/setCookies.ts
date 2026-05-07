@@ -18,7 +18,7 @@ export const clearCookieOptions = {
 export const setCookies = (
   refreshToken: string,
   accessToken: string,
-  res: Response,
+  res: Response<never>,
 ): void => {
   res.cookie("refreshToken", refreshToken, {
     ...baseCookieOptions,

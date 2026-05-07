@@ -1,11 +1,11 @@
 import { pool } from "@api/shared/db/db.js";
 import type { User } from "@domx/shared";
 
-export const getProfile = async (userId: string): Promise<User> => {
+export const getProfile = async (userId: string): Promise<User | null> => {
   const query = `SELECT username, email, display_id FROM users WHERE id = $1`;
 
   const result = await pool.query(query, [userId]);
-  return result.rows[0];
+  return result.rows[0] ?? null;
 };
 
 export const deleteProfileAccount = async (

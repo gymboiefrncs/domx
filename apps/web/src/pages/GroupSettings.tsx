@@ -1,4 +1,9 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  Link,
+  useRouter,
+} from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import type { Member } from "@domx/shared";
 import {
@@ -12,8 +17,10 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 
 export const GroupSettingsPage = () => {
-  const { id } = useParams();
+  // Read the route params from the TanStack route id.
+  const { id } = useParams({ from: "/authenticated/groups/$id/settings" });
   const navigate = useNavigate();
+  const router = useRouter();
   const {
     groups,
     loading,
@@ -153,7 +160,7 @@ export const GroupSettingsPage = () => {
             recentGroupDeletedEventsRef.current.delete(message.data.groupId);
           }, 5000);
 
-          navigate("/groups", { replace: true });
+          navigate({ to: "/authenticated/groups", replace: true });
           toast.error(message.message ?? "Group deleted", {
             id: `group-deleted-${message.data.groupId}`,
           });
@@ -177,7 +184,7 @@ export const GroupSettingsPage = () => {
           view it.
         </p>
         <Link
-          to="/groups"
+          to="/authenticated/groups"
           className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
         >
           Browse other groups
@@ -203,7 +210,7 @@ export const GroupSettingsPage = () => {
     const removed = await removeGroup(groupId);
     if (!removed) return;
     setDeleteConfirmText("");
-    navigate("/groups");
+    navigate({ to: "/authenticated/groups" });
   };
 
   const handlePromoteMember = async (displayId: string) => {
@@ -263,7 +270,7 @@ export const GroupSettingsPage = () => {
     if (!id) return;
     const left = await leaveGroup(id);
     if (!left) return;
-    navigate("/groups");
+    navigate({ to: "/authenticated/groups" });
   };
 
   const requestKickMember = (displayId: string) => {
@@ -300,7 +307,8 @@ export const GroupSettingsPage = () => {
     <div className="h-full bg-bg flex flex-col">
       <div className="flex items-center gap-3 border-b border-border px-4 py-4 md:px-6 lg:px-8">
         <button
-          onClick={() => navigate(-1)}
+          // TanStack doesn't support numeric navigation; use history.back().
+          onClick={() => router.history.back()}
           className="text-text-muted hover:text-text transition-colors text-lg font-bold"
         >
           <span>{"↩"}</span>

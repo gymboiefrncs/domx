@@ -1,7 +1,7 @@
 import { SpinnerIcon } from "@/shared/assets/icons";
 import { useResendOTP, useVerifyOTP } from "@/features/auth/index";
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "@tanstack/react-router";
 
 const OTP_LENGTH = 6;
 
@@ -17,6 +17,7 @@ export default function OtpPage() {
    */
   const email = sessionStorage.getItem("OTP_EMAIL");
   if (!email) {
+    // Use TanStack's Navigate for the guard redirect.
     return <Navigate to="/signup" replace={true} />;
   }
 

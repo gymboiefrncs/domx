@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import {
   usePosts,
   PostCard,
@@ -15,7 +15,8 @@ import { PageLoader } from "@/shared/components/PageLoader";
 import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {
-  const { id } = useParams();
+  // Read the route params from the TanStack route id.
+  const { id } = useParams({ from: "/authenticated/groups/$id/" });
   const { posts, loading, handleCreatePost, handleEditPost, handleDeletePost } =
     usePosts(id!);
   const { user } = useAuthContext();
@@ -31,7 +32,7 @@ export const GroupChatPage = () => {
     null,
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
   const seenGroupRef = useRef<string | null>(null);
 
@@ -140,7 +141,9 @@ export const GroupChatPage = () => {
     <div className="flex h-dvh min-w-0 flex-col overflow-x-hidden bg-neutral-50 md:h-full">
       <div className="shrink-0 flex items-center border-b border-border-subtle bg-neutral-50/90 px-4 py-4 backdrop-blur-sm md:px-6 lg:px-8">
         <button
-          onClick={() => navigate(-1)}
+          // TanStack doesn't support numeric navigation; use history.back().
+          // Invoke the history back action for the header back button.
+          onClick={() => router.history.back()}
           className="mr-4 text-text text-lg font-bold"
         >
           <span>{"↩"}</span>
@@ -156,7 +159,8 @@ export const GroupChatPage = () => {
           </p>
         </div>
         <div className="ml-auto">
-          <Link to={`/groups/${id}/settings`}>
+          {/* Use typed TanStack Link params to satisfy route constraints. */}
+          <Link to="/authenticated/groups/$id/settings" params={{ id }}>
             <SettingsIcon className="h-5 w-5" />
           </Link>
         </div>

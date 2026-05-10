@@ -14,7 +14,7 @@ import { getErrorMessage } from "@/shared/lib/errors";
 import type { PostDetails } from "@domx/shared";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useGroupContext } from "@/providers/GroupContext";
 
 export const usePosts = (groupId: string): GetPostsState => {
@@ -26,6 +26,7 @@ export const usePosts = (groupId: string): GetPostsState => {
   const optimisticQueueRef = useRef<string[]>([]);
   const wasKickedRef = useRef(false);
   const deleteGroupInListRef = useRef(deleteGroupInList);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       messageText: string,
       isError = true,
     ) => {
-      navigate("/groups", { replace: true });
+      navigate({ to: "/authenticated/groups", replace: true });
       deleteGroupInListRef.current(groupId);
       if (isError) {
         toast.error(messageText);

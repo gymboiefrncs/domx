@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { GroupsIcon, ProfileIcon } from "@/shared/assets/icons";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 
@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export const Nav = () => {
+  // Use TanStack navigation hooks after router migration.
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { loadingLogout, handleLogout } = useLogout();
@@ -31,7 +32,7 @@ export const Nav = () => {
           return (
             <li key={href} className="flex-1 md:flex-none">
               <button
-                onClick={() => navigate(href)}
+                onClick={() => navigate({ to: href })}
                 className={`
                   flex w-full items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm md:justify-start md:px-3.5 md:py-3 md:text-base
                   transition-colors duration-150 cursor-pointer
@@ -60,7 +61,7 @@ export const Nav = () => {
         className="mt-auto hidden w-full rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm font-medium text-error transition-colors hover:bg-error/15 md:block"
         onClick={async () => {
           await handleLogout();
-          navigate("/login", { replace: true });
+          navigate({ to: "/login", replace: true });
         }}
         disabled={loadingLogout}
       >

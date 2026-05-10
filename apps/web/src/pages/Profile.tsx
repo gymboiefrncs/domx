@@ -2,7 +2,7 @@ import { useAuthContext } from "@/providers/AuthContext";
 import { useLogout } from "@/features/auth/index";
 import { useDeleteAccount } from "@/features/profile/index";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageLoader } from "@/shared/components/PageLoader";
 
@@ -10,6 +10,7 @@ export const ProfilePage = () => {
   const { user, loading } = useAuthContext();
   const { loadingLogout, handleLogout } = useLogout();
   const { loadingDeleteAccount, handleDeleteAccount } = useDeleteAccount();
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const name = user?.username ?? "Unknown";
@@ -53,7 +54,7 @@ export const ProfilePage = () => {
               className="btn ml-auto bg-error text-xs text-on-error hover:bg-error-hover md:hidden"
               onClick={async () => {
                 await handleLogout();
-                navigate("/login", { replace: true });
+                navigate({ to: "/login", replace: true });
               }}
             >
               Log out

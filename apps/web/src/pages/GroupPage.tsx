@@ -4,7 +4,7 @@ import {
   useGroups,
   GroupCard,
 } from "@/features/groups/index";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import type { Group } from "@domx/shared";
 import { useLogout } from "@/features/auth/index";
 import { PageLoader } from "@/shared/components/PageLoader";
@@ -13,6 +13,7 @@ export const GroupPage = () => {
   const { groups, loading } = useGroups();
   const { loadingLogout, handleLogout } = useLogout();
   const [modal, setModal] = useState<boolean>(false);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   if (loading) {
@@ -47,7 +48,7 @@ export const GroupPage = () => {
               className="rounded-md bg-error px-4 py-2 text-xs text-white md:hidden"
               onClick={async () => {
                 await handleLogout();
-                navigate("/login", { replace: true });
+                navigate({ to: "/login", replace: true });
               }}
             >
               Log out
@@ -59,7 +60,7 @@ export const GroupPage = () => {
             <GroupCard
               key={group.group_id}
               group={group}
-              onClick={(id) => navigate(`/groups/${id}`)}
+              onClick={(id) => navigate({ to: `/groups/${id}` })}
             />
           ))}
         </div>

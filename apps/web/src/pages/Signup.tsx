@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSignup } from "@/features/auth/index";
 import { SpinnerIcon } from "@/shared/assets/icons";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 export default function SignupPage() {
   const [email, setEmail] = useState<string>("");
@@ -74,6 +74,7 @@ export default function SignupPage() {
         {/* Footer */}
         <p className="text-center text-xs font-light text-text-muted md:text-sm">
           Already have an account?{" "}
+          {/* Use TanStack Link for client-side navigation. */}
           <Link
             to="/login"
             className="text-text-link border-b border-text-link pb-px"

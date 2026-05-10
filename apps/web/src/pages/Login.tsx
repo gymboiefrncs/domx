@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLogin } from "@/features/auth/index";
 import { EyeIcon, EyeOffIcon } from "@/shared/assets/icons";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState<string>("");
@@ -83,6 +83,7 @@ export const LoginPage = () => {
         {/* Footer */}
         <p className="text-center text-xs font-light text-text-muted md:text-sm">
           Don't have an account?{" "}
+          {/* Use TanStack Link for client-side navigation. */}
           <Link
             to="/signup"
             className="text-text-link border-b border-text-link pb-px"

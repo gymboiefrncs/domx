@@ -1,10 +1,9 @@
 import { SpinnerIcon } from "@/shared/assets/icons";
 import { useAuthContext } from "@/providers/AuthContext";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "@tanstack/react-router";
 
 export const ProtectedRoute = () => {
   const { user, loading } = useAuthContext();
-  const location = useLocation();
 
   if (loading) {
     return (
@@ -15,7 +14,8 @@ export const ProtectedRoute = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    // Use TanStack's Navigate to redirect unauthenticated users.
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import {
   login,
   logout,
@@ -20,6 +20,7 @@ import type {
 
 export const useLogin = (): LoginState => {
   const [loading, setLoading] = useState<boolean>(false);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   const handleLogin = async (
@@ -30,7 +31,7 @@ export const useLogin = (): LoginState => {
     try {
       await login(email, password);
       toast.success("Logged in successfully!", { duration: 2000 });
-      navigate("/groups", { replace: true });
+      navigate({ to: "/authenticated/groups", replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err), { duration: 2000 });
     } finally {
@@ -59,6 +60,7 @@ export const useLogout = () => {
 
 export const useSignup = (): SignupState => {
   const [loading, setLoading] = useState<boolean>(false);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   const handleSignup = async (email: string): Promise<void> => {
@@ -66,7 +68,7 @@ export const useSignup = (): SignupState => {
     try {
       const result = await signup(email);
       if (result && result.message === "INCOMPLETE_SIGNUP") {
-        navigate("/setup-profile", { replace: true });
+        navigate({ to: "/setup-profile", replace: true });
         return;
       }
       /**
@@ -75,7 +77,7 @@ export const useSignup = (): SignupState => {
        * refresh the page during OTP verification step
        */
       sessionStorage.setItem("OTP_EMAIL", email);
-      navigate("/otp", { replace: true });
+      navigate({ to: "/otp", replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -107,6 +109,7 @@ export const useResendOTP = (): ResendOTPState => {
 
 export const useVerifyOTP = (): VerifyOTPState => {
   const [loading, setLoading] = useState<boolean>(false);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   const handleVerifyOTP = async (email: string, otp: string): Promise<void> => {
@@ -116,7 +119,7 @@ export const useVerifyOTP = (): VerifyOTPState => {
     try {
       await verifyOTP(email, otp);
       toast.success("OTP verified successfully!", { id: toastId });
-      navigate("/setup-profile", { replace: true });
+      navigate({ to: "/setup-profile", replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err), { id: toastId });
     } finally {
@@ -128,6 +131,7 @@ export const useVerifyOTP = (): VerifyOTPState => {
 
 export const useSetInfo = (): SetInfoState => {
   const [loading, setLoading] = useState<boolean>(false);
+  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
 
   const handleSetInfo = async (
@@ -139,7 +143,7 @@ export const useSetInfo = (): SetInfoState => {
     try {
       await setInfo(username, password);
       toast.success("Welcome!", { id: toastId });
-      navigate("/groups", { replace: true });
+      navigate({ to: "/authenticated/groups", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");
     } catch (err) {
       toast.error(getErrorMessage(err), { id: toastId });

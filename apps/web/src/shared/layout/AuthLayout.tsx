@@ -1,10 +1,12 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { AuthProvider } from "@/providers/AuthContext";
 
-export const AuthLayout = () => {
+export const AuthLayout = ({ children }: { children?: ReactNode }) => {
   return (
     <AuthProvider>
-      <Outlet />
+      {/* Prefer explicit children when provided; fallback to TanStack Outlet. */}
+      {children ?? <Outlet />}
     </AuthProvider>
   );
 };

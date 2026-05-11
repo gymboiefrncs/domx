@@ -1,93 +1,50 @@
-import { fetchWithAuth } from "@/shared/lib/fetchWithAuth";
 import type { Group, Member } from "@domx/shared";
-import { API_BASE_URL } from "@/shared/config";
-import { getApiErrorMessage } from "@/shared/lib/errors";
+import { httpClient } from "@/shared/lib/api/http.client";
+import type { ApiResponse } from "@/shared/types";
 
 export const createGroup = async (name: string): Promise<Group> => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ groupName: name }),
+  const res = await httpClient.post<ApiResponse<Group>>("/groups", {
+    groupName: name,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data.data;
-};
-
-export const changeGroupName = async (groupId: string, newName: string) => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/name`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ groupName: newName }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data;
+  return res!.data;
 };
 
 export const fetchMyGroups = async (): Promise<Group[]> => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data.data;
+  const res = await httpClient.get<ApiResponse<Group[]>>("/groups");
+  return res!.data;
 };
 
 export const addMemberToGroup = async (
   groupId: string,
   displayId: string,
 ): Promise<Member> => {
-  const res = await fetchWithAuth(
-    `${API_BASE_URL}/groups/${groupId}/add/${displayId}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ displayId }),
-    },
+  const res = await httpClient.post<ApiResponse<Member>>(
+    `/groups/${groupId}/add/${displayId}`,
+    { displayId },
   );
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data.data;
+  return res!.data;
 };
 
-export const fetchGroupMembers = async (groupId: string) => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/members`, {
-    method: "GET",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data.data;
+export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
+  const res = await httpClient.get<ApiResponse<Member[]>>(
+    `/groups/${groupId}/members`,
+  );
+  return res!.data;
 };
 
-export const deleteGroup = async (groupId: string) => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data;
+export const deleteGroup = async (groupId: string): Promise<void> => {
+  await httpClient.delete(`/groups/${groupId}`);
 };
 
 export const markGroupAsSeen = async (groupId: string): Promise<void> => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/seen`, {
-    method: "PATCH",
-    credentials: "include",
-  });
+  await httpClient.patch(`/groups/${groupId}/seen`);
+};
 
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
+export const changeGroupName = async (
+  groupId: string,
+  newName: string,
+): Promise<void> => {
+  await httpClient.patch(`/groups/${groupId}/name`, {
+    groupName: newName,
+  });
 };

@@ -1,24 +1,12 @@
-import { fetchWithAuth } from "@/shared/lib/fetchWithAuth";
 import type { User } from "@domx/shared";
-import { API_BASE_URL } from "@/shared/config";
-import { getApiErrorMessage } from "@/shared/lib/errors";
+import { httpClient } from "@/shared/lib/api/http.client";
+import type { ApiResponse } from "@/shared/types";
 
 export const fetchProfile = async (): Promise<User> => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/profile/me`, {
-    method: "GET",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data.data;
+  const res = await httpClient.get<ApiResponse<User>>("/profile/me");
+  return res!.data;
 };
 
-export const deleteAccount = async () => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/profile/me`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-  return data;
+export const deleteAccount = async (): Promise<void> => {
+  await httpClient.delete("/profile/delete");
 };

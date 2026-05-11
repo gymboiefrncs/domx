@@ -1,17 +1,12 @@
-import { fetchWithAuth } from "@/shared/lib/fetchWithAuth";
-import { API_BASE_URL } from "@/shared/config";
 import type { PostDetails } from "@domx/shared";
-import { getApiErrorMessage } from "@/shared/lib/errors";
+import { httpClient } from "@/shared/lib/api/http.client";
+import type { ApiResponse } from "@/shared/types";
 
 export const fetchMessages = async (
   groupId: string,
 ): Promise<PostDetails[]> => {
-  const res = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/posts`, {
-    method: "GET",
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(getApiErrorMessage(data));
-
-  return data.data;
+  const res = await httpClient.get<ApiResponse<PostDetails[]>>(
+    `/groups/${groupId}/posts`,
+  );
+  return res!.data;
 };

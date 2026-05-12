@@ -17,3 +17,5 @@ createRoot(document.getElementById("root")!).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+
+// TODO: migrate to tanstack query for data fetching instead of useEffect

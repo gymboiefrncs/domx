@@ -39,7 +39,7 @@ export const usePosts = (groupId: string): GetPostsState => {
       messageText: string,
       isError = true,
     ) => {
-      navigate({ to: "/authenticated/groups", replace: true });
+      navigate({ to: "/groups", replace: true });
       deleteGroupInListRef.current(groupId);
       if (isError) {
         toast.error(messageText);

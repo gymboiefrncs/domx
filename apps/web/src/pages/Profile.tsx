@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { PageLoader } from "@/shared/components/PageLoader";
 
 export const ProfilePage = () => {
-  const { user, loading } = useAuthContext();
+  const { user } = useAuthContext();
   const { loadingLogout, handleLogout } = useLogout();
   const { loadingDeleteAccount, handleDeleteAccount } = useDeleteAccount();
   // Use TanStack navigation after router migration.
@@ -26,7 +26,7 @@ export const ProfilePage = () => {
     }
   };
 
-  if (loading || loadingLogout) {
+  if (loadingLogout) {
     return <PageLoader fullHeight={true} />;
   }
 

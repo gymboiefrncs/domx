@@ -31,7 +31,7 @@ export const useLogin = (): LoginState => {
     try {
       await login(email, password);
       toast.success("Logged in successfully!", { duration: 2000 });
-      navigate({ to: "/authenticated/groups", replace: true });
+      navigate({ to: "/groups", replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err), { duration: 2000 });
     } finally {
@@ -67,7 +67,7 @@ export const useSignup = (): SignupState => {
     setLoading(true);
     try {
       const result = await signup(email);
-      if (result && result.message === "INCOMPLETE_SIGNUP") {
+      if (result === "INCOMPLETE_SIGNUP") {
         navigate({ to: "/setup-profile", replace: true });
         return;
       }
@@ -94,9 +94,7 @@ export const useResendOTP = (): ResendOTPState => {
     setLoading(true);
     try {
       const response = await resendOTP(email);
-      toast.success(
-        (response && response.message) || "OTP resent successfully",
-      );
+      toast.success(response || "OTP resent successfully");
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -143,7 +141,7 @@ export const useSetInfo = (): SetInfoState => {
     try {
       await setInfo(username, password);
       toast.success("Welcome!", { id: toastId });
-      navigate({ to: "/authenticated/groups", replace: true });
+      navigate({ to: "/", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");
     } catch (err) {
       toast.error(getErrorMessage(err), { id: toastId });

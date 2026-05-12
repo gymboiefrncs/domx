@@ -18,7 +18,7 @@ import { getErrorMessage } from "@/shared/lib/errors";
 
 export const GroupSettingsPage = () => {
   // Read the route params from the TanStack route id.
-  const { id } = useParams({ from: "/authenticated/groups/$id/settings" });
+  const { id } = useParams({ from: "/_authenticated/groups/$id/settings" });
   const navigate = useNavigate();
   const router = useRouter();
   const {
@@ -160,7 +160,7 @@ export const GroupSettingsPage = () => {
             recentGroupDeletedEventsRef.current.delete(message.data.groupId);
           }, 5000);
 
-          navigate({ to: "/authenticated/groups", replace: true });
+          navigate({ to: "/groups", replace: true });
           toast.error(message.message ?? "Group deleted", {
             id: `group-deleted-${message.data.groupId}`,
           });
@@ -184,7 +184,7 @@ export const GroupSettingsPage = () => {
           view it.
         </p>
         <Link
-          to="/authenticated/groups"
+          to="/groups"
           className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
         >
           Browse other groups
@@ -210,7 +210,7 @@ export const GroupSettingsPage = () => {
     const removed = await removeGroup(groupId);
     if (!removed) return;
     setDeleteConfirmText("");
-    navigate({ to: "/authenticated/groups" });
+    navigate({ to: "/groups" });
   };
 
   const handlePromoteMember = async (displayId: string) => {
@@ -270,7 +270,7 @@ export const GroupSettingsPage = () => {
     if (!id) return;
     const left = await leaveGroup(id);
     if (!left) return;
-    navigate({ to: "/authenticated/groups" });
+    navigate({ to: "/groups" });
   };
 
   const requestKickMember = (displayId: string) => {

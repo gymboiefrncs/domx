@@ -5,7 +5,7 @@ import { useGroups } from "../hooks/useGroups";
 
 export const AddMemberModal = ({ onClose, onSuccess }: AddMemberProps) => {
   // Read the route params from the TanStack route id.
-  const { id } = useParams({ from: "/authenticated/groups/$id/settings" });
+  const { id } = useParams({ from: "/_authenticated/groups/$id/settings" });
   const [displayId, setDisplayId] = useState<string>("");
   const { addMember, loading } = useGroups();
 

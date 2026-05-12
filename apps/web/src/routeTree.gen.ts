@@ -14,10 +14,10 @@ import { Route as SetupProfileRouteImport } from './routes/setup-profile'
 import { Route as OtpRouteImport } from './routes/otp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedProfileRouteImport } from './routes/authenticated/profile'
-import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/authenticated/groups/index'
-import { Route as AuthenticatedGroupsIdIndexRouteImport } from './routes/authenticated/groups/$id/index'
-import { Route as AuthenticatedGroupsIdSettingsRouteImport } from './routes/authenticated/groups/$id/settings'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/_authenticated/groups/index'
+import { Route as AuthenticatedGroupsIdIndexRouteImport } from './routes/_authenticated/groups/$id/index'
+import { Route as AuthenticatedGroupsIdSettingsRouteImport } from './routes/_authenticated/groups/$id/settings'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -44,62 +44,62 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/authenticated/profile',
-  path: '/authenticated/profile',
-  getParentRoute: () => rootRouteImport,
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGroupsIndexRoute =
   AuthenticatedGroupsIndexRouteImport.update({
-    id: '/authenticated/groups/',
-    path: '/authenticated/groups/',
-    getParentRoute: () => rootRouteImport,
+    id: '/groups/',
+    path: '/groups/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedGroupsIdIndexRoute =
   AuthenticatedGroupsIdIndexRouteImport.update({
-    id: '/authenticated/groups/$id/',
-    path: '/authenticated/groups/$id/',
-    getParentRoute: () => rootRouteImport,
+    id: '/groups/$id/',
+    path: '/groups/$id/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedGroupsIdSettingsRoute =
   AuthenticatedGroupsIdSettingsRouteImport.update({
-    id: '/authenticated/groups/$id/settings',
-    path: '/authenticated/groups/$id/settings',
-    getParentRoute: () => rootRouteImport,
+    id: '/groups/$id/settings',
+    path: '/groups/$id/settings',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedRoute
+  '/': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/otp': typeof OtpRoute
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
-  '/authenticated/profile': typeof AuthenticatedProfileRoute
-  '/authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
-  '/authenticated/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
-  '/authenticated/groups/$id/': typeof AuthenticatedGroupsIdIndexRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/groups/': typeof AuthenticatedGroupsIndexRoute
+  '/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
+  '/groups/$id/': typeof AuthenticatedGroupsIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AuthenticatedRoute
+  '/': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/otp': typeof OtpRoute
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
-  '/authenticated/profile': typeof AuthenticatedProfileRoute
-  '/authenticated/groups': typeof AuthenticatedGroupsIndexRoute
-  '/authenticated/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
-  '/authenticated/groups/$id': typeof AuthenticatedGroupsIdIndexRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/groups': typeof AuthenticatedGroupsIndexRoute
+  '/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
+  '/groups/$id': typeof AuthenticatedGroupsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/otp': typeof OtpRoute
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
-  '/authenticated/profile': typeof AuthenticatedProfileRoute
-  '/authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
-  '/authenticated/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
-  '/authenticated/groups/$id/': typeof AuthenticatedGroupsIdIndexRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
+  '/_authenticated/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
+  '/_authenticated/groups/$id/': typeof AuthenticatedGroupsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,10 +109,10 @@ export interface FileRouteTypes {
     | '/otp'
     | '/setup-profile'
     | '/signup'
-    | '/authenticated/profile'
-    | '/authenticated/groups/'
-    | '/authenticated/groups/$id/settings'
-    | '/authenticated/groups/$id/'
+    | '/profile'
+    | '/groups/'
+    | '/groups/$id/settings'
+    | '/groups/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,10 +120,10 @@ export interface FileRouteTypes {
     | '/otp'
     | '/setup-profile'
     | '/signup'
-    | '/authenticated/profile'
-    | '/authenticated/groups'
-    | '/authenticated/groups/$id/settings'
-    | '/authenticated/groups/$id'
+    | '/profile'
+    | '/groups'
+    | '/groups/$id/settings'
+    | '/groups/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -131,22 +131,18 @@ export interface FileRouteTypes {
     | '/otp'
     | '/setup-profile'
     | '/signup'
-    | '/authenticated/profile'
-    | '/authenticated/groups/'
-    | '/authenticated/groups/$id/settings'
-    | '/authenticated/groups/$id/'
+    | '/_authenticated/profile'
+    | '/_authenticated/groups/'
+    | '/_authenticated/groups/$id/settings'
+    | '/_authenticated/groups/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   OtpRoute: typeof OtpRoute
   SetupProfileRoute: typeof SetupProfileRoute
   SignupRoute: typeof SignupRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedGroupsIndexRoute: typeof AuthenticatedGroupsIndexRoute
-  AuthenticatedGroupsIdSettingsRoute: typeof AuthenticatedGroupsIdSettingsRoute
-  AuthenticatedGroupsIdIndexRoute: typeof AuthenticatedGroupsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -186,47 +182,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/authenticated/profile': {
-      id: '/authenticated/profile'
-      path: '/authenticated/profile'
-      fullPath: '/authenticated/profile'
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/authenticated/groups/': {
-      id: '/authenticated/groups/'
-      path: '/authenticated/groups'
-      fullPath: '/authenticated/groups/'
+    '/_authenticated/groups/': {
+      id: '/_authenticated/groups/'
+      path: '/groups'
+      fullPath: '/groups/'
       preLoaderRoute: typeof AuthenticatedGroupsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/authenticated/groups/$id/': {
-      id: '/authenticated/groups/$id/'
-      path: '/authenticated/groups/$id'
-      fullPath: '/authenticated/groups/$id/'
+    '/_authenticated/groups/$id/': {
+      id: '/_authenticated/groups/$id/'
+      path: '/groups/$id'
+      fullPath: '/groups/$id/'
       preLoaderRoute: typeof AuthenticatedGroupsIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/authenticated/groups/$id/settings': {
-      id: '/authenticated/groups/$id/settings'
-      path: '/authenticated/groups/$id/settings'
-      fullPath: '/authenticated/groups/$id/settings'
+    '/_authenticated/groups/$id/settings': {
+      id: '/_authenticated/groups/$id/settings'
+      path: '/groups/$id/settings'
+      fullPath: '/groups/$id/settings'
       preLoaderRoute: typeof AuthenticatedGroupsIdSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRoute,
-  LoginRoute: LoginRoute,
-  OtpRoute: OtpRoute,
-  SetupProfileRoute: SetupProfileRoute,
-  SignupRoute: SignupRoute,
+interface AuthenticatedRouteChildren {
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedGroupsIndexRoute: typeof AuthenticatedGroupsIndexRoute
+  AuthenticatedGroupsIdSettingsRoute: typeof AuthenticatedGroupsIdSettingsRoute
+  AuthenticatedGroupsIdIndexRoute: typeof AuthenticatedGroupsIdIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedGroupsIndexRoute: AuthenticatedGroupsIndexRoute,
   AuthenticatedGroupsIdSettingsRoute: AuthenticatedGroupsIdSettingsRoute,
   AuthenticatedGroupsIdIndexRoute: AuthenticatedGroupsIdIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  OtpRoute: OtpRoute,
+  SetupProfileRoute: SetupProfileRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

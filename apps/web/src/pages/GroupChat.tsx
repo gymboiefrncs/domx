@@ -16,7 +16,7 @@ import "highlight.js/styles/github.css";
 
 export const GroupChatPage = () => {
   // Read the route params from the TanStack route id.
-  const { id } = useParams({ from: "/authenticated/groups/$id/" });
+  const { id } = useParams({ from: "/_authenticated/groups/$id/" });
   const { posts, loading, handleCreatePost, handleEditPost, handleDeletePost } =
     usePosts(id!);
   const { user } = useAuthContext();
@@ -160,7 +160,7 @@ export const GroupChatPage = () => {
         </div>
         <div className="ml-auto">
           {/* Use typed TanStack Link params to satisfy route constraints. */}
-          <Link to="/authenticated/groups/$id/settings" params={{ id }}>
+          <Link to="/groups/$id/settings" params={{ id }}>
             <SettingsIcon className="h-5 w-5" />
           </Link>
         </div>

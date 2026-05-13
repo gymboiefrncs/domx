@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import {
   login,
   logout,
@@ -22,6 +22,7 @@ export const useLogin = (): LoginState => {
   const [loading, setLoading] = useState<boolean>(false);
   // Use TanStack navigation after router migration.
   const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogin = async (
     email: string,
@@ -31,6 +32,7 @@ export const useLogin = (): LoginState => {
     try {
       await login(email, password);
       toast.success("Logged in successfully!", { duration: 2000 });
+      router.invalidate();
       navigate({ to: "/groups", replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err), { duration: 2000 });
@@ -48,6 +50,7 @@ export const useLogout = () => {
     setLoading(true);
     try {
       await logout();
+      // router.invalidate();
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
@@ -131,6 +134,7 @@ export const useSetInfo = (): SetInfoState => {
   const [loading, setLoading] = useState<boolean>(false);
   // Use TanStack navigation after router migration.
   const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSetInfo = async (
     username: string,
@@ -141,7 +145,8 @@ export const useSetInfo = (): SetInfoState => {
     try {
       await setInfo(username, password);
       toast.success("Welcome!", { id: toastId });
-      navigate({ to: "/", replace: true });
+      router.invalidate();
+      navigate({ to: "/groups", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");
     } catch (err) {
       toast.error(getErrorMessage(err), { id: toastId });

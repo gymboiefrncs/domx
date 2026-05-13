@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/login" });
     }
   },
+  staleTime: Infinity,
   component: () => {
     const { user } = Route.useLoaderData();
 

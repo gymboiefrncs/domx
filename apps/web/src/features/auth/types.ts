@@ -3,19 +3,25 @@ type HookState = {
 };
 
 export type SignupState = HookState & {
-  handleSignup: (email: string) => Promise<void>;
+  handleSignup: (email: string) => void;
 };
 
 export type VerifyOTPState = HookState & {
-  handleVerifyOTP: (email: string, otp: string) => Promise<void>;
+  handleVerifyOTP: ({ email, otp }: { email: string; otp: string }) => void;
 };
 
 export type SetInfoState = HookState & {
-  handleSetInfo: (username: string, password: string) => Promise<void>;
+  handleSetInfo: ({
+    username,
+    password,
+  }: {
+    username: string;
+    password: string;
+  }) => void;
 };
 
 export type ResendOTPState = HookState & {
-  handleResendOTP: (email: string) => Promise<void>;
+  handleResendOTP: (email: string) => void;
 };
 
 export type LoginState = HookState & {

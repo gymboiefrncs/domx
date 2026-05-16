@@ -77,7 +77,7 @@ export default function OtpPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            handleVerifyOTP(email, otp.join(""));
+            handleVerifyOTP({ email, otp: otp.join("") });
           }}
         >
           <div className="mb-6 flex justify-between gap-2 md:gap-3">

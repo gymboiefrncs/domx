@@ -37,7 +37,7 @@ export default function SetupProfilePage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            handleSetInfo(username, password);
+            handleSetInfo({ username, password });
           }}
         >
           <div className="field mb-4">

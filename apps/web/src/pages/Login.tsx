@@ -20,7 +20,7 @@ export const LoginPage = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            handleLogin(email, password);
+            handleLogin({ email, password });
           }}
         >
           <div className="field mb-4">

@@ -39,9 +39,15 @@ export const broadcastToGroup = (
   rooms: Map<string, Set<ChatSocket>>,
   groupId: string,
   payload: string,
+  requester?: ChatSocket,
 ): void => {
   const room = rooms.get(groupId);
   room?.forEach((client) => {
+    /**
+     * Exclude the requester's socket connection because the requester already gets a direct response
+     * This avoids duplicates
+     */
+    if (requester && client === requester) return;
     client.send(payload);
   });
 };

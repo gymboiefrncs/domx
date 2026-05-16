@@ -30,7 +30,7 @@ export const handleAddMember = async (
   });
 
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 
   const targetUserId = await fetchUserByDisplayId(displayId);
   if (targetUserId) {
@@ -59,7 +59,7 @@ export const handlePromoteMember = async (
     data: { groupId, displayId },
   });
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 };
 
 export const handleDemoteMember = async (
@@ -74,7 +74,7 @@ export const handleDemoteMember = async (
     data: { groupId, displayId },
   });
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 };
 
 export const handleKickMember = async (
@@ -89,7 +89,7 @@ export const handleKickMember = async (
     data: { groupId, displayId },
   });
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 };
 
 export const handleLeaveGroup = async (
@@ -106,7 +106,7 @@ export const handleLeaveGroup = async (
     data: { groupId, displayId: profile.display_id },
   });
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 };
 
 export const handleDeleteGroup = async (
@@ -123,5 +123,5 @@ export const handleDeleteGroup = async (
   });
 
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload);
+  broadcastToGroup(rooms, groupId, payload, socket);
 };

@@ -1,9 +1,8 @@
 import { deleteAccount, fetchProfile } from "../transport/rest/profile.api";
 import { getErrorMessage } from "@/shared/lib/errors";
-import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useMe = () => {
   return useQuery({
@@ -14,22 +13,19 @@ export const useMe = () => {
 };
 
 export const useDeleteAccount = () => {
-  const [loadingDeleteAccount, setLoadingDeleteAccount] = useState(false);
-  // Use TanStack navigation after router migration.
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const handleDeleteAccount = async (): Promise<void> => {
-    setLoadingDeleteAccount(true);
-    try {
-      await deleteAccount();
-      toast.success("Account deleted");
-      navigate({ to: "/signup", replace: true });
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setLoadingDeleteAccount(false);
-    }
-  };
+  const { mutate: handleDeleteAccount, isPending: loadingDeleteAccount } =
+    useMutation({
+      mutationFn: deleteAccount,
+      onSuccess: () => {
+        toast.success("Account deleted");
+        queryClient.clear();
+        navigate({ to: "/signup", replace: true });
+      },
+      onError: (err) => toast.error(getErrorMessage(err)),
+    });
 
   return { loadingDeleteAccount, handleDeleteAccount };
 };

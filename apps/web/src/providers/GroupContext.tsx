@@ -11,7 +11,7 @@ import type { GroupContextType } from "@/features/groups/types";
 import { fetchMyGroups } from "@/features/groups/index";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
-import { useAuthContext } from "./AuthContext";
+import { useMe } from "@/features/profile";
 import { connectPostSocket, joinPostGroup } from "@/features/posts";
 
 const GroupContext = createContext<GroupContextType | null>(null);
@@ -23,7 +23,7 @@ export function GroupProvider({
 }): JSX.Element {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user } = useAuthContext();
+  const { data: user } = useMe();
   const recentMemberAddedEventsRef = useRef<Set<string>>(new Set());
 
   const addGroup = (data: Group) => {

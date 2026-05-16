@@ -1,4 +1,4 @@
-import { useAuthContext } from "@/providers/AuthContext";
+import { useMe } from "@/features/profile";
 import { useLogout } from "@/features/auth/index";
 import { useDeleteAccount } from "@/features/profile/index";
 import { useState } from "react";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { PageLoader } from "@/shared/components/PageLoader";
 
 export const ProfilePage = () => {
-  const { user } = useAuthContext();
+  const { data: user } = useMe();
   const { loadingLogout, handleLogout } = useLogout();
   const { loadingDeleteAccount, handleDeleteAccount } = useDeleteAccount();
   // Use TanStack navigation after router migration.

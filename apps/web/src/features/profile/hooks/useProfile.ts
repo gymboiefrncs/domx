@@ -1,8 +1,17 @@
-import { deleteAccount } from "../transport/rest/profile.api";
+import { deleteAccount, fetchProfile } from "../transport/rest/profile.api";
 import { getErrorMessage } from "@/shared/lib/errors";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+
+export const useMe = () => {
+  return useQuery({
+    queryKey: ["profile", "me"],
+    queryFn: fetchProfile,
+    staleTime: Infinity,
+  });
+};
 
 export const useDeleteAccount = () => {
   const [loadingDeleteAccount, setLoadingDeleteAccount] = useState(false);

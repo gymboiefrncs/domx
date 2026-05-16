@@ -10,7 +10,7 @@ import { SettingsIcon } from "@/shared/assets/icons";
 import type { PostDetails } from "@domx/shared";
 import { useGroups } from "@/features/groups/index";
 import { toast } from "sonner";
-import { useAuthContext } from "@/providers/AuthContext";
+import { useMe } from "@/features/profile";
 import { PageLoader } from "@/shared/components/PageLoader";
 import "highlight.js/styles/github.css";
 
@@ -19,7 +19,7 @@ export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/" });
   const { posts, loading, handleCreatePost, handleEditPost, handleDeletePost } =
     usePosts(id!);
-  const { user } = useAuthContext();
+  const { data: user } = useMe();
   const { groups, markGroupSeen } = useGroups();
   const group = groups.find((g) => g.group_id === id);
   const [post, setPost] = useState<string>("");

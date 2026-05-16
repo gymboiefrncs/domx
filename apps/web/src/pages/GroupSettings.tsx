@@ -11,7 +11,7 @@ import {
   AddMemberModal,
   useGroups,
 } from "@/features/groups/index";
-import { useAuthContext } from "@/providers/AuthContext";
+import { useMe } from "@/features/profile";
 import { connectPostSocket, joinPostGroup } from "@/features/posts/index";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
@@ -31,7 +31,7 @@ export const GroupSettingsPage = () => {
     kickMember,
     leaveGroup,
   } = useGroups();
-  const { user } = useAuthContext();
+  const { data: user } = useMe();
   const group = groups.find((g) => g.group_id === id);
 
   const [isEditingName, setIsEditingName] = useState(false);

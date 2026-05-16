@@ -1,4 +1,5 @@
-import { useAuthContext } from "@/providers/AuthContext";
+// import { useAuthContext } from "@/providers/AuthContext";
+import { useMe } from "@/features/profile";
 import {
   connectPostSocket,
   fetchMessages,
@@ -18,7 +19,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useGroupContext } from "@/providers/GroupContext";
 
 export const usePosts = (groupId: string): GetPostsState => {
-  const { user } = useAuthContext();
+  const { data: user } = useMe();
   const { deleteGroupInList } = useGroupContext();
   const [posts, setPosts] = useState<PostDetails[]>([]);
   const [loading, setLoading] = useState(true);

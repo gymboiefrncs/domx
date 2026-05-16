@@ -19,5 +19,11 @@ export type ResendOTPState = HookState & {
 };
 
 export type LoginState = HookState & {
-  handleLogin: (email: string, password: string) => Promise<void>;
+  handleLogin: ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => void;
 };

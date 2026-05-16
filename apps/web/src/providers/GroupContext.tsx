@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import { useMe } from "@/features/profile";
 import { connectPostSocket, joinPostGroup } from "@/features/posts";
+import { useGroupEvents } from "@/features/groups/hooks/useGroupEvents";
 
 const GroupContext = createContext<GroupContextType | null>(null);
 
@@ -24,7 +25,7 @@ export function GroupProvider({
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { data: user } = useMe();
-  const recentMemberAddedEventsRef = useRef<Set<string>>(new Set());
+  const groupsRef = useRef(groups);
 
   const addGroup = (data: Group) => {
     setGroups((prev) => {
@@ -100,121 +101,64 @@ export function GroupProvider({
     );
   };
 
-  const isGroupOpenInCurrentRoute = (groupId: string): boolean => {
-    if (typeof window === "undefined") return false;
-    return window.location.pathname === `/groups/${groupId}`;
-  };
+  const events = useGroupEvents({
+    setGroups,
+    addGroup,
+    deleteGroupInList,
+    incrementUnreadCount,
+    setGroupRoleInList,
+    incrementMemberCount,
+    decrementMemberCount,
+  });
+
+  const eventsRef = useRef(events);
+
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
+  useEffect(() => {
+    groupsRef.current = groups;
+  }, [groups]);
 
   useEffect(() => {
     if (!user) return;
 
     const socket = connectPostSocket({
       onOpen: () => {
-        groups.forEach((g) => {
-          joinPostGroup(g.group_id);
-        });
+        groupsRef.current.forEach((g) => joinPostGroup(g.group_id));
       },
       onMessage: (message) => {
         if (!("type" in message)) return;
 
         switch (message.type) {
-          case "newMessage": {
-            const groupId = message.data.group_id;
-            if (!groupId) return;
-
-            if (
-              "display_id" in message.data &&
-              message.data.display_id === user.display_id
-            ) {
-              return;
-            }
-
-            if (isGroupOpenInCurrentRoute(groupId)) {
-              return;
-            }
-
-            incrementUnreadCount(groupId);
-            return;
-          }
-
-          case "memberAdded": {
-            const dedupeKey = `${message.data.group_id}:${message.data.display_id}`;
-            if (recentMemberAddedEventsRef.current.has(dedupeKey)) {
-              return;
-            }
-
-            recentMemberAddedEventsRef.current.add(dedupeKey);
-            window.setTimeout(() => {
-              recentMemberAddedEventsRef.current.delete(dedupeKey);
-            }, 5000);
-
-            if (message.data.display_id === user.display_id) {
-              void fetchMyGroups()
-                .then((updatedGroups) => {
-                  setGroups(updatedGroups);
-                  joinPostGroup(message.data.group_id);
-                })
-                .catch((err) => {
-                  toast.error(getErrorMessage(err), { duration: 2000 });
-                });
-              toast.success("You have been added to the group", {
-                duration: 2000,
-              });
-              return;
-            }
-
-            incrementMemberCount(message.data.group_id);
-            return;
-          }
-
-          case "memberKicked": {
-            if (message.data.displayId === user.display_id) {
-              deleteGroupInList(message.data.groupId);
-            } else {
-              decrementMemberCount(message.data.groupId);
-            }
-            return;
-          }
-
-          case "memberPromoted": {
-            if (message.data.displayId === user.display_id) {
-              setGroupRoleInList(message.data.groupId, "admin");
-              toast.success("You have been promoted", { duration: 2000 });
-            }
-            return;
-          }
-
-          case "memberDemoted": {
-            if (message.data.displayId === user.display_id) {
-              setGroupRoleInList(message.data.groupId, "member");
-              toast.success("You have been demoted", { duration: 2000 });
-            }
-            return;
-          }
-
-          case "groupLeft": {
-            if (message.data.displayId === user.display_id) {
-              deleteGroupInList(message.data.groupId);
-              return;
-            }
-
-            decrementMemberCount(message.data.groupId);
-            return;
-          }
-
-          case "groupDeleted": {
-            deleteGroupInList(message.data.groupId);
-            return;
-          }
-
-          default:
-            return;
+          case "newMessage":
+            eventsRef.current.onNewMessage(message.data);
+            break;
+          case "memberAdded":
+            eventsRef.current.onMemberAdded(message);
+            break;
+          case "memberKicked":
+            eventsRef.current.onMemberKicked(message.data);
+            break;
+          case "memberPromoted":
+            eventsRef.current.onMemberPromoted(message.data);
+            break;
+          case "memberDemoted":
+            eventsRef.current.onMemberDemoted(message.data);
+            break;
+          case "groupLeft":
+            eventsRef.current.onGroupLeft(message.data);
+            break;
+          case "groupDeleted":
+            eventsRef.current.onGroupDeleted(message.data);
+            break;
         }
       },
       onError: () => {},
     });
     return () => socket();
-  }, [groups, user]);
+  }, [user]);
 
   // fetch groups on mount
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
   hasOtherAdmins,
   fetchUserByDisplayId,
   fetchUserGroups,
+  fetchUserGroupSummary,
   insertGroup,
   insertMember,
   updateRole,
@@ -42,6 +43,11 @@ export const getGroupMembers = async (
 export const getUserGroups = (userId: string): Promise<Group[]> => {
   return fetchUserGroups(userId);
 };
+
+export const getUserGroupSummary = async (
+  userId: string,
+  groupId: string,
+): Promise<Group> => fetchUserGroupSummary(userId, groupId);
 
 export const updateLastSeen = async (
   groupId: string,

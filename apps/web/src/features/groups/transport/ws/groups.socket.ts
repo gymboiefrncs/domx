@@ -1,5 +1,5 @@
 import { wsClient, type WsOutgoingMessage } from "@/shared/lib/ws/wsClient";
-import type { Member } from "@domx/shared";
+import type { Group, Member } from "@domx/shared";
 
 type GroupWsOutgoingMessage = Extract<
   WsOutgoingMessage,
@@ -12,7 +12,7 @@ type GroupWsOutgoingMessage = Extract<
 >;
 
 type GroupWsIncomingMessage =
-  | { type: "memberAdded"; message?: string; data: Member }
+  | { type: "memberAdded"; message?: string; data: Member; group?: Group }
   | {
       type: "memberPromoted";
       message?: string;

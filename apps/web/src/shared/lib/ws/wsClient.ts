@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/shared/config";
-import type { Member, Post, PostDetails } from "@domx/shared";
+import type { Group, Member, Post, PostDetails } from "@domx/shared";
 
 export type WsOutgoingMessage =
   | { type: "joinGroup"; payload: { groupId: string } }
@@ -16,10 +16,10 @@ export type WsOutgoingMessage =
   | { type: "leaveGroup" | "deleteGroup"; payload: { groupId: string } };
 
 export type WsIncomingMessage =
-  | { type: "newMessage"; data: Post | PostDetails }
+  | { type: "newMessage"; data: PostDetails }
   | { type: "postEdited"; data: Partial<PostDetails> & { id: string } }
   | { type: "postDeleted"; data: { postId: string } }
-  | { type: "memberAdded"; data: Member; message?: string }
+  | { type: "memberAdded"; data: Member; group?: Group; message?: string }
   | {
       type: "memberPromoted" | "memberDemoted" | "memberKicked";
       data: { groupId: string; displayId: string };

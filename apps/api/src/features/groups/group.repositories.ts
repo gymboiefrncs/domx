@@ -157,6 +157,30 @@ export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
   return result.rows;
 };
 
+export const fetchUserGroupSummary = async (
+  userId: string,
+  groupId: string,
+): Promise<Group> => {
+  const query = `
+    SELECT
+    g.group_id,
+    g.name,
+    gm.role,
+    gm.last_seen_at,
+    COUNT(p.id) FILTER (WHERE p.created_at > gm.last_seen_at)::int AS unread_count,
+    (SELECT COUNT(*) FROM group_members WHERE group_id = g.group_id)::int AS member_count
+    FROM group_members gm
+    JOIN groups g ON g.group_id = gm.group_id
+    LEFT JOIN posts p ON p.group_id = g.group_id
+    WHERE gm.user_id = $1 AND g.group_id = $2
+    GROUP BY g.group_id, g.name, gm.role, gm.last_seen_at
+  `;
+
+  const values = [userId, groupId];
+  const result = await pool.query<Group>(query, values);
+  return result.rows[0]!;
+};
+
 export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
   const query = `SELECT gm.role, u.display_id, u.username
   FROM group_members gm

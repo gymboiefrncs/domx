@@ -2,6 +2,7 @@ import {
   addMember,
   deleteGroupById,
   demoteMember,
+  getUserGroupSummary,
   kickMember,
   leaveMember,
   promoteMember,
@@ -33,7 +34,16 @@ export const handleAddMember = async (
 
   const targetUserId = await fetchUserByDisplayId(displayId);
   if (targetUserId) {
-    sendToUserSockets(targetUserId, payload);
+    const groupSummary = await getUserGroupSummary(targetUserId, groupId);
+    const targetPayload = JSON.stringify({
+      type: "memberAdded",
+      data: newMember,
+      group: groupSummary,
+    });
+
+    if (targetUserId !== socket.userId) {
+      sendToUserSockets(targetUserId, targetPayload);
+    }
   }
 };
 

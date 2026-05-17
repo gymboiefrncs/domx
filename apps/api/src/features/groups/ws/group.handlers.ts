@@ -24,15 +24,15 @@ export const handleAddMember = async (
     throw new Error("Failed to add member");
   }
 
+  const targetUserId = await fetchUserByDisplayId(displayId);
   const payload = JSON.stringify({
     type: "memberAdded",
     data: newMember,
   });
 
   socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
+  broadcastToGroup(rooms, groupId, payload, socket, targetUserId ?? undefined);
 
-  const targetUserId = await fetchUserByDisplayId(displayId);
   if (targetUserId) {
     const groupSummary = await getUserGroupSummary(targetUserId, groupId);
     const targetPayload = JSON.stringify({

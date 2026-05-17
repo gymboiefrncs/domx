@@ -40,6 +40,7 @@ export const broadcastToGroup = (
   groupId: string,
   payload: string,
   requester?: ChatSocket,
+  targetId?: string,
 ): void => {
   const room = rooms.get(groupId);
   room?.forEach((client) => {
@@ -48,6 +49,9 @@ export const broadcastToGroup = (
      * This avoids duplicates
      */
     if (requester && client === requester) return;
+
+    // Exlcude the target user since they should receive a different payload
+    if (targetId && client.userId === targetId) return;
     client.send(payload);
   });
 };

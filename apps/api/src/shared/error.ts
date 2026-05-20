@@ -45,3 +45,7 @@ export class UnauthorizedError extends AppError {
 export class ForbiddenError extends AppError {
   readonly statusCode = 403;
 }
+
+export class RateLimitError extends Error {
+  readonly statusCode = 429;
+}

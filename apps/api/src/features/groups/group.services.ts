@@ -18,14 +18,14 @@ import {
 } from "./group.repositories.js";
 import { pool } from "@api/shared/db/db.js";
 import { GROUP_ERROR } from "./group.constants.js";
-import { PROFILE_ERROR } from "@api/features/profile/index.js";
+import { fetchProfile, PROFILE_ERROR } from "@api/features/profile/index.js";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup, Group, Member } from "@domx/shared";
+import type { CreateGroup, Group, Member, User } from "@domx/shared";
 
 export const getGroupMembers = async (
   groupId: string,
@@ -121,7 +121,7 @@ export const addMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<Member> => {
+): Promise<{ member: Member; groupDetail: Group; targetUserId: string }> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -138,7 +138,9 @@ export const addMember = async (
      * the global error handler. Any other error is re-thrown as-is.
      */
 
-    return await insertMember(groupId, targetUserId);
+    const member = await insertMember(groupId, targetUserId);
+    const groupDetail = await fetchUserGroupSummary(targetUserId, groupId);
+    return { member, groupDetail, targetUserId };
   } catch (error: unknown) {
     if (
       typeof error === "object" &&
@@ -201,7 +203,7 @@ export const kickMember = async (
 export const leaveMember = async (
   groupId: string,
   requesterId: string,
-): Promise<void> => {
+): Promise<User> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -251,6 +253,10 @@ export const leaveMember = async (
     // Regular members (or admins with co-admins) can leave freely
     const deleted = await deleteMember(requesterId, groupId, client);
     if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
+
+    const profile = await fetchProfile(requesterId);
+    if (!profile) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
+    return profile;
   });
 };
 

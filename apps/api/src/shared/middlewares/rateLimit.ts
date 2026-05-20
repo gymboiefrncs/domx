@@ -127,7 +127,13 @@ export const postLimiter: RequestHandler = createLimiter({
 
 export const wsConnectionLimiter = createSocketLimiter({
   keyPrefix: "ws-connection",
-  prodMax: 20,
+  prodMax: 15,
+  windowMs: 60 * 1000,
+});
+
+export const wsJoinGroupLimiter = createSocketLimiter({
+  keyPrefix: "ws-join-group",
+  prodMax: 30,
   windowMs: 60 * 1000,
 });
 

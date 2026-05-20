@@ -1,84 +1,76 @@
 import "dotenv/config";
-import { app } from "./app.js";
 import http from "http";
-import { WebSocketServer } from "ws";
-import { authenticateWs } from "./shared/middlewares/authenticateWs.js";
-import type { ChatSocket } from "./shared/types/ws.js";
-import { handleChatMessage } from "./features/posts/ws/post.ws.js";
-import {
-  handleGroupWsMessage,
-  isGroupWsAction,
-} from "./features/groups/index.js";
-import {
-  getRetryAfterSeconds,
-  wsConnectionLimiter,
-} from "./shared/middlewares/rateLimit.js";
-import {
-  registerUserSocket,
-  unregisterUserSocket,
-} from "./shared/ws/socketRegistry.js";
+import { Server } from "socket.io";
+import { RateLimitError, UnauthorizedError } from "./shared/error.js";
+import cookie from "cookie";
+import * as jose from "jose";
+import { config } from "./shared/config.js";
+import { registerGroupHandlers } from "./features/groups/ws/group.handlers.js";
+import { wsConnectionLimiter } from "./shared/middlewares/rateLimit.js";
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const server = http.createServer();
+const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
 
-const rooms = new Map<string, Set<ChatSocket>>();
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  },
+});
 
-wss.on("connection", async (socket: ChatSocket, req) => {
-  const ipKey = req.socket.remoteAddress ?? "unknown";
+io.use(async (socket, next) => {
   try {
-    await wsConnectionLimiter.consume(ipKey);
+    // TODO: use a more secure identifier for rate limiting
+    await wsConnectionLimiter.consume(socket.handshake.address);
+    next();
   } catch (error) {
-    const retryAfter = getRetryAfterSeconds(error);
-    socket.send(
-      JSON.stringify({
-        type: "error",
-        payload: "Too many WebSocket connections, try again later",
-        retryAfter,
-      }),
+    next(
+      new RateLimitError(
+        "Too many connection attempts. Please try again later.",
+      ),
     );
-    return socket.terminate();
   }
+});
 
-  const authenticate = await authenticateWs(socket, req);
-  if (!authenticate) return socket.terminate();
+io.use(async (socket, next) => {
+  try {
+    const rawCookie = socket.handshake.headers.cookie;
 
-  registerUserSocket(socket);
-
-  socket.on("message", async (data) => {
-    let parsed: { type: string; payload: unknown };
-
-    try {
-      parsed = JSON.parse(data.toString()) as {
-        type: string;
-        payload: unknown;
-      };
-    } catch {
-      socket.send(
-        JSON.stringify({ type: "error", payload: "Invalid message format" }),
-      );
-      return;
+    if (!rawCookie) {
+      return next(new UnauthorizedError("Invalid or expired token"));
     }
 
-    try {
-      // Checks if the incoming message type is for group WebSocket actions
-      if (isGroupWsAction(parsed.type)) {
-        await handleGroupWsMessage(parsed.type, parsed.payload, socket, rooms);
-      } else {
-        await handleChatMessage(parsed.type, parsed.payload, socket, rooms);
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unexpected server error";
-      socket.send(JSON.stringify({ type: "error", payload: message }));
-    }
-  });
-  socket.on("close", () => {
-    unregisterUserSocket(socket);
+    const cookies = cookie.parse(rawCookie);
+    const token = cookies.accessToken;
 
-    if (socket.groupId) {
-      rooms.get(socket.groupId)?.delete(socket);
+    if (!token) {
+      return next(new UnauthorizedError("Invalid or expired token"));
     }
-  });
+
+    const { payload } = await jose.jwtVerify(token, accessSecret);
+
+    const userId = payload.userId;
+
+    if (typeof userId !== "string") {
+      return next(new UnauthorizedError("Invalid token payload"));
+    }
+
+    socket.data.user = { id: userId };
+
+    next();
+  } catch (err) {
+    next(new UnauthorizedError("Invalid or expired token"));
+  }
+});
+
+io.on("connection", (socket) => {
+  /**
+   * Join a private room for the user to receive direct messages.
+   * This also handles multiple tabs open, since all their connections end up in the same room.
+   */
+  socket.join(socket.data.user.id);
+
+  registerGroupHandlers(io, socket);
 });
 
 server.listen(process.env.PORT, () => {

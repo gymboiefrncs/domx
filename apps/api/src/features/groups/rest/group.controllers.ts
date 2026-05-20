@@ -1,6 +1,5 @@
 import type { RequestHandler } from "express";
 import {
-  addMember,
   changeGroupName,
   createGroup,
   getGroupMembers,
@@ -65,19 +64,6 @@ export const handleChangeGroupName: RequestHandler<Params, never> = async (
 
   await changeGroupName(groupId, groupName, requesterId);
   res.status(204).send();
-};
-
-export const handleAddMember: RequestHandler<
-  Params,
-  GroupResponse<Member>
-> = async (req, res) => {
-  const { displayId, groupId } = req.params;
-  const requesterId = req.user!.userId;
-
-  const newMember = await addMember(groupId, displayId, requesterId);
-  res.status(201).json({
-    data: newMember,
-  });
 };
 
 export const handleDeleteGroup: RequestHandler<Params, never> = async (

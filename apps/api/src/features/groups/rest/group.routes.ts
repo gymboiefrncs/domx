@@ -1,7 +1,6 @@
 import express, { type Router } from "express";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
-  handleAddMember,
   handleChangeGroupName,
   handleCreateGroup,
   handleGetGroups,
@@ -13,17 +12,12 @@ import {
   validateBody,
   validateParams,
 } from "@api/shared/middlewares/validate.js";
-import {
-  GroupParamsSchema,
-  ManageMemberSchema,
-  GroupSchema,
-} from "../group.schemas.js";
+import { GroupParamsSchema, GroupSchema } from "../group.schemas.js";
 import {
   groupLimiter,
   createGroupLimiter,
 } from "@api/shared/middlewares/rateLimit.js";
 
-const manageMemberValidator = validateParams(ManageMemberSchema);
 const groupParamsValidator = validateParams(GroupParamsSchema);
 const groupValidator = validateBody(GroupSchema);
 
@@ -60,19 +54,6 @@ groupRouter.post(
   jwtHandler,
   groupValidator,
   handleCreateGroup,
-);
-groupRouter.post(
-  "/groups/:groupId/add/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handleAddMember,
-);
-
-groupRouter.post(
-  "/groups/:groupId/members/:displayId",
-  jwtHandler,
-  manageMemberValidator,
-  handleAddMember,
 );
 
 groupRouter.delete(

@@ -1,127 +1,189 @@
+import type { Server, Socket } from "socket.io";
 import {
   addMember,
   deleteGroupById,
   demoteMember,
-  getUserGroupSummary,
   kickMember,
   leaveMember,
   promoteMember,
 } from "../group.services.js";
-import type { ChatSocket } from "@api/shared/types/ws.js";
-import { fetchUserByDisplayId } from "../group.repositories.js";
-import { broadcastToGroup } from "../group-helper.js";
-import { sendToUserSockets } from "@api/shared/ws/socketRegistry.js";
-import { fetchProfile } from "@api/features/profile/index.js";
+import { performChecks } from "@api/features/posts/index.js";
+import {
+  getRetryAfterSeconds,
+  wsJoinGroupLimiter,
+  wsWritePostLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 
-export const handleAddMember = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId, displayId } = data as { groupId: string; displayId: string };
-  const newMember = await addMember(groupId, displayId, socket.userId);
-  if (!newMember) {
-    throw new Error("Failed to add member");
+function resolveErrorMessage(error: unknown, fallback: string): string {
+  const retryAfter = getRetryAfterSeconds(error);
+
+  if (retryAfter !== null) {
+    return `Too many attempts. Please try again in ${retryAfter} seconds.`;
   }
 
-  const targetUserId = await fetchUserByDisplayId(displayId);
-  const payload = JSON.stringify({
-    type: "memberAdded",
-    data: newMember,
-  });
+  return error instanceof Error ? error.message : fallback;
+}
 
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket, targetUserId ?? undefined);
+export function registerGroupHandlers(io: Server, socket: Socket) {
+  const actorId = socket.data.user.id;
 
-  if (targetUserId) {
-    const groupSummary = await getUserGroupSummary(targetUserId, groupId);
-    const targetPayload = JSON.stringify({
-      type: "memberAdded",
-      data: newMember,
-      group: groupSummary,
-    });
+  socket.on("group:join", async (groupId: string) => {
+    try {
+      await wsJoinGroupLimiter.consume(socket.data.user.id);
 
-    if (targetUserId !== socket.userId) {
-      sendToUserSockets(targetUserId, targetPayload);
+      await performChecks(groupId, actorId);
+      socket.join(groupId);
+    } catch (error) {
+      socket.emit("group:join:failed", {
+        message: resolveErrorMessage(error, "Unauthorized"),
+      });
     }
-  }
-};
-
-export const handlePromoteMember = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId, displayId } = data as { groupId: string; displayId: string };
-  await promoteMember(groupId, displayId, socket.userId);
-  const payload = JSON.stringify({
-    type: "memberPromoted",
-    data: { groupId, displayId },
-  });
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
-};
-
-export const handleDemoteMember = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId, displayId } = data as { groupId: string; displayId: string };
-  await demoteMember(groupId, displayId, socket.userId);
-  const payload = JSON.stringify({
-    type: "memberDemoted",
-    data: { groupId, displayId },
-  });
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
-};
-
-export const handleKickMember = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId, displayId } = data as { groupId: string; displayId: string };
-  await kickMember(groupId, displayId, socket.userId);
-  const payload = JSON.stringify({
-    type: "memberKicked",
-    data: { groupId, displayId },
-  });
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
-};
-
-export const handleLeaveGroup = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId } = data as { groupId: string };
-  await leaveMember(groupId, socket.userId);
-  const profile = await fetchProfile(socket.userId);
-
-  const payload = JSON.stringify({
-    type: "groupLeft",
-    data: { groupId, displayId: profile.display_id },
-  });
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
-};
-
-export const handleDeleteGroup = async (
-  data: unknown,
-  socket: ChatSocket,
-  rooms: Map<string, Set<ChatSocket>>,
-) => {
-  const { groupId } = data as { groupId: string };
-  await deleteGroupById(groupId, socket.userId);
-
-  const payload = JSON.stringify({
-    type: "groupDeleted",
-    data: { groupId },
   });
 
-  socket.send(payload);
-  broadcastToGroup(rooms, groupId, payload, socket);
-};
+  socket.on("group:leave", async (groupId: string) => {
+    socket.leave(groupId);
+  });
+
+  socket.on(
+    "group:member:add",
+    async ({
+      groupId,
+      targetUserDisplayId,
+    }: {
+      groupId: string;
+      targetUserDisplayId: string;
+    }) => {
+      try {
+        await wsWritePostLimiter.consume(socket.data.user.id);
+
+        const {
+          member: newMember,
+          groupDetail,
+          targetUserId,
+        } = await addMember(groupId, targetUserDisplayId, actorId);
+
+        io.to(groupId).emit("group:member:added", {
+          data: { newMember },
+          by: actorId,
+        });
+
+        /**
+         * send the group detail where the new user was added to so we can update
+         * the group list for that user
+         */
+        io.to(targetUserId).emit("group:summary", {
+          group: groupDetail,
+          type: "added",
+        });
+      } catch (error) {
+        socket.emit("group:member:add:failed", {
+          message: resolveErrorMessage(error, "Failed to add member"),
+        });
+      }
+    },
+  );
+
+  socket.on(
+    "group:member:kick",
+    async ({
+      groupId,
+      targetUserDisplayId,
+    }: {
+      groupId: string;
+      targetUserDisplayId: string;
+    }) => {
+      try {
+        await wsWritePostLimiter.consume(socket.data.user.id);
+
+        await kickMember(groupId, targetUserDisplayId, actorId);
+        io.to(groupId).emit("group:member:kicked", {
+          data: { groupId, targetUserDisplayId },
+          by: actorId,
+        });
+      } catch (error) {
+        socket.emit("group:member:kick:failed", {
+          message: resolveErrorMessage(error, "Failed to kick member"),
+        });
+      }
+    },
+  );
+
+  socket.on("group:member:leave", async ({ groupId }: { groupId: string }) => {
+    try {
+      await wsWritePostLimiter.consume(socket.data.user.id);
+
+      const { display_id } = await leaveMember(groupId, actorId);
+
+      io.to(groupId).emit("group:member:left", {
+        data: { groupId, displayId: display_id },
+      });
+    } catch (error) {
+      socket.emit("group:member:leave:failed", {
+        message: resolveErrorMessage(error, "Failed to leave group"),
+      });
+    }
+  });
+
+  socket.on(
+    "group:member:promote",
+    async ({
+      groupId,
+      targetUserDisplayId,
+    }: {
+      groupId: string;
+      targetUserDisplayId: string;
+    }) => {
+      try {
+        await wsWritePostLimiter.consume(socket.data.user.id);
+
+        await promoteMember(groupId, targetUserDisplayId, actorId);
+        io.to(groupId).emit("group:member:promoted", {
+          data: { groupId, targetUserDisplayId },
+          by: actorId,
+        });
+      } catch (error) {
+        socket.emit("group:member:promote:failed", {
+          message: resolveErrorMessage(error, "Failed to promote member"),
+        });
+      }
+    },
+  );
+
+  socket.on(
+    "group:member:demote",
+    async ({
+      groupId,
+      targetUserDisplayId,
+    }: {
+      groupId: string;
+      targetUserDisplayId: string;
+    }) => {
+      try {
+        await wsWritePostLimiter.consume(socket.data.user.id);
+
+        await demoteMember(groupId, targetUserDisplayId, actorId);
+        io.to(groupId).emit("group:member:demoted", {
+          data: { groupId, targetUserDisplayId },
+          by: actorId,
+        });
+      } catch (error) {
+        socket.emit("group:member:demote:failed", {
+          message: resolveErrorMessage(error, "Failed to demote member"),
+        });
+      }
+    },
+  );
+
+  socket.on("group:delete", async ({ groupId }: { groupId: string }) => {
+    try {
+      await wsWritePostLimiter.consume(socket.data.user.id);
+
+      await deleteGroupById(groupId, actorId);
+      io.to(groupId).emit("group:deleted", { data: { groupId }, by: actorId });
+    } catch (error) {
+      socket.emit("group:delete:failed", {
+        message: resolveErrorMessage(error, "Failed to delete group"),
+      });
+    }
+  });
+}

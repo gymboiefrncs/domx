@@ -4,7 +4,6 @@ import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import { GROUP_ERROR } from "./group.constants.js";
 import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import { fetchUserByDisplayId } from "./group.repositories.js";
-import type { ChatSocket } from "@api/shared/types/ws.js";
 
 /**
  * Shared preamble for group member actions.
@@ -33,43 +32,4 @@ export const resolveGroupAction = async (
   if (!userId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
   return { userId, requesterRole };
-};
-
-export const broadcastToGroup = (
-  rooms: Map<string, Set<ChatSocket>>,
-  groupId: string,
-  payload: string,
-  requester?: ChatSocket,
-  targetId?: string,
-): void => {
-  const room = rooms.get(groupId);
-  room?.forEach((client) => {
-    /**
-     * Exclude the requester's socket connection because the requester already gets a direct response
-     * This avoids duplicates
-     */
-    if (requester && client === requester) return;
-
-    // Exlcude the target user since they should receive a different payload
-    if (targetId && client.userId === targetId) return;
-    client.send(payload);
-  });
-};
-
-export const sendToUserFromRooms = (
-  rooms: Map<string, Set<ChatSocket>>,
-  userId: string,
-  payload: string,
-): void => {
-  const sentSockets = new Set<ChatSocket>();
-
-  rooms.forEach((room) => {
-    room.forEach((client) => {
-      if (client.userId !== userId || sentSockets.has(client)) return;
-      if (client.readyState !== client.OPEN) return;
-
-      client.send(payload);
-      sentSockets.add(client);
-    });
-  });
 };

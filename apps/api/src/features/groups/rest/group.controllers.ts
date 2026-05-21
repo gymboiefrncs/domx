@@ -53,25 +53,3 @@ export const handleCreateGroup: RequestHandler<
     data: newGroup,
   });
 };
-
-export const handleChangeGroupName: RequestHandler<Params, never> = async (
-  req,
-  res,
-) => {
-  const { groupId } = req.params;
-  const { groupName } = req.body;
-  const requesterId = req.user!.userId;
-
-  await changeGroupName(groupId, groupName, requesterId);
-  res.status(204).send();
-};
-
-export const handleDeleteGroup: RequestHandler<Params, never> = async (
-  req,
-  res,
-) => {
-  const { groupId } = req.params;
-  const requesterId = req.user!.userId;
-  await deleteGroupById(groupId, requesterId);
-  res.status(204).send();
-};

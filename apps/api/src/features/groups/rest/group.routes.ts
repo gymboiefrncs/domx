@@ -1,12 +1,10 @@
 import express, { type Router } from "express";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import {
-  handleChangeGroupName,
   handleCreateGroup,
   handleGetGroups,
   handleGetMembers,
   handleUpdateSeen,
-  handleDeleteGroup,
 } from "./group.controllers.js";
 import {
   validateBody,
@@ -35,13 +33,6 @@ groupRouter.get(
 );
 
 groupRouter.patch(
-  "/groups/:groupId/name",
-  jwtHandler,
-  groupValidator,
-  handleChangeGroupName,
-);
-
-groupRouter.patch(
   "/groups/:groupId/seen",
   jwtHandler,
   groupParamsValidator,
@@ -54,11 +45,4 @@ groupRouter.post(
   jwtHandler,
   groupValidator,
   handleCreateGroup,
-);
-
-groupRouter.delete(
-  "/groups/:groupId",
-  jwtHandler,
-  groupParamsValidator,
-  handleDeleteGroup,
 );

@@ -7,11 +7,13 @@ import * as jose from "jose";
 import { config } from "./shared/config.js";
 import { registerGroupHandlers } from "./features/groups/ws/group.handlers.js";
 import { wsConnectionLimiter } from "./shared/middlewares/rateLimit.js";
+import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
+import { getUserGroups } from "./features/groups/group.services.js";
 
 const server = http.createServer();
 const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
 
-const io = new Server(server, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
     credentials: true,
@@ -63,12 +65,15 @@ io.use(async (socket, next) => {
   }
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   /**
    * Join a private room for the user to receive direct messages.
    * This also handles multiple tabs open, since all their connections end up in the same room.
    */
   socket.join(socket.data.user.id);
+
+  const groups = await getUserGroups(socket.data.user.id);
+  groups.forEach((group) => socket.join(group.group_id));
 
   registerGroupHandlers(io, socket);
 });

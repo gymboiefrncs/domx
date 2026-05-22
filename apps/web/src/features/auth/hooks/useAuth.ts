@@ -7,7 +7,7 @@ import {
   setInfo,
   signup,
   verifyOTP,
-} from "../transport/auth.api";
+} from "../api/auth.api";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/shared/lib/errors";
 import type {
@@ -24,7 +24,7 @@ export const useLogin = (): LoginState => {
   const { mutate: handleLogin, isPending: loading } = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       login(email, password),
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("Logged in successfully", { duration: 2000 });
       navigate({ to: "/groups", replace: true });
     },
@@ -101,7 +101,7 @@ export const useSetInfo = (): SetInfoState => {
       username: string;
       password: string;
     }) => setInfo(username, password),
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("Welcome!");
       navigate({ to: "/groups", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");

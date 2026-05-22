@@ -1,7 +1,7 @@
-import { useMe } from "@/features/profile";
+import { Route } from "@/routes/_authenticated/groups";
 
 export const GroupSettingsPage = () => {
-  const { data: user } = useMe();
+  const { auth: user } = Route.useRouteContext();
   console.log("GroupSettingsPage rendered");
   console.log("GroupSettingsPage user data:", user);
   return (

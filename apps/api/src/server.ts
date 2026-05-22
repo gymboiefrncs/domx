@@ -9,8 +9,9 @@ import { registerGroupHandlers } from "./features/groups/ws/group.handlers.js";
 import { wsConnectionLimiter } from "./shared/middlewares/rateLimit.js";
 import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import { getUserGroups } from "./features/groups/group.services.js";
+import { app } from "./app.js";
 
-const server = http.createServer();
+const server = http.createServer(app);
 const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {

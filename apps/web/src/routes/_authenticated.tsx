@@ -1,20 +1,21 @@
-import { GroupProvider } from "@/providers/GroupContext";
-import { fetchProfile } from "@/features/profile";
-import { queryClient } from "@/shared/lib/queryClient";
 import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
 import { Nav } from "@/shared/components/Nav";
+import { meQueryOptions } from "@/features/profile/hooks/useProfile";
 
 export const Route = createFileRoute("/_authenticated")({
-  loader: async () => {
-    // If fetchProfile fails, the user is not authenticated; redirect to login.
+  beforeLoad: async ({ context, location }) => {
     try {
-      await queryClient.ensureQueryData({
-        queryKey: ["profile", "me"],
-        queryFn: fetchProfile,
-        staleTime: Infinity,
+      const user = await context.queryClient.ensureQueryData(meQueryOptions);
+
+      if (!user) {
+        throw redirect({ to: "/login", search: { redirect: location.href } });
+      }
+      return { auth: user };
+    } catch (error) {
+      throw redirect({
+        to: "/login",
+        search: { redirect: location.href },
       });
-    } catch {
-      throw redirect({ to: "/login" });
     }
   },
   staleTime: Infinity,
@@ -23,9 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
       <div className="app-shell">
         <Nav />
         <div className="main-pane">
-          <GroupProvider>
-            <Outlet />
-          </GroupProvider>
+          <Outlet />
         </div>
       </div>
     );

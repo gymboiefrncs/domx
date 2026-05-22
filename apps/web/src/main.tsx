@@ -6,7 +6,10 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { queryClient } from "@/shared/lib/queryClient";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  context: { queryClient, auth: null },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -17,9 +20,7 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <RouterProvider router={router} context={{ queryClient, auth: null }} />
     </QueryClientProvider>
   </StrictMode>,
 );
-
-// TODO: migrate to tanstack query for data fetching instead of useEffect

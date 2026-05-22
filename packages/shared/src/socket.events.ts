@@ -1,4 +1,4 @@
-import type { Group } from "./group.js";
+import type { Group, Member } from "./group.js";
 
 export interface GroupMemberPayload {
   groupId: string;
@@ -46,7 +46,7 @@ interface GroupRenamedResponse {
   by: string;
 }
 interface GroupAddMemberResponse {
-  data: { newMember: unknown };
+  data: { groupId: string; newMember: Member };
   by: string;
 }
 interface GroupSummaryResponse {

@@ -1,19 +1,25 @@
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { createRootRoute, redirect } from "@tanstack/react-router";
+import type { User } from "@domx/shared";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext } from "@tanstack/react-router";
 import { Outlet } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 
-export const Route = createRootRoute({
-  beforeLoad: () => {
-    if (location.pathname === "/") {
-      throw redirect({ to: "/login" });
-    }
-  },
+export interface RouterContext {
+  queryClient: QueryClient;
+  auth: User | null;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFoundPage,
-  component: () => (
+  component: RootLayout,
+});
+
+function RootLayout() {
+  return (
     <>
       <Toaster position="top-right" />
       <Outlet />
     </>
-  ),
-});
+  );
+}

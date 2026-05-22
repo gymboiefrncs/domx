@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   login,
   logout,
@@ -19,17 +19,13 @@ import type {
 } from "../types";
 
 export const useLogin = (): LoginState => {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const router = useRouter();
 
   const { mutate: handleLogin, isPending: loading } = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       login(email, password),
     onSuccess: async () => {
       toast.success("Logged in successfully", { duration: 2000 });
-      await queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
-      router.invalidate();
       navigate({ to: "/groups", replace: true });
     },
     onError: (err) => {
@@ -62,6 +58,7 @@ export const useSignup = (): SignupState => {
         navigate({ to: "/setup-profile", replace: true });
         return;
       }
+      // store email in session to be used in OTP verification step
       sessionStorage.setItem("OTP_EMAIL", email);
       navigate({ to: "/otp", replace: true });
     },
@@ -94,9 +91,7 @@ export const useVerifyOTP = (): VerifyOTPState => {
 };
 
 export const useSetInfo = (): SetInfoState => {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const router = useRouter();
 
   const { mutate: handleSetInfo, isPending: loading } = useMutation({
     mutationFn: ({
@@ -108,8 +103,6 @@ export const useSetInfo = (): SetInfoState => {
     }) => setInfo(username, password),
     onSuccess: async () => {
       toast.success("Welcome!");
-      await queryClient.invalidateQueries({ queryKey: ["profile", "me"] });
-      router.invalidate();
       navigate({ to: "/groups", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");
     },

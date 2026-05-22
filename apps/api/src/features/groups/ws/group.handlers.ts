@@ -60,7 +60,7 @@ export function registerGroupHandlers(
       } = await addMember(groupId, targetUserDisplayId, actorId);
 
       io.to(groupId).emit("group:member:added", {
-        data: { newMember },
+        data: { groupId, newMember },
         by: actorId,
       });
 

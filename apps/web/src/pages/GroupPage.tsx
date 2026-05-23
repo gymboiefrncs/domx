@@ -1,14 +1,34 @@
-import { Route } from "@/routes/_authenticated/groups";
+import { useGroups } from "@/features/groups/hooks/useGroup";
+import { useModalStore } from "@/features/groups/store/group.modal";
+import { CreateGroupModal } from "@/features/groups/components/CreateGroupModal";
 
 export const GroupPage = () => {
-  const { auth: user } = Route.useRouteContext();
-  console.log("GroupPage rendered");
-  console.log("User data in GroupPage:", user);
+  const { data: groups, isLoading, isError } = useGroups();
+  const openModal = useModalStore((state) => state.openModal);
+  if (isLoading) return <p>Loading groups...</p>;
+  if (isError) return <p>Error loading groups.</p>;
   return (
     <div>
       <h1>Group Page</h1>
       {/* TODO: add design */}
       {/* TODO: add group list */}
+
+      {groups && groups.length > 0 ? (
+        <ul>
+          {groups.map((group) => (
+            <li key={group.group_id}>
+              <p>group: {group.name}</p>
+              <p>{group.member_count} members</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No groups found.</p>
+      )}
+      <button className="btn btn-primary" onClick={openModal}>
+        +
+      </button>
+      <CreateGroupModal />
     </div>
   );
 };

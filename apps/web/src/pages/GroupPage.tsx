@@ -1,6 +1,7 @@
 import { useGroups } from "@/features/groups/hooks/useGroup";
 import { useModalStore } from "@/features/groups/store/group.modal";
 import { CreateGroupModal } from "@/features/groups/components/CreateGroupModal";
+import { Link } from "@tanstack/react-router";
 
 export const GroupPage = () => {
   const { data: groups, isLoading, isError } = useGroups();
@@ -17,7 +18,9 @@ export const GroupPage = () => {
         <ul>
           {groups.map((group) => (
             <li key={group.group_id}>
-              <p>group: {group.name}</p>
+              <Link to={`/groups/$id`} params={{ id: group.group_id }}>
+                <p>group: {group.name}</p>
+              </Link>
               <p>{group.member_count} members</p>
             </li>
           ))}

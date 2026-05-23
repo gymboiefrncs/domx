@@ -37,10 +37,14 @@ export const useLogin = (): LoginState => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { mutate: handleLogout, isPending: loadingLogout } = useMutation({
     mutationFn: logout,
-    onSuccess: () => queryClient.clear(),
+    onSuccess: () => {
+      queryClient.clear();
+      navigate({ to: "/login", replace: true });
+    },
     onError: (err) => {
       toast.error(getErrorMessage(err));
     },

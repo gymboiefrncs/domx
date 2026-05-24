@@ -1,4 +1,4 @@
-import { createGroup, fetchGroups } from "../api/group.api";
+import { createGroup, fetchGroupMembers, fetchGroups } from "../api/group.api";
 import {
   queryOptions,
   useMutation,
@@ -32,3 +32,9 @@ export const useCreateGroup = () => {
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 };
+
+export const useGroupMembers = (groupId: string) =>
+  useQuery({
+    queryKey: ["groups", groupId, "members"],
+    queryFn: () => fetchGroupMembers(groupId),
+  });

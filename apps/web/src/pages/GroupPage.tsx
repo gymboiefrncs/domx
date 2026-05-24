@@ -18,7 +18,7 @@ export const GroupPage = () => {
         <ul>
           {groups.map((group) => (
             <li key={group.group_id}>
-              <Link to={`/groups/$id`} params={{ id: group.group_id }}>
+              <Link to={`/groups/$id/chat`} params={{ id: group.group_id }}>
                 <p>group: {group.name}</p>
               </Link>
               <p>{group.member_count} members</p>

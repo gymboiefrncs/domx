@@ -17,7 +17,8 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedGroupsIndexRouteImport } from './routes/_authenticated/groups/index'
-import { Route as AuthenticatedGroupsIdRouteImport } from './routes/_authenticated/groups/$id'
+import { Route as AuthenticatedGroupsIdSettingsRouteImport } from './routes/_authenticated/groups/$id/settings'
+import { Route as AuthenticatedGroupsIdChatRouteImport } from './routes/_authenticated/groups/$id/chat'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -59,11 +60,18 @@ const AuthenticatedGroupsIndexRoute =
     path: '/groups/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedGroupsIdRoute = AuthenticatedGroupsIdRouteImport.update({
-  id: '/groups/$id',
-  path: '/groups/$id',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedGroupsIdSettingsRoute =
+  AuthenticatedGroupsIdSettingsRouteImport.update({
+    id: '/groups/$id/settings',
+    path: '/groups/$id/settings',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedGroupsIdChatRoute =
+  AuthenticatedGroupsIdChatRouteImport.update({
+    id: '/groups/$id/chat',
+    path: '/groups/$id/chat',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,8 +80,9 @@ export interface FileRoutesByFullPath {
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/groups/$id': typeof AuthenticatedGroupsIdRoute
   '/groups/': typeof AuthenticatedGroupsIndexRoute
+  '/groups/$id/chat': typeof AuthenticatedGroupsIdChatRoute
+  '/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,8 +91,9 @@ export interface FileRoutesByTo {
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/groups/$id': typeof AuthenticatedGroupsIdRoute
   '/groups': typeof AuthenticatedGroupsIndexRoute
+  '/groups/$id/chat': typeof AuthenticatedGroupsIdChatRoute
+  '/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,8 +104,9 @@ export interface FileRoutesById {
   '/setup-profile': typeof SetupProfileRoute
   '/signup': typeof SignupRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/groups/$id': typeof AuthenticatedGroupsIdRoute
   '/_authenticated/groups/': typeof AuthenticatedGroupsIndexRoute
+  '/_authenticated/groups/$id/chat': typeof AuthenticatedGroupsIdChatRoute
+  '/_authenticated/groups/$id/settings': typeof AuthenticatedGroupsIdSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -106,8 +117,9 @@ export interface FileRouteTypes {
     | '/setup-profile'
     | '/signup'
     | '/profile'
-    | '/groups/$id'
     | '/groups/'
+    | '/groups/$id/chat'
+    | '/groups/$id/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -116,8 +128,9 @@ export interface FileRouteTypes {
     | '/setup-profile'
     | '/signup'
     | '/profile'
-    | '/groups/$id'
     | '/groups'
+    | '/groups/$id/chat'
+    | '/groups/$id/settings'
   id:
     | '__root__'
     | '/'
@@ -127,8 +140,9 @@ export interface FileRouteTypes {
     | '/setup-profile'
     | '/signup'
     | '/_authenticated/profile'
-    | '/_authenticated/groups/$id'
     | '/_authenticated/groups/'
+    | '/_authenticated/groups/$id/chat'
+    | '/_authenticated/groups/$id/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,11 +212,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/groups/$id': {
-      id: '/_authenticated/groups/$id'
-      path: '/groups/$id'
-      fullPath: '/groups/$id'
-      preLoaderRoute: typeof AuthenticatedGroupsIdRouteImport
+    '/_authenticated/groups/$id/settings': {
+      id: '/_authenticated/groups/$id/settings'
+      path: '/groups/$id/settings'
+      fullPath: '/groups/$id/settings'
+      preLoaderRoute: typeof AuthenticatedGroupsIdSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/groups/$id/chat': {
+      id: '/_authenticated/groups/$id/chat'
+      path: '/groups/$id/chat'
+      fullPath: '/groups/$id/chat'
+      preLoaderRoute: typeof AuthenticatedGroupsIdChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -210,14 +231,16 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedGroupsIdRoute: typeof AuthenticatedGroupsIdRoute
   AuthenticatedGroupsIndexRoute: typeof AuthenticatedGroupsIndexRoute
+  AuthenticatedGroupsIdChatRoute: typeof AuthenticatedGroupsIdChatRoute
+  AuthenticatedGroupsIdSettingsRoute: typeof AuthenticatedGroupsIdSettingsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
-  AuthenticatedGroupsIdRoute: AuthenticatedGroupsIdRoute,
   AuthenticatedGroupsIndexRoute: AuthenticatedGroupsIndexRoute,
+  AuthenticatedGroupsIdChatRoute: AuthenticatedGroupsIdChatRoute,
+  AuthenticatedGroupsIdSettingsRoute: AuthenticatedGroupsIdSettingsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

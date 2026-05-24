@@ -1,11 +1,9 @@
 import type { RequestHandler } from "express";
 import {
-  changeGroupName,
   createGroup,
   getGroupMembers,
   getUserGroups,
   updateLastSeen,
-  deleteGroupById,
 } from "../group.services.js";
 import type { GroupResponse, Params } from "../group.types.js";
 import type { Group, Member } from "@domx/shared";

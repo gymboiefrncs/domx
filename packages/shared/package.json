@@ -19,8 +19,6 @@
   },
   "devDependencies": {
     "@domx/eslint-config": "workspace:*",
-    "@domx/typescript-config": "workspace:*",
-    "eslint": "^10.0.0",
-    "typescript": "^5.9.3"
+    "@domx/typescript-config": "workspace:*"
   }
 }

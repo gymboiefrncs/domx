@@ -5,6 +5,22 @@ import { useEffect } from "react";
 import { socket } from "@/shared/lib/socket/socket.client";
 import { useGroupSocketEvents } from "@/features/groups/hooks/useGroupSocketEvents";
 
+function AuthenticatedLayout() {
+  useGroupSocketEvents();
+  useEffect(() => {
+    if (!socket.connected) socket.connect();
+  }, []);
+
+  return (
+    <div className="app-shell">
+      <Nav />
+      <div className="main-pane">
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ context, location }) => {
     try {
@@ -14,7 +30,7 @@ export const Route = createFileRoute("/_authenticated")({
         throw redirect({ to: "/login", search: { redirect: location.href } });
       }
       return { auth: user };
-    } catch (error) {
+    } catch {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },
@@ -22,19 +38,5 @@ export const Route = createFileRoute("/_authenticated")({
     }
   },
   staleTime: Infinity,
-  component: () => {
-    useGroupSocketEvents();
-    useEffect(() => {
-      if (!socket.connected) socket.connect();
-    }, []);
-
-    return (
-      <div className="app-shell">
-        <Nav />
-        <div className="main-pane">
-          <Outlet />
-        </div>
-      </div>
-    );
-  },
+  component: AuthenticatedLayout,
 });

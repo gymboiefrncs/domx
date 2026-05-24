@@ -26,7 +26,7 @@ io.use(async (socket, next) => {
     // TODO: use a more secure identifier for rate limiting
     await wsConnectionLimiter.consume(socket.handshake.address);
     next();
-  } catch (error) {
+  } catch {
     next(
       new RateLimitError(
         "Too many connection attempts. Please try again later.",
@@ -61,7 +61,7 @@ io.use(async (socket, next) => {
     socket.data.user = { id: userId };
 
     next();
-  } catch (err) {
+  } catch {
     next(new UnauthorizedError("Invalid or expired token"));
   }
 });

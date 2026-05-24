@@ -1,9 +1,12 @@
-import { useGroupMembers } from "@/features/groups/hooks/useGroup";
+import { AddMemberModal } from "@/features/groups/components/AddMemberModal";
+import { useGroupMembers, useGroups } from "@/features/groups/hooks/useGroup";
+import { useModalStore } from "@/features/groups/store/group.modal";
 import { useParams } from "@tanstack/react-router";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/settings" });
-  console.log("group id: ", id);
+  const { data } = useGroups();
+  const openModal = useModalStore((state) => state.openModal);
   const { data: members, isLoading, isError } = useGroupMembers(id);
   if (isLoading) return <p>Loading members...</p>;
   if (isError) return <p>Error loading members.</p>;
@@ -13,6 +16,11 @@ export const GroupSettingsPage = () => {
       {/* TODO: add design */}
       <p>Members:</p>
       <ul>
+        <p>member count</p>
+        <p>
+          {data?.find((group) => group.group_id === id)?.member_count}{" "}
+          members{" "}
+        </p>
         {members && members.length > 0 ? (
           members.map((member) => (
             <li key={member.display_id}>
@@ -23,7 +31,13 @@ export const GroupSettingsPage = () => {
           <p>No members found.</p>
         )}
       </ul>
-      <p></p>
+      <button
+        className="btn btn-primary"
+        onClick={() => openModal("add-member")}
+      >
+        Add Member
+      </button>
+      <AddMemberModal />
     </div>
   );
 };

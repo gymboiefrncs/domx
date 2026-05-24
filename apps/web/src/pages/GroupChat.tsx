@@ -5,6 +5,7 @@ import { Link, useParams } from "@tanstack/react-router";
 export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/chat" });
   const queryClient = useQueryClient();
+
   const group = queryClient
     .getQueryData<Group[]>(["groups"])
     ?.find((g) => g.group_id === id);

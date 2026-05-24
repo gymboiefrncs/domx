@@ -17,6 +17,7 @@ import type {
   SignupState,
   VerifyOTPState,
 } from "../types";
+import { socket } from "@/shared/lib/socket/socket.client";
 
 export const useLogin = (): LoginState => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export const useLogin = (): LoginState => {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       login(email, password),
     onSuccess: () => {
+      socket.connect();
       toast.success("Logged in successfully", { duration: 2000 });
       navigate({ to: "/groups", replace: true });
     },
@@ -42,6 +44,7 @@ export const useLogout = () => {
   const { mutate: handleLogout, isPending: loadingLogout } = useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      socket.disconnect();
       queryClient.clear();
       navigate({ to: "/login", replace: true });
     },
@@ -106,6 +109,7 @@ export const useSetInfo = (): SetInfoState => {
       password: string;
     }) => setInfo(username, password),
     onSuccess: () => {
+      socket.connect();
       toast.success("Welcome!");
       navigate({ to: "/groups", replace: true });
       sessionStorage.removeItem("OTP_EMAIL");

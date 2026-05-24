@@ -41,15 +41,15 @@ export interface GroupDeleteResponse {
 export interface GroupMemberLeftResponse {
   data: { groupId: string; displayId: string };
 }
-interface GroupRenamedResponse {
+export interface GroupRenamedResponse {
   data: { groupId: string; newName: string };
   by: string;
 }
-interface GroupAddMemberResponse {
-  data: { groupId: string; newMember: Member };
+export interface GroupAddMemberResponse {
+  data: { groupId: string; newMember: Member; groupDetail: Group };
   by: string;
 }
-interface GroupSummaryResponse {
+export interface GroupSummaryResponse {
   group: Group;
   type: "added";
 }

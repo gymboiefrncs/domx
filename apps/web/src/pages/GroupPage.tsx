@@ -28,7 +28,10 @@ export const GroupPage = () => {
       ) : (
         <p>No groups found.</p>
       )}
-      <button className="btn btn-primary" onClick={openModal}>
+      <button
+        className="btn btn-primary"
+        onClick={() => openModal("create-group")}
+      >
         +
       </button>
       <CreateGroupModal />

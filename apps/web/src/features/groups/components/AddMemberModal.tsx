@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { useModalStore } from "../store/group.modal";
-import { useCreateGroup } from "../hooks/useGroup";
+import { socket } from "@/shared/lib/socket/socket.client";
+import { useParams } from "@tanstack/react-router";
 
-export const CreateGroupModal = () => {
+export const AddMemberModal = () => {
   const { activeModalId, closeModal } = useModalStore();
-  const [groupName, setGroupName] = useState("");
-  const { mutate: createGroup, isPending } = useCreateGroup();
+  const [displayId, setDisplayId] = useState("");
+  const { id } = useParams({ from: "/_authenticated/groups/$id/settings" });
 
-  if (activeModalId !== "create-group") return null;
+  if (activeModalId !== "add-member") return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupName.trim()) return;
-    createGroup(groupName, {
-      onSuccess: () => {
-        setGroupName("");
-        closeModal();
-      },
+    if (!displayId.trim()) return;
+    socket.emit("group:member:add", {
+      groupId: id,
+      targetUserDisplayId: displayId,
     });
+    setDisplayId("");
+    closeModal();
   };
 
   return (
@@ -30,22 +31,21 @@ export const CreateGroupModal = () => {
         >
           &times;
         </button>
-        <h3 className="font-bold text-2xl mb-4 text-gray-800">Create Group</h3>
+        <h3 className="font-bold text-2xl mb-4 text-gray-800">Add Member</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
-              htmlFor="groupName"
+              htmlFor="addMember"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Group Name
+              Member Display ID
             </label>
             <input
-              id="groupName"
+              id="addMember"
               type="text"
               className="input input-bordered w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={groupName}
-              disabled={isPending}
-              onChange={(e) => setGroupName(e.target.value)}
+              value={displayId}
+              onChange={(e) => setDisplayId(e.target.value)}
               autoFocus
             />
           </div>
@@ -58,7 +58,7 @@ export const CreateGroupModal = () => {
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              Create
+              Add
             </button>
           </div>
         </form>

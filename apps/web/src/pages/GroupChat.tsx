@@ -1,21 +1,18 @@
-import type { Group } from "@domx/shared";
-import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, Send, Settings } from "lucide-react";
 import { useState } from "react";
 import { getInitials } from "@/features/groups/components/main-page/GroupAvatar";
+import { useGroups } from "@/features/groups/hooks/useGroup";
 
 export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/chat" });
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const group = queryClient
-    .getQueryData<Group[]>(["groups"])
-    ?.find((g) => g.group_id === id);
+  const { data: groups } = useGroups();
+  const group = groups?.find((g) => g.group_id === id);
 
   return (
     <div className="flex flex-col h-full">

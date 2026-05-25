@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft } from "lucide-react";
-import { useState } from "react";
 import { GroupHero } from "@/features/groups/components/settings/Hero";
 import { MemberListItem } from "@/features/groups/components/settings/MemberList";
 import { GroupDangerZone } from "@/features/groups/components/settings/DangerZone";
@@ -17,8 +16,6 @@ export const GroupSettingsPage = () => {
   const { data: members, isLoading, isError } = useGroupMembers(id);
   const navigate = useNavigate();
   const group = groups?.find((g) => g.group_id === id);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [groupName, setGroupName] = useState(group?.name ?? "");
 
   if (isLoading)
     return (
@@ -53,10 +50,7 @@ export const GroupSettingsPage = () => {
       {/* TODO: add rename functionality */}
       <GroupHero
         name={group?.name ?? ""}
-        isEditing={isEditingName}
-        onEditStart={() => setIsEditingName(true)}
-        onEditEnd={() => setIsEditingName(false)}
-        onNameChange={setGroupName}
+        groupId={group?.group_id ?? ""}
         onAddMember={() => openModal("add-member")}
       />
 

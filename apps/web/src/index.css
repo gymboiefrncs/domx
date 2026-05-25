@@ -48,7 +48,7 @@
     @apply flex items-center justify-center;
   }
   .otp-input {
-    @apply h-12 w-full rounded-md border border-input bg-transparent text-center text-lg font-medium 
+    @apply h-12 w-full rounded-md border border-input bg-transparent text-center text-lg font-medium;
     @apply text-foreground shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring;
   }
   .nav {

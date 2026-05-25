@@ -44,7 +44,6 @@ export const Nav = () => {
         trigger={
           <Button
             variant="destructive"
-            onClick={() => handleLogout()}
             className="mt-auto hidden w-full md:flex"
             size="lg"
           >

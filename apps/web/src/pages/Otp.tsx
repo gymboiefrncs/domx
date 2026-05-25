@@ -1,7 +1,14 @@
-import { SpinnerIcon } from "@/shared/assets/icons";
 import { useResendOTP, useVerifyOTP } from "@/features/auth/index";
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
 import { Navigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const OTP_LENGTH = 6;
 
@@ -11,40 +18,21 @@ export default function OtpPage() {
   const { handleResendOTP, loading: loadingResend } = useResendOTP();
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
-  /**
-   * Retrieve the email from sessionStorage which was set during the signup step.
-   * Navigatete back to signup if email is not found which can only happen if user directly navigates to /otp
-   */
   const email = sessionStorage.getItem("OTP_EMAIL");
-  if (!email) {
-    // Use TanStack's Navigate for the guard redirect.
-    return <Navigate to="/signup" replace={true} />;
-  }
+  if (!email) return <Navigate to="/signup" replace={true} />;
 
   const handleChange = (value: string, index: number): void => {
-    // Rejects any non-hex charcaters early to prevent users from entering invalid OTP values
     if (!/^[0-9a-f]$/.test(value)) return;
-
     const next = [...otp];
     next[index] = value;
     setOtp(next);
-
-    // Auto-advance focus so the user doesn't have to click each box manually
-    if (value && index < OTP_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
-    }
+    if (value && index < OTP_LENGTH - 1) inputs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (
     e: KeyboardEvent<HTMLInputElement>,
     index: number,
   ): void => {
-    /**
-     * Backspace on empty input should move focus to the previous input and clear it
-     * Backspace on non-empty input should just clear the current input
-     *
-     * This allows users to easily correct mistakes without having to manually click each input
-     */
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputs.current[index - 1]?.focus();
       const prev = [...otp];
@@ -57,77 +45,80 @@ export default function OtpPage() {
     }
   };
 
-  /**
-   * Flag to determine if the all inputs are filled
-   * Returns false if any input is empty
-   */
-  const isComplete: boolean = otp.every(Boolean);
+  const isComplete = otp.every(Boolean);
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h5 className="mb-5 text-sm font-medium uppercase tracking-wide text-text md:mb-6 md:text-base">
-          Verify your email
-        </h5>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Verify your email
+          </CardTitle>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            If this email exists we'll send you an OTP.
+          </p>
+        </CardHeader>
 
-        <p className="mb-4 text-sm font-normal leading-relaxed text-text-secondary md:text-base">
-          If this email exist we will send you an OTP.
-        </p>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleVerifyOTP({ email, otp: otp.join("") });
-          }}
-        >
-          <div className="mb-6 flex justify-between gap-2 md:gap-3">
-            {otp.map((char, i) => (
-              <input
-                key={i}
-                ref={(el) => {
-                  inputs.current[i] = el;
-                }}
-                type="text"
-                maxLength={1}
-                value={char}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleChange(e.target.value, i)
-                }
-                onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
-                  handleKeyDown(e, i)
-                }
-                className="input text-center"
-              />
-            ))}
-          </div>
-          <button
-            type="submit"
-            disabled={!isComplete}
-            className="btn w-full disabled:opacity-30 disabled:cursor-not-allowed"
+        <CardContent>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleVerifyOTP({ email, otp: otp.join("") });
+            }}
+            className="space-y-6"
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <SpinnerIcon className="h-4 w-4 spinner" />
-                Verifying...
-              </span>
-            ) : (
-              "Verify"
-            )}
-          </button>
-        </form>
+            <div className="flex justify-between gap-2">
+              {otp.map((char, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    inputs.current[i] = el;
+                  }}
+                  type="text"
+                  maxLength={1}
+                  value={char}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    handleChange(e.target.value, i)
+                  }
+                  onKeyDown={(e: KeyboardEvent<HTMLInputElement>) =>
+                    handleKeyDown(e, i)
+                  }
+                  className="otp-input"
+                />
+              ))}
+            </div>
 
-        <p className="mt-5 text-center text-sm font-normal leading-relaxed text-text-muted md:text-base">
-          Didn't receive anything?{" "}
-          <button
-            type="button"
-            onClick={() => void handleResendOTP(email)}
-            disabled={loadingResend}
-            className="text-text-link border-b border-text-link pb-px bg-transparent cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loadingResend ? "Resending..." : "Resend OTP"}
-          </button>
-        </p>
-      </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!isComplete || loading}
+            >
+              {loading ? "Verifying..." : "Verify"}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="justify-center">
+          <p className="text-xs text-muted-foreground">
+            Didn't receive anything?{" "}
+            <button
+              type="button"
+              onClick={() => void handleResendOTP(email)}
+              disabled={loadingResend}
+              className="
+              text-foreground 
+              underline 
+              underline-offset-4 
+              hover:text-muted-foreground 
+              transition-colors 
+              disabled:opacity-50 
+              disabled:cursor-not-allowed"
+            >
+              {loadingResend ? "Resending..." : "Resend OTP"}
+            </button>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

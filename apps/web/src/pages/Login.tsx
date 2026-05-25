@@ -1,97 +1,97 @@
 import { useState } from "react";
 import { useLogin } from "@/features/auth/index";
-import { EyeIcon, EyeOffIcon } from "@/shared/assets/icons";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const LoginPage = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { handleLogin, loading } = useLogin();
-  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        {/* Eyebrow */}
-        <h5 className="mb-4 text-sm font-medium uppercase tracking-wide text-text md:mb-5 md:text-base">
-          Log in
-        </h5>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Log in
+          </CardTitle>
+        </CardHeader>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleLogin({ email, password });
-          }}
-        >
-          <div className="field mb-4">
-            <label htmlFor="email" className="field-label">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="input"
-            />
-          </div>
-
-          <div className="relative">
-            <div className="field mb-4">
-              <label htmlFor="password" className="field-label">
-                Password
-              </label>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+        <CardContent>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin({ email, password });
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="input"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 text-text-muted hover:text-text transition-colors cursor-pointer md:top-10.5"
+
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOffIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Logging in..." : "Log in"}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="justify-center">
+          <p className="text-xs text-muted-foreground">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-foreground underline underline-offset-4 hover:text-muted-foreground transition-colors"
             >
-              {showPassword ? (
-                <EyeOffIcon className="h-4 w-4" />
-              ) : (
-                <EyeIcon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-
-          <button type="submit" className="w-full btn" disabled={loading}>
-            {loading ? "Logging in..." : "Log in"}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="my-6 flex items-center gap-2.5 md:my-7">
-          <div className="flex-1 h-px bg-gray-300" />
-          <span className="whitespace-nowrap text-xs tracking-wide text-text-muted md:text-sm">
-            or sign up
-          </span>
-          <div className="flex-1 h-px bg-gray-300" />
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs font-light text-text-muted md:text-sm">
-          Don't have an account?{" "}
-          {/* Use TanStack Link for client-side navigation. */}
-          <Link
-            to="/signup"
-            className="text-text-link border-b border-text-link pb-px"
-          >
-            Sign up
-          </Link>
-        </p>
-      </div>
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

@@ -12,7 +12,7 @@ function AuthenticatedLayout() {
   }, []);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell bg-background">
       <Nav />
       <div className="main-pane">
         <Outlet />

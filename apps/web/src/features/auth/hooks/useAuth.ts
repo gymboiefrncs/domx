@@ -41,7 +41,7 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { mutate: handleLogout, isPending: loadingLogout } = useMutation({
+  const { mutate: handleLogout } = useMutation({
     mutationFn: logout,
     onSuccess: () => {
       socket.disconnect();
@@ -52,7 +52,7 @@ export const useLogout = () => {
       toast.error(getErrorMessage(err));
     },
   });
-  return { handleLogout, loadingLogout };
+  return { handleLogout };
 };
 
 export const useSignup = (): SignupState => {

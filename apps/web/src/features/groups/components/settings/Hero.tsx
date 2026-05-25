@@ -2,16 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, UserPlus } from "lucide-react";
 import { getInitials } from "../main-page/GroupAvatar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { socket } from "@/shared/lib/socket/socket.client";
+import type { GroupRole } from "@domx/shared";
 
 type Props = {
   name: string;
+  role: GroupRole;
   groupId: string;
   onAddMember: () => void;
 };
 
-export const GroupHero = ({ name, groupId, onAddMember }: Props) => {
+export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(name);
 
@@ -37,6 +39,7 @@ export const GroupHero = ({ name, groupId, onAddMember }: Props) => {
           <Input
             value={editedName}
             onChange={(e) => setEditedName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleRename(editedName)}
             className="text-center"
             autoFocus
           />
@@ -54,7 +57,7 @@ export const GroupHero = ({ name, groupId, onAddMember }: Props) => {
       <div className="flex items-center gap-6 mt-1">
         <button
           onClick={onEditStart}
-          className="flex flex-col items-center gap-1 cursor-pointer"
+          className={`flex-col items-center gap-1 cursor-pointer ${role === "admin" ? "flex" : "hidden"}`}
         >
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
             <Pencil className="w-4 h-4 text-muted-foreground" />

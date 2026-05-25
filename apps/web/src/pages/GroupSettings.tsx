@@ -8,6 +8,7 @@ import { ChevronLeft } from "lucide-react";
 import { GroupHero } from "@/features/groups/components/settings/Hero";
 import { MemberListItem } from "@/features/groups/components/settings/MemberList";
 import { GroupDangerZone } from "@/features/groups/components/settings/DangerZone";
+import { useMe } from "@/features/profile/hooks/useProfile";
 
 export const GroupSettingsPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/settings" });
@@ -16,6 +17,8 @@ export const GroupSettingsPage = () => {
   const { data: members, isLoading, isError } = useGroupMembers(id);
   const navigate = useNavigate();
   const group = groups?.find((g) => g.group_id === id);
+  const { data: me } = useMe();
+  const role = members?.find((m) => m.display_id === me?.display_id)?.role;
 
   if (isLoading)
     return (
@@ -50,6 +53,7 @@ export const GroupSettingsPage = () => {
       {/* TODO: add rename functionality */}
       <GroupHero
         name={group?.name ?? ""}
+        role={role ?? "member"}
         groupId={group?.group_id ?? ""}
         onAddMember={() => openModal("add-member")}
       />

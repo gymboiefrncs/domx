@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, Send, Settings } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getInitials } from "@/features/groups/components/main-page/GroupAvatar";
 import { useGroups } from "@/features/groups/hooks/useGroup";
 
@@ -11,8 +11,18 @@ export const GroupChatPage = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const { data: groups } = useGroups();
+  const { data: groups, isLoading } = useGroups();
   const group = groups?.find((g) => g.group_id === id);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!group) {
+      navigate({ to: "/groups" });
+    }
+  }, [group, navigate]);
+
+  if (!group) return null;
 
   return (
     <div className="flex flex-col h-full">
@@ -26,14 +36,14 @@ export const GroupChatPage = () => {
           <ChevronLeft className="w-5 h-5" />
         </Button>
         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-xs font-medium text-emerald-400 shrink-0">
-          {group?.name ? getInitials(group.name) : "?"}
+          {getInitials(group?.name ?? "")}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground truncate">
-            {group?.name ?? "Group"}
+            {group?.name}
           </p>
           <p className="text-xs text-muted-foreground">
-            {group?.member_count ?? 0} members
+            {group?.member_count} members
           </p>
         </div>
         <Link to="/groups/$id/settings" params={{ id }}>

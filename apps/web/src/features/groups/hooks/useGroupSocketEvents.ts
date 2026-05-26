@@ -2,6 +2,7 @@ import { socket } from "@/shared/lib/socket/socket.client";
 import type {
   Group,
   GroupAddMemberResponse,
+  GroupDeleteResponse,
   GroupRenameResponse,
   GroupSummaryResponse,
 } from "@domx/shared";
@@ -29,8 +30,11 @@ export const useGroupSocketEvents = () => {
         );
       });
     };
+
     const handleGroupSummary = (data: GroupSummaryResponse) => {
       const { group } = data;
+      // join the room for the user who just got added
+      socket.emit("group:join", group.group_id);
       queryClient.setQueryData(["groups"], (oldGroups: Group[] = []) => [
         ...oldGroups,
         group,
@@ -49,13 +53,26 @@ export const useGroupSocketEvents = () => {
       });
     };
 
+    const handleGroupDeleted = (data: GroupDeleteResponse) => {
+      const {
+        data: { groupId },
+      } = data;
+
+      queryClient.setQueryData(["groups"], (oldGroups: Group[] = []) => {
+        return oldGroups.filter((group) => group.group_id !== groupId);
+      });
+    };
+
     socket.on("group:summary", handleGroupSummary);
     socket.on("group:member:added", handleMemberAdded);
     socket.on("group:renamed", handleRenameGroup);
+    socket.on("group:deleted", handleGroupDeleted);
+
     return () => {
       socket.off("group:member:added", handleMemberAdded);
       socket.off("group:summary", handleGroupSummary);
       socket.off("group:renamed", handleRenameGroup);
+      socket.off("group:deleted", handleGroupDeleted);
     };
   }, [queryClient]);
 };

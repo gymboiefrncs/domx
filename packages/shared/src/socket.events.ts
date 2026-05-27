@@ -15,7 +15,11 @@ export interface ClientToServerEvents {
   "group:leave": (groupId: string) => void;
   "group:member:add": (payload: GroupMemberPayload) => void;
   "group:member:kick": (payload: GroupMemberPayload) => void;
-  "group:member:leave": (groupId: string) => void;
+  "group:member:leave": (
+    groupId: string,
+    callback: (response: { success: boolean }) => void,
+  ) => void;
+  "group:member:leave:self": (groupId: string) => void;
   "group:member:promote": (payload: GroupMemberPayload) => void;
   "group:member:demote": (payload: GroupMemberPayload) => void;
   "group:rename": (payload: GroupRenamePayload) => void;
@@ -25,6 +29,12 @@ export interface ClientToServerEvents {
 // ------ Response ------
 export interface ErrorResponse {
   message: string;
+}
+export interface GroupLeftResponse {
+  data: { groupId: string; memberCount: number; wasDeleted?: boolean };
+}
+export interface GroupLeftSelfResponse {
+  data: { groupId: string };
 }
 export interface GroupRenameResponse {
   data: { groupId: string; newName: string };
@@ -37,9 +47,6 @@ export interface GroupMemberResponse {
 export interface GroupDeleteResponse {
   data: { groupId: string };
   by: string;
-}
-export interface GroupMemberLeftResponse {
-  data: { groupId: string; displayId: string };
 }
 export interface GroupRenamedResponse {
   data: { groupId: string; newName: string };
@@ -60,7 +67,8 @@ export interface ServerToClientEvents {
   "group:member:add:failed": (payload: ErrorResponse) => void;
   "group:member:kicked": (payload: GroupMemberResponse) => void;
   "group:member:kick:failed": (payload: ErrorResponse) => void;
-  "group:member:left": (payload: GroupMemberLeftResponse) => void;
+  "group:member:left": (payload: GroupLeftResponse) => void;
+  "group:member:left:self": (payload: GroupLeftSelfResponse) => void;
   "group:member:leave:failed": (payload: ErrorResponse) => void;
   "group:member:promoted": (payload: GroupMemberResponse) => void;
   "group:member:promote:failed": (payload: ErrorResponse) => void;

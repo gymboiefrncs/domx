@@ -5,6 +5,7 @@ import { useParams } from "@tanstack/react-router";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -36,6 +37,9 @@ export const AddMemberModal = () => {
         <DialogHeader>
           <DialogTitle>Add Member</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="sr-only">
+          Invite a new member to join this group by using their Display ID.
+        </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="display-id" className="mb-2">

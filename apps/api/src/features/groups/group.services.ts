@@ -15,17 +15,19 @@ import {
   fetchGroupMembers,
   fetchMemberRole,
   fetchGroupById,
+  fetchGroupMemberCount,
 } from "./group.repositories.js";
 import { pool } from "@api/shared/db/db.js";
 import { GROUP_ERROR } from "./group.constants.js";
-import { fetchProfile, PROFILE_ERROR } from "@api/features/profile/index.js";
+import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup, Group, Member, User } from "@domx/shared";
+import type { CreateGroup, Group, Member } from "@domx/shared";
+import type { GroupWithMemberCount } from "./group.types.js";
 
 export const getGroupMembers = async (
   groupId: string,
@@ -203,7 +205,7 @@ export const kickMember = async (
 export const leaveMember = async (
   groupId: string,
   requesterId: string,
-): Promise<User> => {
+): Promise<GroupWithMemberCount | undefined> => {
   const group = await fetchGroupById(groupId);
   if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
@@ -231,6 +233,7 @@ export const leaveMember = async (
     if (memberCount === 1) {
       await deleteMember(requesterId, groupId, client);
       await deleteGroup(groupId, client);
+      return;
     }
 
     // Admin with other members: ensure at least one other admin remains
@@ -254,9 +257,13 @@ export const leaveMember = async (
     const deleted = await deleteMember(requesterId, groupId, client);
     if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
-    const profile = await fetchProfile(requesterId);
-    if (!profile) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-    return profile;
+    // for everyone else in the group
+    const newGroupMemberCount = await fetchGroupMemberCount(groupId, client);
+
+    return {
+      group_id: groupId,
+      member_count: newGroupMemberCount.member_count,
+    };
   });
 };
 

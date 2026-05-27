@@ -16,17 +16,30 @@ export const GroupDangerZone = ({ groupId, role }: Props) => {
     socket.emit("group:delete", groupId);
     navigate({ to: "/groups" });
   };
+  const handleLeave = () => {
+    socket.emit("group:member:leave", groupId, (response) => {
+      if (response.success) {
+        navigate({ to: "/groups" });
+      }
+    });
+  };
 
   return (
     <div className="px-5 py-4 border-t border-border space-y-2">
-      <Button
-        variant="outline"
-        className="w-full text-destructive border-destructive/40 hover:bg-destructive/10"
-      >
-        <LogOut className="w-4 h-4" />
-        Leave Group
-      </Button>
-
+      <ConfirmDialog
+        trigger={
+          <Button
+            variant="outline"
+            className="w-full text-destructive border-destructive/40 hover:bg-destructive/10"
+          >
+            <LogOut className="w-4 h-4" />
+            Leave Group
+          </Button>
+        }
+        title="Leave Group?"
+        description="You  need to ask the admin to be re-added if you change your mind. If you are the only admin, consider promoting another member to admin before leaving."
+        onConfirm={handleLeave}
+      />
       <ConfirmDialog
         trigger={
           <Button

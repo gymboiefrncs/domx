@@ -4,6 +4,7 @@ import { useCreateGroup } from "../../hooks/useGroup";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -35,6 +36,9 @@ export const CreateGroupModal = () => {
         <DialogHeader>
           <DialogTitle>Create Group</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="sr-only">
+          Start a new group chat by giving it a name.
+        </DialogDescription>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="group-name" className="mb-2">

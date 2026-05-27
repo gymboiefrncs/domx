@@ -95,19 +95,42 @@ export function registerGroupHandlers(
     }
   });
 
-  socket.on("group:member:leave", async (groupId) => {
+  socket.on("group:member:leave", async (groupId, callback) => {
     try {
       await wsWritePostLimiter.consume(socket.data.user.id);
 
-      const { display_id } = await leaveMember(groupId, actorId);
+      const result = await leaveMember(groupId, actorId);
+
+      if (!result) {
+        /**
+         * if result is undefined it means the group was deleted because the last member left
+         * just call the callback function with success true for the client to redirect
+         */
+        io.to(groupId).emit("group:member:left", {
+          data: { groupId, memberCount: 0, wasDeleted: true },
+        });
+
+        callback({ success: true });
+        socket.leave(groupId);
+        return;
+      }
 
       io.to(groupId).emit("group:member:left", {
-        data: { groupId, displayId: display_id },
+        data: {
+          groupId,
+          memberCount: result.member_count,
+        },
       });
+      io.to(actorId).emit("group:member:left:self", { data: { groupId } });
+      callback({ success: true });
+      socket.leave(groupId);
     } catch (error) {
+      callback({ success: false });
+
       socket.emit("group:member:leave:failed", {
         message: resolveErrorMessage(error, "Failed to leave group"),
       });
+      console.log(error);
     }
   });
 

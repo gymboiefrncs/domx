@@ -2,6 +2,7 @@ import type { Pool, PoolClient } from "pg";
 import type { CreateGroup, Member } from "@domx/shared";
 import type { Group, GroupRole } from "@domx/shared";
 import { pool } from "@api/shared/db/db.js";
+import type { GroupMemberCount } from "./group.types.js";
 
 export const insertGroup = async (
   groupName: string,
@@ -178,6 +179,16 @@ export const fetchUserGroupSummary = async (
 
   const values = [userId, groupId];
   const result = await pool.query<Group>(query, values);
+  return result.rows[0]!;
+};
+
+export const fetchGroupMemberCount = async (
+  groupId: string,
+  client: PoolClient,
+): Promise<GroupMemberCount> => {
+  const query = `SELECT COUNT(*)::int as member_count FROM group_members WHERE group_id = $1`;
+  const values = [groupId];
+  const result = await client.query<GroupMemberCount>(query, values);
   return result.rows[0]!;
 };
 

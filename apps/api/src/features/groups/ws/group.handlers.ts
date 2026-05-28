@@ -83,15 +83,22 @@ export function registerGroupHandlers(
     try {
       await wsWritePostLimiter.consume(socket.data.user.id);
 
-      await kickMember(groupId, targetUserDisplayId, actorId);
+      const result = await kickMember(groupId, targetUserDisplayId, actorId);
       io.to(groupId).emit("group:member:kicked", {
-        data: { groupId, targetUserDisplayId },
+        data: {
+          groupId,
+          targetUserDisplayId,
+          memberCount: result.member_count,
+          targetId: result.userId,
+        },
         by: actorId,
       });
+      io.to(result.userId).socketsLeave(groupId);
     } catch (error) {
       socket.emit("group:member:kick:failed", {
         message: resolveErrorMessage(error, "Failed to kick member"),
       });
+      console.log(error);
     }
   });
 

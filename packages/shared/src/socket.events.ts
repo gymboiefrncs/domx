@@ -57,12 +57,20 @@ export interface GroupSummaryResponse {
   group: Group;
   type: "added";
 }
-
+export interface GroupMemberKickResponse {
+  data: {
+    groupId: string;
+    targetUserDisplayId: string;
+    memberCount: number;
+    targetId: string;
+  };
+  by: string;
+}
 export interface ServerToClientEvents {
   "group:join:failed": (payload: ErrorResponse) => void;
   "group:member:added": (payload: GroupAddMemberResponse) => void;
   "group:member:add:failed": (payload: ErrorResponse) => void;
-  "group:member:kicked": (payload: GroupMemberResponse) => void;
+  "group:member:kicked": (payload: GroupMemberKickResponse) => void;
   "group:member:kick:failed": (payload: ErrorResponse) => void;
   "group:member:left": (payload: GroupLeftResponse) => void;
   "group:member:leave:failed": (payload: ErrorResponse) => void;

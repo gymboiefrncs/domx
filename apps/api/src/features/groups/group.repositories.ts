@@ -184,11 +184,11 @@ export const fetchUserGroupSummary = async (
 
 export const fetchGroupMemberCount = async (
   groupId: string,
-  client: PoolClient,
+  con: PoolClient | Pool = pool,
 ): Promise<GroupMemberCount> => {
   const query = `SELECT COUNT(*)::int as member_count FROM group_members WHERE group_id = $1`;
   const values = [groupId];
-  const result = await client.query<GroupMemberCount>(query, values);
+  const result = await con.query<GroupMemberCount>(query, values);
   return result.rows[0]!;
 };
 

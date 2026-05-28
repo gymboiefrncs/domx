@@ -27,7 +27,7 @@ import {
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
 import type { CreateGroup, Group, Member } from "@domx/shared";
-import type { GroupWithMemberCount } from "./group.types.js";
+import type { GroupMemberCount, GroupWithMemberCount } from "./group.types.js";
 
 export const getGroupMembers = async (
   groupId: string,
@@ -168,7 +168,7 @@ export const kickMember = async (
   groupId: string,
   displayId: string,
   requesterId: string,
-): Promise<void> => {
+): Promise<GroupMemberCount & { userId: string }> => {
   const { userId } = await resolveGroupAction(
     groupId,
     displayId,
@@ -184,9 +184,10 @@ export const kickMember = async (
     throw new ForbiddenError(
       "You cannot remove yourself. Use the leave option instead.",
     );
-
   const deleted = await deleteMember(userId, groupId);
   if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
+  const { member_count } = await fetchGroupMemberCount(groupId);
+  return { member_count, userId };
 };
 
 /**

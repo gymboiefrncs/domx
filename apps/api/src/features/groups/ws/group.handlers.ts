@@ -108,6 +108,7 @@ export function registerGroupHandlers(
          */
         io.to(groupId).emit("group:member:left", {
           data: { groupId, memberCount: 0, wasDeleted: true },
+          by: actorId,
         });
 
         callback({ success: true });
@@ -120,8 +121,8 @@ export function registerGroupHandlers(
           groupId,
           memberCount: result.member_count,
         },
+        by: actorId,
       });
-      io.to(actorId).emit("group:member:left:self", { data: { groupId } });
       callback({ success: true });
       socket.leave(groupId);
     } catch (error) {

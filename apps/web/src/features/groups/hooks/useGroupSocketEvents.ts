@@ -4,10 +4,9 @@ import type {
   GroupAddMemberResponse,
   GroupDeleteResponse,
   GroupLeftResponse,
-  GroupLeftSelfResponse,
-  // GroupMemberLeftSummaryResponse,
   GroupRenameResponse,
   GroupSummaryResponse,
+  User,
 } from "@domx/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -72,7 +71,13 @@ export const useGroupSocketEvents = () => {
     };
 
     const handleMemberLeave = (payload: GroupLeftResponse) => {
-      const { groupId, memberCount, wasDeleted } = payload.data;
+      const {
+        data: { groupId, memberCount, wasDeleted },
+        by,
+      } = payload;
+      const me = queryClient.getQueryData<User>(["profile", "me"]);
+
+      const isActor = me?.id === by;
 
       queryClient.invalidateQueries({
         queryKey: ["groups", groupId, "members"],
@@ -87,19 +92,11 @@ export const useGroupSocketEvents = () => {
       });
 
       // for group list to be updated
-      if (wasDeleted) {
+      if (wasDeleted || isActor) {
         queryClient.setQueryData(["groups"], (oldGroups: Group[] = []) => {
           return oldGroups.filter((group) => group.group_id !== groupId);
         });
       }
-    };
-
-    const handleGroupSelfLeft = (payload: GroupLeftSelfResponse) => {
-      const { groupId } = payload.data;
-
-      queryClient.setQueryData(["groups"], (oldGroups: Group[] = []) => {
-        return oldGroups.filter((group) => group.group_id !== groupId);
-      });
     };
 
     socket.on("group:summary", handleGroupSummary);
@@ -107,7 +104,6 @@ export const useGroupSocketEvents = () => {
     socket.on("group:renamed", handleRenameGroup);
     socket.on("group:deleted", handleGroupDeleted);
     socket.on("group:member:left", handleMemberLeave);
-    socket.on("group:member:left:self", handleGroupSelfLeft);
 
     // error events
     socket.on("group:rename:failed", errorCallback);
@@ -121,7 +117,6 @@ export const useGroupSocketEvents = () => {
       socket.off("group:renamed", handleRenameGroup);
       socket.off("group:deleted", handleGroupDeleted);
       socket.off("group:member:left", handleMemberLeave);
-      socket.off("group:member:left:self", handleGroupSelfLeft);
 
       // error events
       socket.off("group:rename:failed", errorCallback);

@@ -5,6 +5,7 @@ import type {
   GroupDeleteResponse,
   GroupLeftResponse,
   GroupMemberKickResponse,
+  GroupMemberResponse,
   GroupRenameResponse,
   GroupSummaryResponse,
   User,
@@ -123,12 +124,28 @@ export const useGroupSocketEvents = () => {
       }
     };
 
+    const handlePromoteMember = (payload: GroupMemberResponse) => {
+      const { groupId } = payload.data;
+      queryClient.invalidateQueries({
+        queryKey: ["groups", groupId, "members"],
+      });
+    };
+
+    const handleDemoteMember = (payload: GroupMemberResponse) => {
+      const { groupId } = payload.data;
+      queryClient.invalidateQueries({
+        queryKey: ["groups", groupId, "members"],
+      });
+    };
+
     socket.on("group:summary", handleGroupSummary);
     socket.on("group:member:added", handleMemberAdded);
     socket.on("group:renamed", handleRenameGroup);
     socket.on("group:deleted", handleGroupDeleted);
     socket.on("group:member:left", handleMemberLeave);
     socket.on("group:member:kicked", handleKick);
+    socket.on("group:member:promoted", handlePromoteMember);
+    socket.on("group:member:demoted", handleDemoteMember);
 
     // error events
     socket.on("group:rename:failed", errorCallback);
@@ -136,6 +153,8 @@ export const useGroupSocketEvents = () => {
     socket.on("group:member:add:failed", errorCallback);
     socket.on("group:member:leave:failed", errorCallback);
     socket.on("group:member:kick:failed", errorCallback);
+    socket.on("group:member:promote:failed", errorCallback);
+    socket.on("group:member:demote:failed", errorCallback);
 
     return () => {
       socket.off("group:member:added", handleMemberAdded);
@@ -144,6 +163,8 @@ export const useGroupSocketEvents = () => {
       socket.off("group:deleted", handleGroupDeleted);
       socket.off("group:member:left", handleMemberLeave);
       socket.off("group:member:kicked", handleKick);
+      socket.off("group:member:promoted", handlePromoteMember);
+      socket.off("group:member:demoted", handleDemoteMember);
 
       // error events
       socket.off("group:rename:failed", errorCallback);
@@ -151,6 +172,8 @@ export const useGroupSocketEvents = () => {
       socket.off("group:member:add:failed", errorCallback);
       socket.off("group:member:leave:failed", errorCallback);
       socket.off("group:member:kick:failed", errorCallback);
+      socket.off("group:member:promote:failed", errorCallback);
+      socket.off("group:member:demote:failed", errorCallback);
     };
   }, [queryClient]);
 };

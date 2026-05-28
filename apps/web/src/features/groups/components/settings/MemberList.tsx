@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { socket } from "@/shared/lib/socket/socket.client";
 import type { GroupRole } from "@domx/shared";
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 
 interface Props {
   username: string;
   displayId: string;
-  role: GroupRole;
+  role: GroupRole; // for permissions
   groupId: string;
+  groupRole: GroupRole; // for display
 }
 
 type Actions = "promote" | "demote" | "kick" | null;
@@ -18,13 +18,32 @@ export const MemberListItem = ({
   displayId,
   role,
   groupId,
+  groupRole,
 }: Props) => {
   const [confirmAction, setConfirmAction] = useState<Actions>(null);
+
   const handleKick = () => {
     socket.emit("group:member:kick", {
       groupId,
       targetUserDisplayId: displayId,
     });
+    setConfirmAction(null);
+  };
+
+  const handleRoleChange = () => {
+    if (confirmAction === "promote") {
+      socket.emit("group:member:promote", {
+        groupId,
+        targetUserDisplayId: displayId,
+      });
+    } else if (confirmAction === "demote") {
+      socket.emit("group:member:demote", {
+        groupId,
+        targetUserDisplayId: displayId,
+      });
+    }
+
+    setConfirmAction(null);
   };
 
   return (
@@ -34,12 +53,19 @@ export const MemberListItem = ({
       </div>
       <p className="text-sm font-medium text-foreground">{username}</p>
       <p className="text-xs text-muted-foreground">({displayId})</p>
+      <p className="text-xs text-muted-foreground">({groupRole})</p>
       {role === "admin" && (
         <div className="ml-auto flex items-center gap-2">
           {confirmAction === null ? (
             <>
-              <Button size="sm" variant="outline">
-                {role === "admin" ? "Demote" : "Promote"}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setConfirmAction(groupRole === "admin" ? "demote" : "promote")
+                }
+              >
+                {groupRole === "admin" ? "Demote" : "Promote"}
               </Button>
               <Button
                 size="sm"
@@ -52,9 +78,25 @@ export const MemberListItem = ({
           ) : (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">
-                Are you sure you want to kick {username}?
+                {confirmAction === "kick" &&
+                  `Are you sure you want to kick ${username}?`}
+                {confirmAction === "promote" &&
+                  `Are you sure you want to promote ${username} to admin?`}
+                {confirmAction === "demote" &&
+                  `Are you sure you want to demote ${username} from admin?`}
               </span>
-              <Button size="sm" variant="destructive" onClick={handleKick}>
+              <Button
+                size="sm"
+                variant={confirmAction === "kick" ? "destructive" : "default"}
+                className={
+                  confirmAction === "promote"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : ""
+                }
+                onClick={
+                  confirmAction === "kick" ? handleKick : handleRoleChange
+                }
+              >
                 Yes
               </Button>
               <Button

@@ -90,6 +90,7 @@ export const GroupSettingsPage = () => {
               displayId={member.display_id}
               role={role ?? "member"}
               groupId={group.group_id}
+              groupRole={member.role}
             />
           ))
         )}

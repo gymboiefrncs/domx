@@ -59,7 +59,6 @@ describe("Auth integration - Signup", () => {
     expect(user).toBeDefined();
     expect(user?.email).toBe(signupData.email);
     expect(result).toEqual({
-      ok: true,
       reason: "INCOMPLETE_SIGNUP",
       message:
         "Incomplete signup. Please set your username and password to complete the registration.",
@@ -178,10 +177,6 @@ describe("Auth integration - Signup", () => {
       [users.rows[0].id],
     );
 
-    // System invariants: exactly one user, exactly one OTP, no errors.
-    // The exact reason per call depends on scheduling:
-    //   - If both fetch null → both take handleNewUser → both return NEW_USER
-    //   - If Request A commits before Request B fetches → Request B sees the user → generic ack
     expect(users.rows).toHaveLength(1);
     expect(otp.rows).toHaveLength(1);
 

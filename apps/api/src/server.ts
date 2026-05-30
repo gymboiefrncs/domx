@@ -10,6 +10,7 @@ import { wsConnectionLimiter } from "./shared/middlewares/rateLimit.js";
 import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import { getUserGroups } from "./features/groups/group.services.js";
 import { app } from "./app.js";
+import { registerPostHandlers } from "./features/posts/ws/post.handlers.js";
 
 const server = http.createServer(app);
 const accessSecret = new TextEncoder().encode(config.jwt.accessTokenSecret);
@@ -77,6 +78,7 @@ io.on("connection", async (socket) => {
   groups.forEach((group) => socket.join(group.group_id));
 
   registerGroupHandlers(io, socket);
+  registerPostHandlers(io, socket);
 });
 
 server.listen(process.env.PORT, () => {

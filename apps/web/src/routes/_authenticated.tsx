@@ -4,9 +4,11 @@ import { meQueryOptions } from "@/features/profile/hooks/useProfile";
 import { useEffect } from "react";
 import { socket } from "@/shared/lib/socket/socket.client";
 import { useGroupSocketEvents } from "@/features/groups/hooks/useGroupSocketEvents";
+import { usePostSocketEvents } from "@/features/posts/hooks/usePostSocketEvents";
 
 function AuthenticatedLayout() {
   useGroupSocketEvents();
+  usePostSocketEvents();
   useEffect(() => {
     if (!socket.connected) socket.connect();
   }, []);

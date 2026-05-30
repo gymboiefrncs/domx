@@ -1,4 +1,5 @@
 import type { Group, Member } from "./group.js";
+import type { PostDetails } from "./post.js";
 
 export interface GroupMemberPayload {
   groupId: string;
@@ -10,22 +11,13 @@ export interface GroupRenamePayload {
   newName: string;
 }
 
-export interface ClientToServerEvents {
-  "group:join": (groupId: string) => void;
-  "group:leave": (groupId: string) => void;
-  "group:member:add": (payload: GroupMemberPayload) => void;
-  "group:member:kick": (payload: GroupMemberPayload) => void;
-  "group:member:leave": (
-    groupId: string,
-    callback: (response: { success: boolean }) => void,
-  ) => void;
-  "group:member:promote": (payload: GroupMemberPayload) => void;
-  "group:member:demote": (payload: GroupMemberPayload) => void;
-  "group:rename": (payload: GroupRenamePayload) => void;
-  "group:delete": (groupId: string) => void;
+export interface ChatPayload {
+  title: string;
+  body: string;
+  groupId: string;
 }
 
-// ------ Response ------
+// ------ Responses ------
 export interface ErrorResponse {
   message: string;
 }
@@ -66,6 +58,33 @@ export interface GroupMemberKickResponse {
   };
   by: string;
 }
+
+export interface ChatResponsePayload {
+  data: { newMessage: PostDetails };
+  by: string;
+}
+
+export interface ClientToServerEvents {
+  "group:join": (groupId: string) => void;
+  "group:leave": (groupId: string) => void;
+  "group:member:add": (payload: GroupMemberPayload) => void;
+  "group:member:kick": (payload: GroupMemberPayload) => void;
+  "group:member:leave": (
+    groupId: string,
+    callback: (response: { success: boolean }) => void,
+  ) => void;
+  "group:member:promote": (payload: GroupMemberPayload) => void;
+  "group:member:demote": (payload: GroupMemberPayload) => void;
+  "group:rename": (payload: GroupRenamePayload) => void;
+  "group:delete": (groupId: string) => void;
+
+  // chat events
+  "chat:send": (
+    payload: ChatPayload,
+    callback: (response: { success: boolean }) => void,
+  ) => void;
+}
+
 export interface ServerToClientEvents {
   "group:join:failed": (payload: ErrorResponse) => void;
   "group:member:added": (payload: GroupAddMemberResponse) => void;
@@ -83,4 +102,8 @@ export interface ServerToClientEvents {
   "group:deleted": (payload: GroupDeleteResponse) => void;
   "group:delete:failed": (payload: ErrorResponse) => void;
   "group:summary": (payload: GroupSummaryResponse) => void;
+
+  // chat events
+  "chat:received": (payload: ChatResponsePayload) => void;
+  "chat:send:failed": (payload: ErrorResponse) => void;
 }

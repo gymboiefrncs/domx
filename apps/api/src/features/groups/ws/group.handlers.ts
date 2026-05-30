@@ -16,7 +16,7 @@ import {
 } from "@api/shared/middlewares/rateLimit.js";
 import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 
-function resolveErrorMessage(error: unknown, fallback: string): string {
+export function resolveErrorMessage(error: unknown, fallback: string): string {
   const retryAfter = getRetryAfterSeconds(error);
 
   if (retryAfter !== null) {

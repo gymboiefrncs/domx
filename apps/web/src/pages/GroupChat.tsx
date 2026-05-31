@@ -5,7 +5,6 @@ import { GroupChatHeader } from "@/features/posts/component/GroupChatHeader";
 import { GroupChatMessages } from "@/features/posts/component/GroupChatMessages";
 import { GroupChatInput } from "@/features/posts/component/GroupChatInput";
 import { useMe } from "@/features/profile";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/chat" });

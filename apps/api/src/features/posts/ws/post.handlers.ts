@@ -2,7 +2,7 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import type { Server, Socket } from "socket.io";
 import { resolveErrorMessage } from "@api/features/groups/ws/group.handlers.js";
 import { wsWritePostLimiter } from "@api/shared/middlewares/rateLimit.js";
-import { createPost } from "../post.services.js";
+import { createPost, editPost } from "../post.services.js";
 
 export function registerPostHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
@@ -11,22 +11,35 @@ export function registerPostHandlers(
   const actorId = socket.data.user.id;
 
   socket.on("chat:send", async ({ title, body, groupId }, callback) => {
-    console.log("[chat:send] received payload:", { title, body, groupId });
     try {
       await wsWritePostLimiter.consume(actorId);
-      const newMessage = await createPost(title, body, actorId, groupId);
+      const message = await createPost(title, body, actorId, groupId);
       io.to(groupId).emit("chat:received", {
-        data: { newMessage },
+        data: { message },
         by: actorId,
+        type: "added",
       });
       callback({ success: true });
     } catch (error) {
       socket.emit("chat:send:failed", {
         message: resolveErrorMessage(error, "Failed to send message"),
       });
-      console.log(groupId);
-      console.log("[post.handlers] chat:send error:", error);
       callback({ success: false });
+    }
+  });
+  socket.on("chat:edit", async ({ groupId, postId, title, body }) => {
+    try {
+      await wsWritePostLimiter.consume(actorId);
+      const message = await editPost(actorId, groupId, postId, title, body);
+      io.to(groupId).emit("chat:received", {
+        data: { message },
+        by: actorId,
+        type: "edited",
+      });
+    } catch (error) {
+      socket.emit("chat:send:failed", {
+        message: resolveErrorMessage(error, "Failed to edit message"),
+      });
     }
   });
 }

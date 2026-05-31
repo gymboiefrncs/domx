@@ -14,13 +14,25 @@ export const usePostSocketEvents = () => {
     };
 
     const handleChatReceived = (payload: ChatResponsePayload) => {
-      const { group_id } = payload.data.newMessage;
-      queryClient.setQueryData(
-        ["posts", group_id],
-        (oldData: PostDetails[]) => {
-          return [...oldData, payload.data.newMessage];
-        },
-      );
+      const { group_id } = payload.data.message;
+      if (payload.type === "added") {
+        queryClient.setQueryData(
+          ["posts", group_id],
+          (oldData: PostDetails[]) => {
+            return [...oldData, payload.data.message];
+          },
+        );
+      }
+      if (payload.type === "edited") {
+        queryClient.setQueryData(
+          ["posts", group_id],
+          (oldData: PostDetails[]) => {
+            return oldData.map((post) =>
+              post.id === payload.data.message.id ? payload.data.message : post,
+            );
+          },
+        );
+      }
     };
     socket.on("chat:received", handleChatReceived);
 

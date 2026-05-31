@@ -41,11 +41,11 @@ export const createPost = async (
 };
 
 export const editPost = async (
-  title: string,
-  body: string,
   requesterId: string,
   groupId: string,
   postId: string,
+  title?: string,
+  body?: string,
 ): Promise<PostDetails> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   const requesterRole = await performChecks(groupId, requesterId);

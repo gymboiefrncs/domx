@@ -22,6 +22,13 @@ export const GroupChatInput = ({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
 
+  const handleSaveOnEnter = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   const handleSend = () => {
     if (!title.trim() && !body.trim()) return;
 
@@ -45,8 +52,6 @@ export const GroupChatInput = ({
     setBody("");
 
     socket.emit("chat:send", { title, body, groupId }, (response) => {
-      // Debug: log response from server
-      console.log("[GroupChatInput] chat:send response:", response);
       /**
        * remove optimistic post no matter what (success or failure) because:
        * - on success, it will be replaced by the actual post from the server via the "chat:received" event.
@@ -72,12 +77,14 @@ export const GroupChatInput = ({
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={handleSaveOnEnter}
             placeholder="Title"
             className="border-0 border-b border-border rounded-none bg-transparent font-medium focus-visible:ring-0 text-sm"
           />
           <Input
             value={body}
             onChange={(e) => setBody(e.target.value)}
+            onKeyDown={handleSaveOnEnter}
             placeholder="Write a message..."
             className="border-0 rounded-none bg-transparent focus-visible:ring-0 text-sm"
           />

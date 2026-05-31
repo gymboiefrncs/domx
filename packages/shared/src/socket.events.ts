@@ -17,6 +17,13 @@ export interface ChatPayload {
   groupId: string;
 }
 
+export interface ChatEditPayload {
+  title?: string;
+  body?: string;
+  groupId: string;
+  postId: string;
+}
+
 // ------ Responses ------
 export interface ErrorResponse {
   message: string;
@@ -60,8 +67,9 @@ export interface GroupMemberKickResponse {
 }
 
 export interface ChatResponsePayload {
-  data: { newMessage: PostDetails };
+  data: { message: PostDetails };
   by: string;
+  type: "added" | "edited";
 }
 
 export interface ClientToServerEvents {
@@ -83,6 +91,7 @@ export interface ClientToServerEvents {
     payload: ChatPayload,
     callback: (response: { success: boolean }) => void,
   ) => void;
+  "chat:edit": (payload: ChatEditPayload) => void;
 }
 
 export interface ServerToClientEvents {

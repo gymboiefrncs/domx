@@ -2,7 +2,7 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import type { Server, Socket } from "socket.io";
 import { resolveErrorMessage } from "@api/features/groups/ws/group.handlers.js";
 import { wsWritePostLimiter } from "@api/shared/middlewares/rateLimit.js";
-import { createPost, editPost } from "../post.services.js";
+import { createPost, editPost, removePost } from "../post.services.js";
 
 export function registerPostHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
@@ -39,6 +39,21 @@ export function registerPostHandlers(
     } catch (error) {
       socket.emit("chat:send:failed", {
         message: resolveErrorMessage(error, "Failed to edit message"),
+      });
+    }
+  });
+  socket.on("chat:delete", async ({ groupId, postId }) => {
+    try {
+      await wsWritePostLimiter.consume(actorId);
+      const message = await removePost(postId, groupId, actorId);
+      io.to(groupId).emit("chat:received", {
+        data: { message },
+        by: actorId,
+        type: "deleted",
+      });
+    } catch (error) {
+      socket.emit("chat:send:failed", {
+        message: resolveErrorMessage(error, "Failed to delete message"),
       });
     }
   });

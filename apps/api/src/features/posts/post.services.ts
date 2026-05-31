@@ -66,7 +66,7 @@ export const removePost = async (
   postId: string,
   groupId: string,
   requesterId: string,
-): Promise<void> => {
+): Promise<PostDetails> => {
   // Perform necessary checks (e.g., group existence, membership) and get requester role.
   const requesterRole = await performChecks(groupId, requesterId);
 
@@ -78,5 +78,7 @@ export const removePost = async (
     throw new ForbiddenError("You are not allowed to delete this post.");
   }
 
-  await deletePost(postId, groupId);
+  const deletedPost = await deletePost(postId, groupId);
+  if (!deletedPost) throw new NotFoundError(POST_ERROR.NOT_FOUND);
+  return deletedPost;
 };

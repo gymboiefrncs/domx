@@ -33,9 +33,18 @@ export const usePostSocketEvents = () => {
           },
         );
       }
+      if (payload.type === "deleted") {
+        queryClient.setQueryData(
+          ["posts", group_id],
+          (oldData: PostDetails[]) => {
+            return oldData.filter(
+              (post) => post.id !== payload.data.message.id,
+            );
+          },
+        );
+      }
     };
     socket.on("chat:received", handleChatReceived);
-
     socket.on("chat:send:failed", errorCallback);
     return () => {
       socket.off("chat:received", handleChatReceived);

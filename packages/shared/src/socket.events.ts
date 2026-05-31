@@ -16,7 +16,10 @@ export interface ChatPayload {
   body: string;
   groupId: string;
 }
-
+export interface ChatDeletePayload {
+  groupId: string;
+  postId: string;
+}
 export interface ChatEditPayload {
   title?: string;
   body?: string;
@@ -69,7 +72,12 @@ export interface GroupMemberKickResponse {
 export interface ChatResponsePayload {
   data: { message: PostDetails };
   by: string;
-  type: "added" | "edited";
+  type: "added" | "edited" | "deleted";
+}
+export interface ChatDeleteResponsePayload {
+  data: { postId: string; groupId: string };
+  by: string;
+  type: "deleted";
 }
 
 export interface ClientToServerEvents {
@@ -92,6 +100,7 @@ export interface ClientToServerEvents {
     callback: (response: { success: boolean }) => void,
   ) => void;
   "chat:edit": (payload: ChatEditPayload) => void;
+  "chat:delete": (payload: ChatDeletePayload) => void;
 }
 
 export interface ServerToClientEvents {

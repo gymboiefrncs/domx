@@ -73,9 +73,10 @@ export const updatePost = async (
 export const deletePost = async (
   postId: string,
   groupId: string,
-): Promise<void> => {
-  const query = `DELETE FROM posts WHERE id = $1 AND group_id = $2`;
+): Promise<PostDetails | null> => {
+  const query = `DELETE FROM posts WHERE id = $1 AND group_id = $2 RETURNING *`;
 
   const values = [postId, groupId];
-  await pool.query(query, values);
+  const result = await pool.query<PostDetails>(query, values);
+  return result.rows[0] ?? null;
 };

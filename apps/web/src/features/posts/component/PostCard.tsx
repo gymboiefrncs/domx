@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { queryClient } from "@/shared/lib/queryClient";
 import { socket } from "@/shared/lib/socket/socket.client";
 import type { PostDetails } from "@domx/shared";
@@ -58,6 +59,20 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
     setIsEditing(false);
   };
 
+  const handleDelete = () => {
+    queryClient.setQueryData(
+      ["posts", post.group_id],
+      (oldData: PostDetails[]) => {
+        return oldData.filter((p) => p.id !== post.id);
+      },
+    );
+
+    socket.emit("chat:delete", {
+      groupId: post.group_id,
+      postId: post.id,
+    });
+  };
+
   return (
     <div
       className={`group flex flex-col gap-2.5 p-4 rounded-xl border transition-all duration-200 ${
@@ -96,13 +111,20 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
               >
                 <Pencil className="w-3.5 h-3.5" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                }
+                title="Delete post?"
+                description="This action cannot be undone."
+                onConfirm={handleDelete}
+              />
             </div>
           )}
           <div className="flex items-center gap-1 ml-1">

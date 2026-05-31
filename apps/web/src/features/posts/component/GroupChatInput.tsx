@@ -23,13 +23,6 @@ export const GroupChatInput = ({
   const [body, setBody] = useState("");
 
   const handleSend = () => {
-    // Debug: log groupId and its type
-    console.log(
-      "[GroupChatInput] Sending message with groupId:",
-      groupId,
-      "type:",
-      typeof groupId,
-    );
     if (!title.trim() && !body.trim()) return;
 
     const optimisticPost: PostDetails = {

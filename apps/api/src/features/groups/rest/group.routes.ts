@@ -4,7 +4,6 @@ import {
   handleCreateGroup,
   handleGetGroups,
   handleGetMembers,
-  handleUpdateSeen,
 } from "./group.controllers.js";
 import {
   validateBody,
@@ -30,13 +29,6 @@ groupRouter.get(
   jwtHandler,
   groupParamsValidator,
   handleGetMembers,
-);
-
-groupRouter.patch(
-  "/groups/:groupId/seen",
-  jwtHandler,
-  groupParamsValidator,
-  handleUpdateSeen,
 );
 
 groupRouter.post(

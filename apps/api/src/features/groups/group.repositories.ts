@@ -202,14 +202,3 @@ export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
   const result = await pool.query<Member>(query, values);
   return result.rows;
 };
-
-export const updateSeen = async (
-  groupId: string,
-  userId: string,
-  con: Pool | PoolClient = pool,
-): Promise<boolean> => {
-  const query = `UPDATE group_members SET last_seen_at = NOW() WHERE group_id = $1 AND user_id = $2`;
-  const values = [groupId, userId];
-  const result = await con.query(query, values);
-  return (result.rowCount ?? 0) > 0;
-};

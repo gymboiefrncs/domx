@@ -3,7 +3,6 @@ import {
   createGroup,
   getGroupMembers,
   getUserGroups,
-  updateLastSeen,
 } from "../group.services.js";
 import type { GroupResponse, Params } from "../group.types.js";
 import type { Group, Member } from "@domx/shared";
@@ -29,16 +28,6 @@ export const handleGetGroups: RequestHandler<
   res.status(200).json({
     data: groups,
   });
-};
-
-export const handleUpdateSeen: RequestHandler<Params, never> = async (
-  req,
-  res,
-) => {
-  const userId = req.user!.userId;
-  const { groupId } = req.params;
-  await updateLastSeen(groupId, userId);
-  res.status(204).send();
 };
 
 export const handleCreateGroup: RequestHandler<

@@ -10,7 +10,6 @@ import {
   insertGroup,
   insertMember,
   updateRole,
-  updateSeen,
   updateGroupName,
   fetchGroupMembers,
   fetchMemberRole,
@@ -50,19 +49,6 @@ export const getUserGroupSummary = async (
   userId: string,
   groupId: string,
 ): Promise<Group> => fetchUserGroupSummary(userId, groupId);
-
-export const updateLastSeen = async (
-  groupId: string,
-  requesterId: string,
-): Promise<void> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-
-  await updateSeen(groupId, requesterId);
-};
 
 export const createGroup = async (
   groupName: string,

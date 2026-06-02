@@ -212,3 +212,5 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
     // Ignore errors and allow logout to succeed
   }
 };
+
+// TODO: fix violations: Bumpy Road/ Complex Method/ Complex Conditional

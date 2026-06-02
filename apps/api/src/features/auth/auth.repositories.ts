@@ -119,3 +119,5 @@ export const fetchUserForSignup = async (
   const result = await client.query<SignupUser>(query, values);
   return result.rows[0] ?? null;
 };
+
+// TODO: fix violations: Excess number of function arguments/ Primitive Obsession/ String heavy function arguments

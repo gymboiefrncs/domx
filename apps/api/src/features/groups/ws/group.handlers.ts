@@ -99,7 +99,6 @@ export function registerGroupHandlers(
       socket.emit("group:member:kick:failed", {
         message: resolveErrorMessage(error, "Failed to kick member"),
       });
-      console.log(error);
     }
   });
 
@@ -139,7 +138,6 @@ export function registerGroupHandlers(
       socket.emit("group:member:leave:failed", {
         message: resolveErrorMessage(error, "Failed to leave group"),
       });
-      console.log(error);
     }
   });
 

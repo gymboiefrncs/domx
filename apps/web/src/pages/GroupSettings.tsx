@@ -60,7 +60,6 @@ export const GroupSettingsPage = () => {
           <ChevronLeft className="w-5 h-5" />
         </Button>
       </div>
-      {/* TODO: add rename functionality */}
       <GroupHero
         name={group.name}
         role={role ?? "member"}
@@ -96,7 +95,6 @@ export const GroupSettingsPage = () => {
         )}
       </ul>
 
-      {/* TODO: implement leave and delete group functionality */}
       <GroupDangerZone groupId={group.group_id} role={role ?? "member"} />
       <AddMemberModal />
     </div>

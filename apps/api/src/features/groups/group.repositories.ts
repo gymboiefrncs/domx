@@ -231,3 +231,5 @@ export const updateLastSeenAt = async (
   const result = await pool.query<{ last_seen_at: Date }>(query, values);
   return result.rows[0]!;
 };
+
+// TODO: fix violations: Duplicated function blocks/ Primitive Obsession/ String heavy function arguments

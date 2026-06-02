@@ -344,3 +344,5 @@ export const updateLastSeen = async (
 
   return updateLastSeenAt(requesterId, groupId);
 };
+
+// TODO: fix violations: Many Conditionals/ Complex Method/ Complex Conditional/ COde Duplication/ Primitive Obsession/ String heavy function arguments.

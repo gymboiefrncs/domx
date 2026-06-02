@@ -5,6 +5,7 @@ import { GroupChatHeader } from "@/features/posts/component/GroupChatHeader";
 import { GroupChatMessages } from "@/features/posts/component/GroupChatMessages";
 import { GroupChatInput } from "@/features/posts/component/GroupChatInput";
 import { useMe } from "@/features/profile";
+import { socket } from "@/shared/lib/socket/socket.client";
 
 export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/chat" });
@@ -19,6 +20,10 @@ export const GroupChatPage = () => {
     if (isLoading) return;
     if (!group) navigate({ to: "/groups" });
   }, [group, navigate]);
+
+  useEffect(() => {
+    socket.emit("group:seen", id);
+  }, [id]);
 
   if (!group) return null;
 

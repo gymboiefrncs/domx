@@ -15,6 +15,7 @@ import {
   fetchMemberRole,
   fetchGroupById,
   fetchGroupMemberCount,
+  updateLastSeenAt,
 } from "./group.repositories.js";
 import { pool } from "@api/shared/db/db.js";
 import { GROUP_ERROR } from "./group.constants.js";
@@ -329,4 +330,17 @@ export const deleteGroupById = async (
     throw new ForbiddenError("Only admins can delete the group");
 
   await deleteGroup(groupId);
+};
+
+export const updateLastSeen = async (
+  groupId: string,
+  requesterId: string,
+): Promise<{ last_seen_at: Date }> => {
+  const group = await fetchGroupById(groupId);
+  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
+
+  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
+
+  return updateLastSeenAt(requesterId, groupId);
 };

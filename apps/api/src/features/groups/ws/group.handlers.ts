@@ -7,6 +7,7 @@ import {
   leaveMember,
   promoteMember,
   changeGroupName,
+  updateLastSeen,
 } from "../group.services.js";
 import { performChecks } from "@api/features/posts/index.js";
 import {
@@ -203,6 +204,20 @@ export function registerGroupHandlers(
       socket.emit("group:delete:failed", {
         message: resolveErrorMessage(error, "Failed to delete group"),
       });
+    }
+  });
+  socket.on("group:seen", async (groupId) => {
+    try {
+      const result = await updateLastSeen(groupId, actorId);
+      io.to(groupId).emit("group:seen:ack", {
+        data: {
+          groupId: groupId,
+          userId: actorId,
+          seenAt: result.last_seen_at,
+        },
+      });
+    } catch (error) {
+      console.log(error);
     }
   });
 }

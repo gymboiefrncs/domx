@@ -139,20 +139,26 @@ export const deleteGroup = async (
 export const fetchUserGroups = async (userId: string): Promise<Group[]> => {
   const query = `
     SELECT 
-    g.group_id, 
-    g.name, 
-    gm.role,
-    gm.last_seen_at,
-    COUNT(p.id) FILTER (WHERE p.created_at > gm.last_seen_at)::int AS unread_count,
-    (SELECT COUNT(*) FROM group_members WHERE group_id = g.group_id)::int AS member_count
+      g.group_id, 
+      g.name, 
+      gm.role,
+      gm.last_seen_at,
+      (
+        SELECT COUNT(*)::int 
+        FROM posts p 
+        WHERE p.group_id = g.group_id 
+          AND p.user_id != $1 
+          AND p.created_at > COALESCE(gm.last_seen_at, gm.joined_at)
+      ) AS unread_count,
+      (
+        SELECT COUNT(*)::int 
+        FROM group_members 
+        WHERE group_id = g.group_id
+      ) AS member_count
     FROM group_members gm
     JOIN groups g ON g.group_id = gm.group_id
-    LEFT JOIN posts p ON p.group_id = g.group_id
     WHERE gm.user_id = $1
-    GROUP BY g.group_id, g.name, gm.role, gm.last_seen_at
-    ORDER BY g.created_at DESC
-  `;
-
+    ORDER BY g.created_at DESC;`;
   const values = [userId];
   const result = await pool.query<Group>(query, values);
   return result.rows;
@@ -163,18 +169,26 @@ export const fetchUserGroupSummary = async (
   groupId: string,
 ): Promise<Group> => {
   const query = `
-    SELECT
-    g.group_id,
-    g.name,
-    gm.role,
-    gm.last_seen_at,
-    COUNT(p.id) FILTER (WHERE p.created_at > gm.last_seen_at)::int AS unread_count,
-    (SELECT COUNT(*) FROM group_members WHERE group_id = g.group_id)::int AS member_count
+  SELECT 
+  g.group_id, 
+  g.name, 
+  gm.role,
+  gm.last_seen_at,
+  (
+    SELECT COUNT(*)::int 
+    FROM posts p 
+    WHERE p.group_id = g.group_id 
+      AND p.user_id != $1 
+      AND p.created_at > COALESCE(gm.last_seen_at, gm.joined_at)
+  ) AS unread_count,
+  (
+    SELECT COUNT(*)::int 
+    FROM group_members 
+    WHERE group_id = g.group_id
+  ) AS member_count
     FROM group_members gm
     JOIN groups g ON g.group_id = gm.group_id
-    LEFT JOIN posts p ON p.group_id = g.group_id
     WHERE gm.user_id = $1 AND g.group_id = $2
-    GROUP BY g.group_id, g.name, gm.role, gm.last_seen_at
   `;
 
   const values = [userId, groupId];
@@ -193,7 +207,7 @@ export const fetchGroupMemberCount = async (
 };
 
 export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
-  const query = `SELECT gm.role, u.display_id, u.username
+  const query = `SELECT gm.role, u.id, u.display_id, u.username
   FROM group_members gm
   JOIN users u on u.id = gm.user_id
   WHERE gm.group_id = $1
@@ -201,4 +215,19 @@ export const fetchGroupMembers = async (groupId: string): Promise<Member[]> => {
   const values = [groupId];
   const result = await pool.query<Member>(query, values);
   return result.rows;
+};
+
+export const updateLastSeenAt = async (
+  userId: string,
+  groupId: string,
+): Promise<{ last_seen_at: Date }> => {
+  const query = `
+  UPDATE group_members
+  SET last_seen_at = NOW()
+  WHERE user_id = $1 AND group_id = $2
+  RETURNING last_seen_at
+  `;
+  const values = [userId, groupId];
+  const result = await pool.query<{ last_seen_at: Date }>(query, values);
+  return result.rows[0]!;
 };

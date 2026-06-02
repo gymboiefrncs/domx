@@ -79,6 +79,13 @@ export interface ChatDeleteResponsePayload {
   by: string;
   type: "deleted";
 }
+export interface GroupSeenResponse {
+  data: {
+    groupId: string;
+    userId: string;
+    seenAt: Date;
+  };
+}
 
 export interface ClientToServerEvents {
   "group:join": (groupId: string) => void;
@@ -93,6 +100,7 @@ export interface ClientToServerEvents {
   "group:member:demote": (payload: GroupMemberPayload) => void;
   "group:rename": (payload: GroupRenamePayload) => void;
   "group:delete": (groupId: string) => void;
+  "group:seen": (groupId: string) => void;
 
   // chat events
   "chat:send": (
@@ -120,6 +128,7 @@ export interface ServerToClientEvents {
   "group:deleted": (payload: GroupDeleteResponse) => void;
   "group:delete:failed": (payload: ErrorResponse) => void;
   "group:summary": (payload: GroupSummaryResponse) => void;
+  "group:seen:ack": (payload: GroupSeenResponse) => void;
 
   // chat events
   "chat:received": (payload: ChatResponsePayload) => void;

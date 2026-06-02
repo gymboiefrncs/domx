@@ -14,6 +14,7 @@ export interface CreateGroup {
 }
 
 export interface Member {
+  id: string;
   role: GroupRole;
   display_id: string;
   username: string;

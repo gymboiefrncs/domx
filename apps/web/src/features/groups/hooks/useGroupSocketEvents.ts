@@ -7,7 +7,9 @@ import type {
   GroupMemberKickResponse,
   GroupMemberResponse,
   GroupRenameResponse,
+  GroupSeenResponse,
   GroupSummaryResponse,
+  Member,
   User,
 } from "@domx/shared";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,7 +18,6 @@ import { toast } from "sonner";
 
 export const useGroupSocketEvents = () => {
   const queryClient = useQueryClient();
-
   useEffect(() => {
     const errorCallback = ({ message }: { message: string }) => {
       toast.error(message);
@@ -138,6 +139,28 @@ export const useGroupSocketEvents = () => {
       });
     };
 
+    const handleGroupSeenAck = (payload: GroupSeenResponse) => {
+      const { groupId, userId, seenAt } = payload.data;
+      const me = queryClient.getQueryData<User>(["profile", "me"]);
+
+      queryClient.setQueryData(
+        ["groups", groupId, "members"],
+        (oldMembers: Member[] = []) => {
+          return oldMembers.map((member) =>
+            member.id === userId ? { ...member, last_seen_at: seenAt } : member,
+          );
+        },
+      );
+
+      if (userId === me?.id) {
+        queryClient.setQueryData(["groups"], (oldGroups: Group[]) => {
+          return oldGroups.map((group) =>
+            group.group_id === groupId ? { ...group, unread_count: 0 } : group,
+          );
+        });
+      }
+    };
+
     socket.on("group:summary", handleGroupSummary);
     socket.on("group:member:added", handleMemberAdded);
     socket.on("group:renamed", handleRenameGroup);
@@ -146,6 +169,7 @@ export const useGroupSocketEvents = () => {
     socket.on("group:member:kicked", handleKick);
     socket.on("group:member:promoted", handlePromoteMember);
     socket.on("group:member:demoted", handleDemoteMember);
+    socket.on("group:seen:ack", handleGroupSeenAck);
 
     // error events
     socket.on("group:rename:failed", errorCallback);
@@ -165,6 +189,7 @@ export const useGroupSocketEvents = () => {
       socket.off("group:member:kicked", handleKick);
       socket.off("group:member:promoted", handlePromoteMember);
       socket.off("group:member:demoted", handleDemoteMember);
+      socket.off("group:seen:ack", handleGroupSeenAck);
 
       // error events
       socket.off("group:rename:failed", errorCallback);

@@ -21,6 +21,9 @@ export const GroupListItem = ({ group, index }: Props) => (
           {group.member_count} members
         </p>
       </div>
+      <p className="text-xs text-muted-foreground">
+        {group.unread_count} unread
+      </p>
       <ChevronRight className="w-4 h-4 text-muted-foreground" />
     </Link>
   </li>

@@ -121,16 +121,18 @@ export const resendOtp = async (
 
     const user = await fetchUserForSignup(data.email, client);
 
-    if (!user)
+    if (!user) {
       return {
         message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
-    if (user.is_verified)
+    }
+    if (user.is_verified) {
       return {
         reason: "ALREADY_VERIFIED" as const,
         email: user.email,
         message: VERIFICATION_SUCCESS.RESEND_ACKNOWLEDGED,
       };
+    }
 
     /**
      * Enforce a cooldown to prevent spamming OTP requests
@@ -167,6 +169,7 @@ export const resendOtp = async (
     sendVerificationEmail(result.email, otp).catch((err) => {
       console.error("Failed to send verification email:", err);
     });
+    console.log(`Verification OTP for ${result.email}: ${otp})`);
   }
   if ("reason" in result && result.reason === "ALREADY_VERIFIED") {
     sendAlreadyRegisteredEmail(result.email).catch((err) => {

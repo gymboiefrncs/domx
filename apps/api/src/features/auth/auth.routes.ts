@@ -19,19 +19,18 @@ export const authRouter: Router = express.Router();
 
 authRouter.post(
   "/auth/signup",
-  signupLimiter,
   validateBody(signupSchema),
+  signupLimiter,
   signupHandler,
 );
 authRouter.post(
   "/auth/login",
-  loginLimiter,
   validateBody(loginSchema),
+  loginLimiter,
   loginHandler,
 );
-authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post("/auth/logout", logoutHandler);
-
+authRouter.post("/auth/refresh", refreshLimiter, rotateTokensHandler);
 authRouter.post(
   "/auth/set-info",
   validateBody(infoSchema),

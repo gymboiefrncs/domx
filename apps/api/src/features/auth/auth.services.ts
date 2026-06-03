@@ -118,6 +118,7 @@ export const registerUser = async (
 };
 
 export const loginUser = async (data: LoginRequest): Promise<Tokens> => {
+  console.log(`Login attempt for email: ${data.email}`);
   const { email, password } = data;
   const user = await fetchUserByEmail(email);
 

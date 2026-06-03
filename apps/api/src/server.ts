@@ -24,20 +24,6 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
 
 io.use(async (socket, next) => {
   try {
-    // TODO: use a more secure identifier for rate limiting
-    await wsConnectionLimiter.consume(socket.handshake.address);
-    next();
-  } catch {
-    next(
-      new RateLimitError(
-        "Too many connection attempts. Please try again later.",
-      ),
-    );
-  }
-});
-
-io.use(async (socket, next) => {
-  try {
     const rawCookie = socket.handshake.headers.cookie;
 
     if (!rawCookie) {
@@ -64,6 +50,19 @@ io.use(async (socket, next) => {
     next();
   } catch {
     next(new UnauthorizedError("Invalid or expired token"));
+  }
+});
+
+io.use(async (socket, next) => {
+  try {
+    await wsConnectionLimiter.consume(socket.data.user.id);
+    next();
+  } catch {
+    next(
+      new RateLimitError(
+        "Too many connection attempts. Please try again later.",
+      ),
+    );
   }
 });
 

@@ -4,14 +4,13 @@ import {
   handleGetProfile,
 } from "./profile.controllers.js";
 import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
-import { profileLimiter } from "@api/shared/middlewares/rateLimit.js";
+import {
+  deleteProfileLimiter,
+  readProfileLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 
 export const profileRouter: Router = express.Router();
+profileRouter.use(jwtHandler);
 
-profileRouter.get("/profile/me", profileLimiter, jwtHandler, handleGetProfile);
-profileRouter.delete(
-  "/profile/me",
-  profileLimiter,
-  jwtHandler,
-  handleDeleteProfile,
-);
+profileRouter.get("/profile/me", readProfileLimiter, handleGetProfile);
+profileRouter.delete("/profile/me", deleteProfileLimiter, handleDeleteProfile);

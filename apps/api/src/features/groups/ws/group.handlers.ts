@@ -12,8 +12,11 @@ import {
 import { performChecks } from "@api/features/posts/index.js";
 import {
   getRetryAfterSeconds,
-  wsJoinGroupLimiter,
-  wsWritePostLimiter,
+  wsAddMemberLimiter,
+  wsAdminActionLimiter,
+  wsDeleteGroupLimiter,
+  wsLeaveGroupLimiter,
+  wsRenameGroupLimiter,
 } from "@api/shared/middlewares/rateLimit.js";
 import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 
@@ -35,8 +38,6 @@ export function registerGroupHandlers(
 
   socket.on("group:join", async (groupId) => {
     try {
-      await wsJoinGroupLimiter.consume(socket.data.user.id);
-
       await performChecks(groupId, actorId);
       socket.join(groupId);
     } catch (error) {
@@ -52,7 +53,7 @@ export function registerGroupHandlers(
 
   socket.on("group:member:add", async ({ groupId, targetUserDisplayId }) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsAddMemberLimiter.consume(`${actorId}:${groupId}`);
 
       const {
         member: newMember,
@@ -82,7 +83,7 @@ export function registerGroupHandlers(
 
   socket.on("group:member:kick", async ({ groupId, targetUserDisplayId }) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsAdminActionLimiter.consume(`${actorId}:${groupId}`);
 
       const result = await kickMember(groupId, targetUserDisplayId, actorId);
       io.to(groupId).emit("group:member:kicked", {
@@ -104,7 +105,7 @@ export function registerGroupHandlers(
 
   socket.on("group:member:leave", async (groupId, callback) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsLeaveGroupLimiter.consume(actorId);
 
       const result = await leaveMember(groupId, actorId);
 
@@ -145,7 +146,7 @@ export function registerGroupHandlers(
     "group:member:promote",
     async ({ groupId, targetUserDisplayId }) => {
       try {
-        await wsWritePostLimiter.consume(socket.data.user.id);
+        await wsAdminActionLimiter.consume(`${actorId}:${groupId}`);
 
         await promoteMember(groupId, targetUserDisplayId, actorId);
         io.to(groupId).emit("group:member:promoted", {
@@ -162,7 +163,7 @@ export function registerGroupHandlers(
 
   socket.on("group:member:demote", async ({ groupId, targetUserDisplayId }) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsAdminActionLimiter.consume(`${actorId}:${groupId}`);
 
       await demoteMember(groupId, targetUserDisplayId, actorId);
       io.to(groupId).emit("group:member:demoted", {
@@ -178,7 +179,7 @@ export function registerGroupHandlers(
 
   socket.on("group:rename", async ({ groupId, newName }) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsRenameGroupLimiter.consume(`${actorId}:${groupId}`);
 
       await changeGroupName(groupId, newName, actorId);
       io.to(groupId).emit("group:renamed", {
@@ -194,7 +195,7 @@ export function registerGroupHandlers(
 
   socket.on("group:delete", async (groupId) => {
     try {
-      await wsWritePostLimiter.consume(socket.data.user.id);
+      await wsDeleteGroupLimiter.consume(actorId);
 
       await deleteGroupById(groupId, actorId);
       io.to(groupId).emit("group:deleted", { data: { groupId }, by: actorId });

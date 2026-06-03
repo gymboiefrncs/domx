@@ -1,7 +1,11 @@
 import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import type { Server, Socket } from "socket.io";
 import { resolveErrorMessage } from "@api/features/groups/ws/group.handlers.js";
-import { wsWritePostLimiter } from "@api/shared/middlewares/rateLimit.js";
+import {
+  wsDeletePostLimiter,
+  wsEditPostLimiter,
+  wsWritePostLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 import { createPost, editPost, removePost } from "../post.services.js";
 
 export function registerPostHandlers(
@@ -29,7 +33,7 @@ export function registerPostHandlers(
   });
   socket.on("chat:edit", async ({ groupId, postId, title, body }) => {
     try {
-      await wsWritePostLimiter.consume(actorId);
+      await wsEditPostLimiter.consume(actorId);
       const message = await editPost(actorId, groupId, postId, title, body);
       io.to(groupId).emit("chat:received", {
         data: { message },
@@ -44,7 +48,7 @@ export function registerPostHandlers(
   });
   socket.on("chat:delete", async ({ groupId, postId }) => {
     try {
-      await wsWritePostLimiter.consume(actorId);
+      await wsDeletePostLimiter.consume(actorId);
       const message = await removePost(postId, groupId, actorId);
       io.to(groupId).emit("chat:received", {
         data: { message },

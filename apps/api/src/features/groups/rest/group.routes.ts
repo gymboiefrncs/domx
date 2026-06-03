@@ -19,22 +19,18 @@ const groupParamsValidator = validateParams(GroupParamsSchema);
 const groupValidator = validateBody(GroupSchema);
 
 export const groupRouter: Router = express.Router();
+groupRouter.use(jwtHandler);
 
-groupRouter.use(groupLimiter);
-
-groupRouter.get("/groups", jwtHandler, handleGetGroups);
-
+groupRouter.get("/groups", groupLimiter, handleGetGroups);
 groupRouter.get(
   "/groups/:groupId/members",
-  jwtHandler,
   groupParamsValidator,
+  groupLimiter,
   handleGetMembers,
 );
-
 groupRouter.post(
   "/groups",
   createGroupLimiter,
-  jwtHandler,
   groupValidator,
   handleCreateGroup,
 );

@@ -5,7 +5,10 @@ import {
 } from "./verification.controllers.js";
 import { validateBody } from "@api/shared/middlewares/validate.js";
 import { otpSchema, emailSchema } from "./verification.schemas.js";
-import { verificationLimiter } from "@api/shared/middlewares/rateLimit.js";
+import {
+  otpLimiter,
+  verificationLimiter,
+} from "@api/shared/middlewares/rateLimit.js";
 
 const emailValidator = validateBody(emailSchema);
 const otpValidator = validateBody(otpSchema);
@@ -14,14 +17,13 @@ export const verificationRouter: Router = express.Router();
 
 verificationRouter.post(
   "/verify-email",
-  verificationLimiter,
   otpValidator,
+  otpLimiter,
   verificationHandler,
 );
-
 verificationRouter.post(
   "/resend-otp",
-  verificationLimiter,
   emailValidator,
+  verificationLimiter,
   resendOtpHandler,
 );

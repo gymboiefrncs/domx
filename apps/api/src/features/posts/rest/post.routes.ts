@@ -3,17 +3,16 @@ import { jwtHandler } from "@api/shared/middlewares/authenticate.js";
 import { validateParams } from "@api/shared/middlewares/validate.js";
 import { handleGetPosts } from "./post.controllers.js";
 import { PostParamsSchema } from "../post.schemas.js";
-import { postLimiter } from "@api/shared/middlewares/rateLimit.js";
+import { readPostLimiter } from "@api/shared/middlewares/rateLimit.js";
 
 const postParamsValidator = validateParams(PostParamsSchema);
 
 export const postRouter: Router = express.Router();
-
-postRouter.use(postLimiter);
+postRouter.use(jwtHandler);
 
 postRouter.get(
   "/groups/:groupId/posts",
-  jwtHandler,
+  readPostLimiter,
   postParamsValidator,
   handleGetPosts,
 );

@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLayoutEffect, useRef } from "react";
 import type { GroupRole, PostDetails } from "@domx/shared";
-import { postsQueryOptions } from "../hooks/usePosts";
+import { postsQueryOptions } from "../queries";
 import { PostCard } from "./PostCard";
 
 interface GroupChatMessagesProps {
@@ -15,7 +15,7 @@ export const GroupChatMessages = ({
   userId,
   role,
 }: GroupChatMessagesProps) => {
-  const { data: posts } = useQuery(postsQueryOptions(groupId));
+  const { data: posts } = useSuspenseQuery(postsQueryOptions(groupId));
   const scrollRef = useRef<HTMLDivElement | null>(null);
   // remembers if the user was at the bottom before the latest render,
   // so we know whether to auto-scroll when new posts arrive

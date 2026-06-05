@@ -31,7 +31,6 @@ export const Route = createFileRoute("/_authenticated")({
       if (!user) {
         throw redirect({ to: "/login", search: { redirect: location.href } });
       }
-      return { auth: user };
     } catch {
       throw redirect({
         to: "/login",

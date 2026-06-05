@@ -8,7 +8,7 @@ import { queryClient } from "@/shared/lib/queryClient";
 
 const router = createRouter({
   routeTree,
-  context: { queryClient, auth: null },
+  context: { queryClient },
 });
 
 declare module "@tanstack/react-router" {
@@ -20,7 +20,7 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} context={{ queryClient, auth: null }} />
+      <RouterProvider router={router} context={{ queryClient }} />
     </QueryClientProvider>
   </StrictMode>,
 );

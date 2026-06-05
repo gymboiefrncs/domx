@@ -8,7 +8,7 @@ import type {
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 export const usePostSocketEvents = () => {
@@ -18,6 +18,11 @@ export const usePostSocketEvents = () => {
    * we dont want it to throw error when the route params are not present in the url
    */
   const { id: activeGroupId } = useParams({ strict: false });
+
+  const activeGroupIdRef = useRef(activeGroupId);
+  useEffect(() => {
+    activeGroupIdRef.current = activeGroupId;
+  });
 
   useEffect(() => {
     const errorCallback = ({ message }: { message: string }) => {
@@ -29,10 +34,13 @@ export const usePostSocketEvents = () => {
         data: { message },
         by,
       } = payload;
+
+      const currentGroupId = activeGroupIdRef.current;
+
       if (payload.type === "added") {
         const me = queryClient.getQueryData<User>(["profile", "me"]);
         const isOwnMesage = by === me?.id;
-        const isViewingGroup = activeGroupId === message.group_id;
+        const isViewingGroup = currentGroupId === message.group_id;
         if (!isViewingGroup && !isOwnMesage) {
           queryClient.setQueryData(["groups"], (oldGroups: Group[]) => {
             return oldGroups.map((group) =>
@@ -77,5 +85,5 @@ export const usePostSocketEvents = () => {
       socket.off("chat:received", handleChatReceived);
       socket.off("chat:send:failed", errorCallback);
     };
-  }, [queryClient, activeGroupId]);
+  }, [queryClient]);
 };

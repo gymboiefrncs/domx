@@ -3,23 +3,19 @@ import {
   countMembers,
   deleteGroup,
   deleteMember,
-  hasOtherAdmins,
-  fetchUserByDisplayId,
-  fetchUserGroups,
-  fetchUserGroupSummary,
+  doesGroupExist,
+  findGroupDetails,
+  findGroupMembers,
+  findGroupsByUserId,
+  getMemberRole,
+  hasExistingAdmin,
   insertGroup,
   insertMember,
-  updateRole,
-  updateGroupName,
-  fetchGroupMembers,
-  fetchMemberRole,
-  fetchGroupById,
-  fetchGroupMemberCount,
-  updateLastSeenAt,
+  updateMemberRole,
+  updateName,
 } from "./group.repositories.js";
 import { pool } from "@api/shared/db/db.js";
 import { GROUP_ERROR } from "./group.constants.js";
-import { PROFILE_ERROR } from "@api/features/profile/index.js";
 import {
   ConflictError,
   ForbiddenError,
@@ -27,34 +23,38 @@ import {
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
 import type { CreateGroup, Group, Member } from "@domx/shared";
-import type { GroupMemberCount, GroupWithMemberCount } from "./group.types.js";
+import type {
+  CreateGroupParams,
+  GetUserGroupDetailsParams,
+  GroupActionParams,
+  GroupMemberActionParams,
+  GroupMemberCount,
+  GroupWithMemberCount,
+  RenameGroupParams,
+} from "./group.types.js";
+import { PROFILE_ERROR } from "../profile/profile.constants.js";
 
-export const getGroupMembers = async (
-  groupId: string,
-  requesterId: string,
-): Promise<Member[]> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-
-  return fetchGroupMembers(groupId);
+export const getMembers = async ({
+  groupId,
+  requesterId,
+}: GroupActionParams): Promise<Member[]> => {
+  await resolveGroupAction(groupId, requesterId, null);
+  return findGroupMembers(groupId);
 };
 
-export const getUserGroups = (userId: string): Promise<Group[]> => {
-  return fetchUserGroups(userId);
-};
+export const getUserGroups = (userId: string): Promise<Group[]> =>
+  findGroupsByUserId(userId);
 
-export const getUserGroupSummary = async (
-  userId: string,
-  groupId: string,
-): Promise<Group> => fetchUserGroupSummary(userId, groupId);
+export const getUserGroupDetails = async ({
+  userId,
+  groupId,
+}: GetUserGroupDetailsParams): Promise<Group> =>
+  findGroupDetails({ userId, groupId });
 
-export const createGroup = async (
-  groupName: string,
-  userId: string,
-): Promise<Group> => {
+export const createGroup = async ({
+  groupName,
+  userId,
+}: CreateGroupParams): Promise<Group> => {
   /**
    * withTransaction owns BEGIN/COMMIT/ROLLBACK entirely.
    * Inside: return to commit, throw to rollback.
@@ -66,13 +66,18 @@ export const createGroup = async (
     pool,
     async (client): Promise<CreateGroup> => {
       const group = await insertGroup(groupName, client);
-      await insertMember(group.group_id, userId, "admin", client);
+      await insertMember({
+        groupId: group.group_id,
+        userId,
+        role: "admin",
+        con: client,
+      });
       return group;
     },
   );
 
   // for optimistic update on client side
-  const newGroup: Group = {
+  return {
     group_id: result.group_id,
     name: groupName,
     member_count: 1,
@@ -80,25 +85,18 @@ export const createGroup = async (
     role: "admin",
     last_seen_at: new Date(),
   };
-
-  return newGroup;
 };
 
-export const changeGroupName = async (
-  groupId: string,
-  groupName: string,
-  requester: string,
-): Promise<void> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requester);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-  if (requesterRole !== "admin")
-    throw new ForbiddenError("Only admins can change the group name");
-
-  await updateGroupName(groupId, groupName);
+export const renameGroup = async ({
+  groupId,
+  groupName,
+  requesterId,
+}: RenameGroupParams): Promise<void> => {
+  await resolveGroupAction(groupId, requesterId, null, "admin");
+  await updateName(groupId, groupName);
 };
+
+// --- GROUP MEMBER ACTIONS ---
 
 /**
  * Adds a member to a group by their display ID.
@@ -106,18 +104,20 @@ export const changeGroupName = async (
  * This avoids bottlenecks in situations where the admin is unavailable
  * and a member needs to be added urgently.
  */
-export const addMember = async (
-  groupId: string,
-  displayId: string,
-  requesterId: string,
-): Promise<{ member: Member; groupDetail: Group; targetUserId: string }> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-
-  const targetUserId = await fetchUserByDisplayId(displayId);
+export const addMember = async ({
+  groupId,
+  displayId,
+  requesterId,
+}: GroupMemberActionParams): Promise<{
+  member: Member;
+  groupDetail: Group;
+  targetUserId: string;
+}> => {
+  const { targetUserId } = await resolveGroupAction(
+    groupId,
+    requesterId,
+    displayId,
+  );
   if (!targetUserId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
   try {
     /**
@@ -127,8 +127,11 @@ export const addMember = async (
      * the global error handler. Any other error is re-thrown as-is.
      */
 
-    const member = await insertMember(groupId, targetUserId);
-    const groupDetail = await fetchUserGroupSummary(targetUserId, groupId);
+    const member = await insertMember({ groupId, userId: targetUserId });
+    const groupDetail = await findGroupDetails({
+      userId: targetUserId,
+      groupId,
+    });
     return { member, groupDetail, targetUserId };
   } catch (error: unknown) {
     if (
@@ -151,30 +154,32 @@ export const addMember = async (
  * removes another member, as opposed to leaving which is self-initiated.
  * Admins who want to leave the group should use the leave flow instead.
  */
-export const kickMember = async (
-  groupId: string,
-  displayId: string,
-  requesterId: string,
-): Promise<GroupMemberCount & { userId: string }> => {
-  const { userId } = await resolveGroupAction(
+export const kickMember = async ({
+  groupId,
+  displayId,
+  requesterId,
+}: GroupMemberActionParams): Promise<GroupMemberCount & { userId: string }> => {
+  const { targetUserId } = await resolveGroupAction(
     groupId,
-    displayId,
     requesterId,
+    displayId,
     "admin",
   );
+  if (!targetUserId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
   /**
    * Prevents admins from using kick as a substitute for leaving.
    * Self-removal is handled separately by the leave flow.
    */
-  if (userId === requesterId)
+  if (targetUserId === requesterId)
     throw new ForbiddenError(
       "You cannot remove yourself. Use the leave option instead.",
     );
-  const deleted = await deleteMember(userId, groupId);
-  if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-  const { member_count } = await fetchGroupMemberCount(groupId);
-  return { member_count, userId };
+
+  await deleteMember({ userId: targetUserId, groupId });
+
+  const member_count = await countMembers(groupId);
+  return { member_count, userId: targetUserId };
 };
 
 /**
@@ -190,24 +195,23 @@ export const kickMember = async (
  *
  * Regular members can leave without restriction.
  */
-export const leaveMember = async (
-  groupId: string,
-  requesterId: string,
-): Promise<GroupWithMemberCount | undefined> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
+export const leaveGroup = async ({
+  groupId,
+  requesterId,
+}: GroupActionParams): Promise<GroupWithMemberCount | undefined> => {
+  if (!doesGroupExist(groupId)) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
 
   return withTransaction(pool, async (client) => {
     /**
      * Lock the requester's row to prevent concurrent modifications
      * like other admins demoting and kicking them
      */
-    const requesterRole = await fetchMemberRole(
+    const requesterRole = await getMemberRole({
       groupId,
-      requesterId,
-      client,
-      true,
-    );
+      userId: requesterId,
+      con: client,
+      forUpdate: true,
+    });
     if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
 
     /**
@@ -215,11 +219,10 @@ export const leaveMember = async (
      * This prevents race conditions where multiple members leave at the same time
      * and the count becomes inaccurate,
      */
-    const memberCount = await countMembers(groupId, client);
+    const memberCount = await countMembers(groupId, client, true);
 
     // Last member: remove them regardless of their role and delete the group
     if (memberCount === 1) {
-      await deleteMember(requesterId, groupId, client);
       await deleteGroup(groupId, client);
       return;
     }
@@ -230,50 +233,54 @@ export const leaveMember = async (
        * Prevents two admins from both seeing each other as "other admins"
        * and both leaving, which would leave the group without any admins.
        */
-      const otherAdminsExist = await hasOtherAdmins(
-        groupId,
-        requesterId,
-        client,
-      );
-      if (!otherAdminsExist)
+      if (
+        !(await hasExistingAdmin({ groupId, userId: requesterId, con: client }))
+      ) {
         throw new ConflictError(
           "Promote a member to admin before leaving this group.",
         );
+      }
     }
 
     // Regular members (or admins with co-admins) can leave freely
-    const deleted = await deleteMember(requesterId, groupId, client);
-    if (!deleted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
+    await deleteMember({ userId: requesterId, groupId, con: client });
 
     // for everyone else in the group
-    const newGroupMemberCount = await fetchGroupMemberCount(groupId, client);
+    const newMemberCount = await countMembers(groupId, client, true);
 
     return {
       group_id: groupId,
-      member_count: newGroupMemberCount.member_count,
+      member_count: newMemberCount,
     };
   });
 };
 
-export const promoteMember = async (
-  groupId: string,
-  displayId: string,
-  requesterId: string,
-): Promise<void> => {
-  const { userId } = await resolveGroupAction(
+export const promoteMember = async ({
+  groupId,
+  displayId,
+  requesterId,
+}: GroupMemberActionParams): Promise<void> => {
+  const { targetUserId } = await resolveGroupAction(
     groupId,
-    displayId,
     requesterId,
+    displayId,
     "admin",
   );
+  if (!targetUserId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
-  const targetRole = await fetchMemberRole(groupId, userId);
+  const targetRole = await getMemberRole({
+    groupId,
+    userId: targetUserId,
+  });
   if (!targetRole) throw new NotFoundError(GROUP_ERROR.NOT_A_MEMBER);
   if (targetRole === "admin")
     throw new ConflictError("User is already an admin.");
 
-  const promoted = await updateRole("admin", userId, groupId);
-  if (!promoted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
+  await updateMemberRole({
+    role: "admin",
+    userId: targetUserId,
+    groupId,
+  });
 };
 
 /**
@@ -285,64 +292,45 @@ export const promoteMember = async (
  * Admin demoting another admin is also allowed because some admins
  * might become inactive
  */
-export const demoteMember = async (
-  groupId: string,
-  displayId: string,
-  requesterId: string,
-): Promise<void> => {
-  const { userId } = await resolveGroupAction(
+export const demoteMember = async ({
+  groupId,
+  displayId,
+  requesterId,
+}: GroupMemberActionParams): Promise<void> => {
+  const { targetUserId } = await resolveGroupAction(
     groupId,
-    displayId,
     requesterId,
+    displayId,
     "admin",
   );
+  if (!targetUserId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
 
-  const targetRole = await fetchMemberRole(groupId, userId);
+  const targetRole = await getMemberRole({ groupId, userId: targetUserId });
   if (!targetRole) throw new NotFoundError(GROUP_ERROR.NOT_A_MEMBER);
   if (targetRole === "member")
     throw new ConflictError("User is already a regular member.");
 
-  await withTransaction(pool, async (client) => {
-    // Ensure at least one admin remains after demotion.
-    // Guards both self-demotion and mutual-demotion races
-    // (e.g. Admin A demotes B while B demotes A simultaneously).
-    const otherAdminsExist = await hasOtherAdmins(groupId, userId, client);
-    if (!otherAdminsExist)
-      throw new ConflictError(
-        "Cannot demote. This would leave the group with no admins.",
-      );
+  if (!(await hasExistingAdmin({ groupId, userId: requesterId }))) {
+    throw new ConflictError(
+      "Cannot demote. This would leave the group with no admins.",
+    );
+  }
 
-    const demoted = await updateRole("member", userId, groupId, client);
-    if (!demoted) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-  });
+  await updateMemberRole({ role: "member", userId: targetUserId, groupId });
 };
 
-export const deleteGroupById = async (
-  groupId: string,
-  requesterId: string,
-): Promise<void> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-  if (requesterRole !== "admin")
-    throw new ForbiddenError("Only admins can delete the group");
-
+export const removeGroup = async ({
+  groupId,
+  requesterId,
+}: GroupActionParams): Promise<void> => {
+  await resolveGroupAction(groupId, requesterId, null, "admin");
   await deleteGroup(groupId);
 };
 
-export const updateLastSeen = async (
-  groupId: string,
-  requesterId: string,
-): Promise<{ last_seen_at: Date }> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
-
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
-  if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-
-  return updateLastSeenAt(requesterId, groupId);
+export const updateLastSeen = async ({
+  groupId,
+  requesterId,
+}: GroupActionParams): Promise<{ last_seen_at: Date }> => {
+  await resolveGroupAction(groupId, requesterId);
+  return updateLastSeen({ requesterId, groupId });
 };
-
-// TODO: fix violations: Many Conditionals/ Complex Method/ Complex Conditional/ COde Duplication/ Primitive Obsession/ String heavy function arguments.

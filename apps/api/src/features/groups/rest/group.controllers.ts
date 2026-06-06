@@ -1,9 +1,5 @@
 import type { RequestHandler } from "express";
-import {
-  createGroup,
-  getGroupMembers,
-  getUserGroups,
-} from "../group.services.js";
+import { createGroup, getMembers, getUserGroups } from "../group.services.js";
 import type { GroupResponse, Params } from "../group.types.js";
 import type { Group, Member } from "@domx/shared";
 
@@ -13,7 +9,7 @@ export const handleGetMembers: RequestHandler<
 > = async (req, res) => {
   const userId = req.user!.userId;
   const { groupId } = req.params;
-  const members = await getGroupMembers(groupId, userId);
+  const members = await getMembers({ groupId, requesterId: userId });
   res.status(200).json({
     data: members,
   });
@@ -35,7 +31,7 @@ export const handleCreateGroup: RequestHandler<
   GroupResponse<Group>
 > = async (req, res) => {
   const userId = req.user!.userId;
-  const newGroup = await createGroup(req.body.groupName, userId);
+  const newGroup = await createGroup({ groupName: req.body.groupName, userId });
   res.status(201).json({
     data: newGroup,
   });

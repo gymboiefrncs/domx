@@ -1,35 +1,34 @@
 import type { GroupRole } from "@domx/shared";
-import { fetchGroupById, fetchMemberRole } from "./group.repositories.js";
+import { getAccessContext } from "./group.repositories.js";
 import { ForbiddenError, NotFoundError } from "@api/shared/error.js";
 import { GROUP_ERROR } from "./group.constants.js";
-import { PROFILE_ERROR } from "@api/features/profile/index.js";
-import { fetchUserByDisplayId } from "./group.repositories.js";
+import type { GroupAction } from "./group.types.js";
 
 /**
  * Shared preamble for group member actions.
  * Validates that the group exists, resolves the target displayId to a userId,
  * and optionally verifies the requester's role meets a minimum privilege.
  *
- * @param requireRole - If provided, the requester must have this exact role.
+ * @param requiredRole - If provided, the requester must have this exact role.
  */
 export const resolveGroupAction = async (
   groupId: string,
-  displayId: string,
   requesterId: string,
-  requireRole?: GroupRole,
-): Promise<{ userId: string; requesterRole: GroupRole }> => {
-  const group = await fetchGroupById(groupId);
-  if (!group) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
+  targetDisplayId: string | null = null,
+  requiredRole?: GroupRole,
+): Promise<GroupAction> => {
+  const { groupExists, requesterRole, targetUserId } = await getAccessContext({
+    groupId,
+    userId: requesterId,
+    targetDisplayId,
+  });
 
-  const requesterRole = await fetchMemberRole(groupId, requesterId);
+  const isAllowed = !requiredRole || requesterRole === requiredRole; // ✅
+
+  if (!groupExists) throw new NotFoundError(GROUP_ERROR.NOT_FOUND);
   if (!requesterRole) throw new ForbiddenError(GROUP_ERROR.NOT_A_MEMBER);
-  if (requireRole && requesterRole !== requireRole)
-    throw new ForbiddenError(
-      `Only group ${requireRole}s can perform this action.`,
-    );
+  if (!isAllowed)
+    throw new ForbiddenError("You are not allowed to perform this action.");
 
-  const userId = await fetchUserByDisplayId(displayId);
-  if (!userId) throw new NotFoundError(PROFILE_ERROR.USER_NOT_FOUND);
-
-  return { userId, requesterRole };
+  return { targetUserId, requesterRole };
 };

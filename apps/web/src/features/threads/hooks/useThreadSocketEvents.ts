@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { threadsQueryOptions } from "../queries";
 import { groupsQueryOptions } from "@/features/groups/queries";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 
 export const useThreadSocketEvents = () => {
   const queryClient = useQueryClient();

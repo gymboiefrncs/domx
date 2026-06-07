@@ -3,7 +3,7 @@ import {
   groupMembersQueryOptions,
   groupsQueryOptions,
 } from "@/features/groups/queries";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 import { GroupSettingsPage } from "@/pages/GroupSettings";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 

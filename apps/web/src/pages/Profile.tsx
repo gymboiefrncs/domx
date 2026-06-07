@@ -3,7 +3,7 @@ import { Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 
 export const ProfilePage = () => {
   const { data: user } = useSuspenseQuery(meQueryOptions);

@@ -10,7 +10,7 @@ import { ChevronLeft } from "lucide-react";
 import { GroupHero } from "@/features/groups/components/settings/Hero";
 import { MemberListItem } from "@/features/groups/components/settings/MemberList";
 import { GroupDangerZone } from "@/features/groups/components/settings/DangerZone";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 export const GroupSettingsPage = () => {

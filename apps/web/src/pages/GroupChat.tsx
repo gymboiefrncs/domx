@@ -9,7 +9,7 @@ import { GroupChatMessages } from "@/features/threads/component/GroupChatMessage
 import { GroupChatInput } from "@/features/threads/component/GroupChatInput";
 import { socket } from "@/shared/lib/socket/socket.client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 import { ChatMessagesSkeleton } from "@/features/threads/component/GroupMessagesSkeleton";
 
 export const GroupChatPage = () => {

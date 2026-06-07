@@ -3,7 +3,7 @@ import {
   groupsQueryOptions,
 } from "@/features/groups/queries";
 import { GroupChatSkeleton } from "@/features/threads/component/GroupChatPageSkeleton";
-import { meQueryOptions } from "@/features/profile/hooks/useProfile";
+import { meQueryOptions } from "@/features/profile/queries";
 import { GroupChatPage } from "@/pages/GroupChat";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 

@@ -9,7 +9,7 @@ import {
   renameGroup,
   updateLastSeen,
 } from "../group.services.js";
-import { performChecks } from "@api/features/posts/index.js";
+import { performChecks } from "@api/features/threads/thread.helpers.js";
 import {
   getRetryAfterSeconds,
   wsAddMemberLimiter,

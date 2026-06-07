@@ -139,8 +139,8 @@ export const createGroupLimiter: RequestHandler = createLimiter({
   blockDurationMs: 60 * 1000,
 });
 
-export const readPostLimiter: RequestHandler = createLimiter({
-  keyPrefix: "read-posts",
+export const readThreadLimiter: RequestHandler = createLimiter({
+  keyPrefix: "read-threads",
   prodMax: 150,
   windowMs: 60 * 1000,
   message: "Too many requests, try again after a minute",
@@ -189,27 +189,27 @@ export const wsConnectionLimiter = createSocketLimiter({
   blockDurationMs: 3 * 60 * 1000,
 });
 
-export const wsWritePostLimiter = createSocketLimiter({
+export const wsWriteThreadLimiter = createSocketLimiter({
   keyPrefix: "ws-write",
   prodMax: 10,
   windowMs: 10 * 1000,
-  message: "You are sending messages too quickly, try again after 20 seconds",
+  message: "You are sending threads too quickly, try again after 20 seconds",
   blockDurationMs: 20 * 1000,
 });
 
-export const wsEditPostLimiter = createSocketLimiter({
+export const wsEditThreadLimiter = createSocketLimiter({
   keyPrefix: "ws-edit",
   prodMax: 3,
   windowMs: 10 * 1000,
-  message: "You are editing messages too quickly, try again after 20 seconds",
+  message: "You are editing threads too quickly, try again after 20 seconds",
   blockDurationMs: 20 * 1000,
 });
 
-export const wsDeletePostLimiter = createSocketLimiter({
+export const wsDeleteThreadLimiter = createSocketLimiter({
   keyPrefix: "ws-delete",
   prodMax: 3,
   windowMs: 10 * 1000,
-  message: "You are deleting messages too quickly, try again after 20 seconds",
+  message: "You are deleting threads too quickly, try again after 20 seconds",
   blockDurationMs: 20 * 1000,
 });
 

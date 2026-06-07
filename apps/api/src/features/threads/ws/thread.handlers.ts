@@ -2,22 +2,27 @@ import type { ClientToServerEvents, ServerToClientEvents } from "@domx/shared";
 import type { Server, Socket } from "socket.io";
 import { resolveErrorMessage } from "@api/features/groups/ws/group.handlers.js";
 import {
-  wsDeletePostLimiter,
-  wsEditPostLimiter,
-  wsWritePostLimiter,
+  wsEditThreadLimiter,
+  wsWriteThreadLimiter,
+  wsDeleteThreadLimiter,
 } from "@api/shared/middlewares/rateLimit.js";
-import { createPost, editPost, removePost } from "../post.services.js";
+import { createThread, editThread, removeThread } from "../thread.services.js";
 
-export function registerPostHandlers(
+export function registerThreadHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
   socket: Socket<ClientToServerEvents, ServerToClientEvents>,
 ) {
   const actorId = socket.data.user.id;
 
-  socket.on("chat:send", async ({ title, body, groupId }, callback) => {
+  socket.on("chat:send", async ({ title, content, groupId }, callback) => {
     try {
-      await wsWritePostLimiter.consume(actorId);
-      const message = await createPost(title, body, actorId, groupId);
+      await wsWriteThreadLimiter.consume(actorId);
+      const message = await createThread({
+        title,
+        content,
+        requesterId: actorId,
+        groupId,
+      });
       io.to(groupId).emit("chat:received", {
         data: { message },
         by: actorId,
@@ -31,10 +36,21 @@ export function registerPostHandlers(
       callback({ success: false });
     }
   });
-  socket.on("chat:edit", async ({ groupId, postId, title, body }) => {
+  socket.on("chat:edit", async ({ groupId, threadId, title, content }) => {
     try {
-      await wsEditPostLimiter.consume(actorId);
-      const message = await editPost(actorId, groupId, postId, title, body);
+      await wsEditThreadLimiter.consume(actorId);
+      const message = await editThread({
+        requesterId: actorId,
+        groupId,
+        threadId,
+        /**
+         *  Conditionally spread each optional field so that when they're
+         *  undefined, the property is simply absent from the object rather
+         *  than present but undefined
+         */
+        ...(title !== undefined && { title }),
+        ...(content !== undefined && { content }),
+      });
       io.to(groupId).emit("chat:received", {
         data: { message },
         by: actorId,
@@ -46,10 +62,14 @@ export function registerPostHandlers(
       });
     }
   });
-  socket.on("chat:delete", async ({ groupId, postId }) => {
+  socket.on("chat:delete", async ({ groupId, threadId }) => {
     try {
-      await wsDeletePostLimiter.consume(actorId);
-      const message = await removePost(postId, groupId, actorId);
+      await wsDeleteThreadLimiter.consume(actorId);
+      const message = await removeThread({
+        threadId,
+        groupId,
+        requesterId: actorId,
+      });
       io.to(groupId).emit("chat:received", {
         data: { message },
         by: actorId,

@@ -1,4 +1,4 @@
-export type Post = {
+export type Thread = {
   id: string;
   user_id: string;
   group_id: string;
@@ -8,7 +8,7 @@ export type Post = {
   updated_at: Date;
 };
 
-export type PostDetails = Post & {
+export type ThreadDetails = Thread & {
   username: string;
   display_id: string;
 };

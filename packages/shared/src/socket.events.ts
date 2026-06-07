@@ -1,5 +1,5 @@
 import type { Group, Member } from "./group.js";
-import type { PostDetails } from "./post.js";
+import type { ThreadDetails } from "./post.js";
 
 export interface GroupMemberPayload {
   groupId: string;
@@ -11,20 +11,20 @@ export interface GroupRenamePayload {
   newName: string;
 }
 
-export interface ChatPayload {
+export interface ThreadPayload {
   title: string;
-  body: string;
+  content: string;
   groupId: string;
 }
-export interface ChatDeletePayload {
+export interface ThreadDeletePayload {
   groupId: string;
-  postId: string;
+  threadId: string;
 }
-export interface ChatEditPayload {
+export interface ThreadEditPayload {
   title?: string;
-  body?: string;
+  content?: string;
   groupId: string;
-  postId: string;
+  threadId: string;
 }
 
 // ------ Responses ------
@@ -70,12 +70,12 @@ export interface GroupMemberKickResponse {
 }
 
 export interface ChatResponsePayload {
-  data: { message: PostDetails };
+  data: { message: ThreadDetails };
   by: string;
   type: "added" | "edited" | "deleted";
 }
 export interface ChatDeleteResponsePayload {
-  data: { postId: string; groupId: string };
+  data: { threadId: string; groupId: string };
   by: string;
   type: "deleted";
 }
@@ -104,11 +104,11 @@ export interface ClientToServerEvents {
 
   // chat events
   "chat:send": (
-    payload: ChatPayload,
+    payload: ThreadPayload,
     callback: (response: { success: boolean }) => void,
   ) => void;
-  "chat:edit": (payload: ChatEditPayload) => void;
-  "chat:delete": (payload: ChatDeletePayload) => void;
+  "chat:edit": (payload: ThreadEditPayload) => void;
+  "chat:delete": (payload: ThreadDeletePayload) => void;
 }
 
 export interface ServerToClientEvents {

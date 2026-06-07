@@ -112,7 +112,7 @@ export const updateMemberRole = async ({
   await con.query(query, [role, groupId, userId]);
 };
 
-export const updateLastSeen = async ({
+export const markSeenAt = async ({
   userId,
   groupId,
 }: UpdateLastSeenParams): Promise<{ last_seen_at: Date }> => {

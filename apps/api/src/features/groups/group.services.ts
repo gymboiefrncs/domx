@@ -11,6 +11,7 @@ import {
   hasExistingAdmin,
   insertGroup,
   insertMember,
+  markSeenAt,
   updateMemberRole,
   updateName,
 } from "./group.repositories.js";
@@ -332,5 +333,5 @@ export const updateLastSeen = async ({
   requesterId,
 }: GroupActionParams): Promise<{ last_seen_at: Date }> => {
   await resolveGroupAction(groupId, requesterId);
-  return updateLastSeen({ requesterId, groupId });
+  return markSeenAt({ userId: requesterId, groupId });
 };

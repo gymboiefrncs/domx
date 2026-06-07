@@ -67,15 +67,15 @@ export const useGroupSocketEvents = () => {
         data: { groupId },
       } = payload;
 
+      queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
+        return oldGroups?.filter((group) => group.group_id !== groupId);
+      });
+
       queryClient.removeQueries({
         queryKey: groupMembersQueryOptions(groupId).queryKey,
       });
       queryClient.removeQueries({
         queryKey: threadsQueryOptions(groupId).queryKey,
-      });
-
-      queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
-        return oldGroups?.filter((group) => group.group_id !== groupId);
       });
     };
 

@@ -6,7 +6,7 @@ export const fetchThreads = async (
   groupId: string,
 ): Promise<ThreadDetails[]> => {
   const res = await httpClient.get<ApiResponse<ThreadDetails[]>>(
-    `/groups/${groupId}/thread`,
+    `/groups/${groupId}/threads`,
   );
   return res!.data;
 };

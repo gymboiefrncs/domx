@@ -34,7 +34,6 @@ const createLimiter = (options: LimiterOptions): RequestHandler => {
   return async (req, res, next) => {
     const key: string | undefined =
       req.user?.userId ?? req.body?.email ?? req.ip;
-    console.log("Key:", key);
     if (!key) {
       res
         .status(400)

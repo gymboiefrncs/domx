@@ -1,15 +1,13 @@
 import { socket } from "@/shared/lib/socket/socket.client";
-import type {
-  ChatResponsePayload,
-  Group,
-  ThreadDetails,
-  User,
-} from "@domx/shared";
+import type { ChatResponsePayload } from "@domx/shared";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { threadsQueryOptions } from "../queries";
+import { groupsQueryOptions } from "@/features/groups/queries";
+import { meQueryOptions } from "@/features/profile/hooks/useProfile";
 
 export const useThreadSocketEvents = () => {
   const queryClient = useQueryClient();
@@ -42,43 +40,41 @@ export const useThreadSocketEvents = () => {
       const currentGroupId = activeGroupIdRef.current;
 
       if (payload.type === "added") {
-        const me = queryClient.getQueryData<User>(["profile", "me"]);
+        const me = queryClient.getQueryData(meQueryOptions.queryKey);
         const isOwnMesage = by === me?.id;
         const isViewingGroup = currentGroupId === message.group_id;
         if (!isViewingGroup && !isOwnMesage) {
-          queryClient.setQueryData(["groups"], (oldGroups: Group[]) => {
-            return oldGroups.map((group) =>
+          queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) =>
+            oldGroups?.map((group) =>
               group.group_id === message.group_id
                 ? { ...group, unread_count: group.unread_count + 1 }
                 : group,
-            );
-          });
+            ),
+          );
         }
 
         queryClient.setQueryData(
-          ["threads", message.group_id],
-          (oldData: ThreadDetails[]) => {
-            return [...oldData, payload.data.message];
-          },
+          threadsQueryOptions(message.group_id).queryKey,
+          (oldThread) =>
+            oldThread ? [...oldThread, payload.data.message] : undefined,
         );
       }
       if (payload.type === "edited") {
         queryClient.setQueryData(
-          ["threads", message.group_id],
-          (oldData: ThreadDetails[]) => {
-            return oldData.map((thread) =>
+          threadsQueryOptions(message.group_id).queryKey,
+          (oldThread) =>
+            oldThread?.map((thread) =>
               thread.id === payload.data.message.id
                 ? payload.data.message
                 : thread,
-            );
-          },
+            ),
         );
       }
       if (payload.type === "deleted") {
         queryClient.setQueryData(
-          ["threads", message.group_id],
-          (oldData: ThreadDetails[]) => {
-            return oldData.filter(
+          threadsQueryOptions(message.group_id).queryKey,
+          (oldThread) => {
+            return oldThread?.filter(
               (post) => post.id !== payload.data.message.id,
             );
           },

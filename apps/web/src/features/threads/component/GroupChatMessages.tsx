@@ -1,8 +1,8 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLayoutEffect, useRef } from "react";
-import type { GroupRole, PostDetails } from "@domx/shared";
-import { postsQueryOptions } from "../queries";
-import { PostCard } from "./PostCard";
+import type { GroupRole, ThreadDetails } from "@domx/shared";
+import { threadsQueryOptions } from "../queries";
+import { PostCard } from "./ThreadCard";
 
 interface GroupChatMessagesProps {
   groupId: string;
@@ -15,12 +15,12 @@ export const GroupChatMessages = ({
   userId,
   role,
 }: GroupChatMessagesProps) => {
-  const { data: posts } = useSuspenseQuery(postsQueryOptions(groupId));
+  const { data: thread } = useSuspenseQuery(threadsQueryOptions(groupId));
   const scrollRef = useRef<HTMLDivElement | null>(null);
   // remembers if the user was at the bottom before the latest render,
-  // so we know whether to auto-scroll when new posts arrive
+  // so we know whether to auto-scroll when new thread arrive
   const isAtBottomRef = useRef(true);
-  const prevCountRef = useRef(0); // tracks previous post count to detect new posts
+  const prevCountRef = useRef(0); // tracks previous post count to detect new thread
 
   const updateIsAtBottom = () => {
     const container = scrollRef.current;
@@ -33,14 +33,14 @@ export const GroupChatMessages = ({
 
   useLayoutEffect(() => {
     const container = scrollRef.current;
-    const currentCount = posts?.length ?? 0;
+    const currentCount = thread?.length ?? 0;
     if (!container || currentCount === 0) {
       prevCountRef.current = currentCount;
       return;
     }
 
     const wasEmpty = prevCountRef.current === 0;
-    const lastPost = posts?.[currentCount - 1];
+    const lastPost = thread?.[currentCount - 1];
     const lastIsMine = !!userId && lastPost?.user_id === userId;
 
     if (wasEmpty || lastIsMine || isAtBottomRef.current) {
@@ -49,9 +49,9 @@ export const GroupChatMessages = ({
     }
 
     prevCountRef.current = currentCount;
-  }, [posts, userId]);
+  }, [thread, userId]);
 
-  if (!posts?.length) {
+  if (!thread?.length) {
     return (
       <div
         ref={scrollRef}
@@ -71,14 +71,14 @@ export const GroupChatMessages = ({
       onScroll={updateIsAtBottom}
       className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
     >
-      {posts.map((post: PostDetails) => {
-        const isMe = post.user_id === userId;
+      {thread.map((thread: ThreadDetails) => {
+        const isMe = thread.user_id === userId;
         const isAdmin = role === "admin";
         const canModify = isMe || isAdmin;
         return (
           <PostCard
-            key={post.id}
-            post={post}
+            key={thread.id}
+            thread={thread}
             isMe={isMe}
             canModify={canModify}
           />

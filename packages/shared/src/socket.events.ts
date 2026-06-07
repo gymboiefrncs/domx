@@ -1,5 +1,5 @@
 import type { Group, Member } from "./group.js";
-import type { ThreadDetails } from "./post.js";
+import type { ThreadDetails } from "./thread.js";
 
 export interface GroupMemberPayload {
   groupId: string;

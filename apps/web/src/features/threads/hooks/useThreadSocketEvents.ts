@@ -2,7 +2,7 @@ import { socket } from "@/shared/lib/socket/socket.client";
 import type {
   ChatResponsePayload,
   Group,
-  PostDetails,
+  ThreadDetails,
   User,
 } from "@domx/shared";
 
@@ -11,7 +11,7 @@ import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
-export const usePostSocketEvents = () => {
+export const useThreadSocketEvents = () => {
   const queryClient = useQueryClient();
   /**
    * strict: false because this hook is mounted globally.
@@ -19,6 +19,10 @@ export const usePostSocketEvents = () => {
    */
   const { id: activeGroupId } = useParams({ strict: false });
 
+  /**
+   * use ref to store the activeGroupId instead of putting it in the dependency array
+   * to avoid re-subscribing to the socket events every time the activeGroupId changes
+   */
   const activeGroupIdRef = useRef(activeGroupId);
   useEffect(() => {
     activeGroupIdRef.current = activeGroupId;
@@ -52,26 +56,28 @@ export const usePostSocketEvents = () => {
         }
 
         queryClient.setQueryData(
-          ["posts", message.group_id],
-          (oldData: PostDetails[]) => {
+          ["threads", message.group_id],
+          (oldData: ThreadDetails[]) => {
             return [...oldData, payload.data.message];
           },
         );
       }
       if (payload.type === "edited") {
         queryClient.setQueryData(
-          ["posts", message.group_id],
-          (oldData: PostDetails[]) => {
-            return oldData.map((post) =>
-              post.id === payload.data.message.id ? payload.data.message : post,
+          ["threads", message.group_id],
+          (oldData: ThreadDetails[]) => {
+            return oldData.map((thread) =>
+              thread.id === payload.data.message.id
+                ? payload.data.message
+                : thread,
             );
           },
         );
       }
       if (payload.type === "deleted") {
         queryClient.setQueryData(
-          ["posts", message.group_id],
-          (oldData: PostDetails[]) => {
+          ["threads", message.group_id],
+          (oldData: ThreadDetails[]) => {
             return oldData.filter(
               (post) => post.id !== payload.data.message.id,
             );

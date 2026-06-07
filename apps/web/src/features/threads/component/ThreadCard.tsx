@@ -4,30 +4,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
 import { queryClient } from "@/shared/lib/queryClient";
 import { socket } from "@/shared/lib/socket/socket.client";
-import type { PostDetails } from "@domx/shared";
+import type { ThreadDetails } from "@domx/shared";
 import { Check, Clock, Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 interface PostCardProps {
-  post: PostDetails;
+  thread: ThreadDetails;
   isMe: boolean;
   canModify: boolean;
 }
 
-export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
+export const PostCard = ({ thread, isMe, canModify }: PostCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(post.title);
-  const [editBody, setEditBody] = useState(post.body);
+  const [editTitle, setEditTitle] = useState(thread.title);
+  const [editBody, setEditBody] = useState(thread.content);
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditTitle(post.title);
-    setEditBody(post.body);
+    setEditTitle(thread.title);
+    setEditBody(thread.content);
   };
   const handleCancel = () => {
     setIsEditing(false);
-    setEditTitle(post.title);
-    setEditBody(post.body);
+    setEditTitle(thread.title);
+    setEditBody(thread.content);
   };
 
   const handleSaveOnEnter = (e: React.KeyboardEvent) => {
@@ -41,35 +41,37 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
     if (!editTitle.trim() && !editBody.trim()) return;
 
     queryClient.setQueryData(
-      ["posts", post.group_id],
-      (oldPost: PostDetails[] | undefined) => {
-        if (!oldPost) return oldPost;
-        return oldPost.map((p) =>
-          p.id === post.id ? { ...p, title: editTitle, body: editBody } : p,
+      ["threads", thread.group_id],
+      (oldThread: ThreadDetails[] | undefined) => {
+        if (!oldThread) return oldThread;
+        return oldThread.map((p) =>
+          p.id === thread.id
+            ? { ...p, title: editTitle, content: editBody }
+            : p,
         );
       },
     );
 
     socket.emit("chat:edit", {
-      groupId: post.group_id,
-      postId: post.id,
+      groupId: thread.group_id,
+      threadId: thread.id,
       title: editTitle,
-      body: editBody,
+      content: editBody,
     });
     setIsEditing(false);
   };
 
   const handleDelete = () => {
     queryClient.setQueryData(
-      ["posts", post.group_id],
-      (oldData: PostDetails[]) => {
-        return oldData.filter((p) => p.id !== post.id);
+      ["threads", thread.group_id],
+      (oldData: ThreadDetails[]) => {
+        return oldData.filter((p) => p.id !== thread.id);
       },
     );
 
     socket.emit("chat:delete", {
-      groupId: post.group_id,
-      postId: post.id,
+      groupId: thread.group_id,
+      threadId: thread.id,
     });
   };
 
@@ -87,10 +89,10 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-semibold text-foreground truncate">
-            {post.username}
+            {thread.username}
           </span>
           <span className="text-xs text-muted-foreground truncate">
-            @{post.display_id}
+            @{thread.display_id}
           </span>
           {isMe && (
             <span className="px-1.5 py-0.5 text-[10px] font-bold bg-primary text-primary-foreground rounded-md uppercase tracking-wider scale-95">
@@ -121,7 +123,7 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 }
-                title="Delete post?"
+                title="Delete thread?"
                 description="This action cannot be undone."
                 onConfirm={handleDelete}
               />
@@ -130,7 +132,7 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
           <div className="flex items-center gap-1 ml-1">
             <Clock className="w-3 h-3" />
             <span>
-              {new Date(post.created_at).toLocaleTimeString([], {
+              {new Date(thread.created_at).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
@@ -185,7 +187,7 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
       ) : (
         <>
           <h3 className="text-base font-medium text-foreground tracking-tight px-0.5">
-            {post.title}
+            {thread.title}
           </h3>
           <div className="relative rounded-lg border border-border bg-zinc-950 dark:bg-zinc-900/50 overflow-hidden shadow-inner">
             <div className="flex items-center justify-between px-4 py-1.5 bg-zinc-900 border-b border-zinc-800">
@@ -200,7 +202,7 @@ export const PostCard = ({ post, isMe, canModify }: PostCardProps) => {
             </div>
             <div className="overflow-x-auto">
               <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre leading-relaxed selection:bg-zinc-800">
-                <code>{post.body}</code>
+                <code>{thread.content}</code>
               </pre>
             </div>
           </div>

@@ -3,7 +3,7 @@ export type Thread = {
   user_id: string;
   group_id: string;
   title: string;
-  body: string;
+  content: string;
   created_at: Date;
   updated_at: Date;
 };

@@ -4,13 +4,13 @@ import {
   groupMembersQueryOptions,
   groupsQueryOptions,
 } from "@/features/groups/queries";
-import { GroupChatHeader } from "@/features/posts/component/GroupChatHeader";
-import { GroupChatMessages } from "@/features/posts/component/GroupChatMessages";
-import { GroupChatInput } from "@/features/posts/component/GroupChatInput";
+import { GroupChatHeader } from "@/features/threads/component/GroupChatHeader";
+import { GroupChatMessages } from "@/features/threads/component/GroupChatMessages";
+import { GroupChatInput } from "@/features/threads/component/GroupChatInput";
 import { socket } from "@/shared/lib/socket/socket.client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { meQueryOptions } from "@/features/profile/hooks/useProfile";
-import { ChatMessagesSkeleton } from "@/features/posts/component/GroupMessagesSkeleton";
+import { ChatMessagesSkeleton } from "@/features/threads/component/GroupMessagesSkeleton";
 
 export const GroupChatPage = () => {
   const { id } = useParams({ from: "/_authenticated/groups/$id/chat" });

@@ -15,10 +15,10 @@ export const SELECT_GROUP_DETAILS_FIELDS = `
             gm.last_seen_at,
             (
               SELECT COUNT(*)::int 
-              FROM posts p 
-              WHERE p.group_id = g.group_id 
-                AND p.user_id != $1 
-                AND p.created_at > COALESCE(gm.last_seen_at, gm.joined_at)
+              FROM threads t 
+              WHERE t.group_id = g.group_id 
+                AND t.user_id != $1 
+                AND t.created_at > COALESCE(gm.last_seen_at, gm.joined_at)
             ) AS unread_count,
             (
               SELECT COUNT(*)::int 

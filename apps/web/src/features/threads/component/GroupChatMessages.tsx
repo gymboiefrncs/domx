@@ -30,7 +30,8 @@ export const GroupChatMessages = ({
   // so we know whether to auto-scroll when new threads arrive
   const isAtBottomRef = useRef(true);
   const prevCountRef = useRef(0); // tracks previous post count to detect new threads
-  const prevScrollHeightRef = useRef(0); // tracks previous scroll height to adjust scroll when loading more threadss
+  const prevScrollHeightRef = useRef(0); // tracks previous scroll height to adjust scroll when loading more threads
+  const lastPostIdRef = useRef<string | null>(null); // tracks the ID of the last post to detect new threads
 
   // Scroll position preservation when older messages are prepended
   useLayoutEffect(() => {
@@ -54,7 +55,11 @@ export const GroupChatMessages = ({
 
     const wasEmpty = prevCountRef.current === 0;
     const lastPost = threads?.[currentCount - 1];
-    const lastIsMine = !!userId && lastPost?.user_id === userId;
+
+    // check if the actual message id at the bottom has changed
+    const lastPostIdChanged = lastPost && lastPost.id !== lastPostIdRef.current;
+    const lastIsMine =
+      !!userId && lastPost?.user_id === userId && lastPostIdChanged;
 
     if (wasEmpty || lastIsMine || isAtBottomRef.current) {
       container.scrollTop = container.scrollHeight;
@@ -62,6 +67,7 @@ export const GroupChatMessages = ({
     }
 
     prevCountRef.current = currentCount;
+    lastPostIdRef.current = lastPost?.id ?? null;
   }, [threads, userId]);
 
   useEffect(() => {
@@ -80,7 +86,7 @@ export const GroupChatMessages = ({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const updateIsAtBottom = () => {
     const container = scrollRef.current;

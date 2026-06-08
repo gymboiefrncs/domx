@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { queryClient } from "@/shared/lib/queryClient";
 import { socket } from "@/shared/lib/socket/socket.client";
-import type { ThreadDetails } from "@domx/shared";
+import type { PaginateThread, ThreadDetails } from "@domx/shared";
 import { Send } from "lucide-react";
 import { useState } from "react";
+import { threadsQueryOptions } from "../queries";
+import type { InfiniteData } from "@tanstack/react-query";
 
 interface GroupChatInputProps {
   groupId: string;
@@ -32,40 +34,10 @@ export const GroupChatInput = ({
   const handleSend = () => {
     if (!title.trim() && !content.trim()) return;
 
-    const optimisticPost: ThreadDetails = {
-      username: username || "",
-      display_id: displayId || "",
-      id: crypto.randomUUID(),
-      title,
-      content,
-      group_id: groupId,
-      user_id: userId || "someid",
-      created_at: new Date(),
-      updated_at: new Date(),
-    }; // for optimistic update - this will be replaced by the actual post from the server
-
-    queryClient.setQueryData(
-      ["threads", groupId],
-      (oldData: ThreadDetails[]) => {
-        return [...oldData, optimisticPost];
-      },
-    );
-
     setTitle("");
     setContent("");
 
     socket.emit("chat:send", { title, content, groupId }, (response) => {
-      /**
-       * remove optimistic post no matter what (success or failure) because:
-       * - on success, it will be replaced by the actual post from the server via the "chat:received" event.
-       * keeping it will cause duplicate
-       * - on failure, we want to remove the optimistic post and show an error toast (handled in usePostSocketEvents)
-       */
-      queryClient.setQueryData(
-        ["threads", groupId],
-        (oldMessage: ThreadDetails[] = []) =>
-          oldMessage.filter((p) => p.id !== optimisticPost.id),
-      );
       if (!response.success) {
         setTitle(title);
         setContent(content);

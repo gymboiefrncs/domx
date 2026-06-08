@@ -55,28 +55,70 @@ export const useThreadSocketEvents = () => {
 
         queryClient.setQueryData(
           threadsQueryOptions(message.group_id).queryKey,
-          (oldThread) =>
-            oldThread ? [...oldThread, payload.data.message] : undefined,
+          (oldData) => {
+            if (!oldData) return undefined;
+
+            // Check if optimistic version already exists across all pages
+            const exists = oldData.pages.some((page) =>
+              page.items.some((t) => t.id === message.id),
+            );
+
+            if (exists) {
+              // Replace optimistic with real
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((t) =>
+                    t.id === message.id ? message : t,
+                  ),
+                })),
+              };
+            }
+
+            // Not found — append to first page (newest messages live here)
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page, i) =>
+                i === 0 ? { ...page, items: [...page.items, message] } : page,
+              ),
+            };
+          },
         );
       }
       if (payload.type === "edited") {
         queryClient.setQueryData(
           threadsQueryOptions(message.group_id).queryKey,
-          (oldThread) =>
-            oldThread?.map((thread) =>
-              thread.id === payload.data.message.id
-                ? payload.data.message
-                : thread,
-            ),
+          (oldData) => {
+            if (!oldData) return undefined;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) => ({
+                ...page,
+                items: page.items.map((thread) =>
+                  thread.id === payload.data.message.id
+                    ? payload.data.message
+                    : thread,
+                ),
+              })),
+            };
+          },
         );
       }
       if (payload.type === "deleted") {
         queryClient.setQueryData(
           threadsQueryOptions(message.group_id).queryKey,
-          (oldThread) => {
-            return oldThread?.filter(
-              (post) => post.id !== payload.data.message.id,
-            );
+          (oldData) => {
+            if (!oldData) return undefined;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) => ({
+                ...page,
+                items: page.items.filter(
+                  (post) => post.id !== payload.data.message.id,
+                ),
+              })),
+            };
           },
         );
       }

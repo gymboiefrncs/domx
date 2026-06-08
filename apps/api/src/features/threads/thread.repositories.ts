@@ -1,5 +1,5 @@
 import { pool } from "@api/shared/db/db.js";
-import type { ThreadDetails } from "@domx/shared";
+import type { PaginateThread, ThreadDetails } from "@domx/shared";
 import type {
   EditThread,
   RepoInsertThreadParams,
@@ -9,16 +9,33 @@ import type {
 
 export const getAllThreads = async (
   groupId: string,
-): Promise<ThreadDetails[]> => {
+  cursor: { createdAt: string; id: string } | null,
+  limit: number,
+): Promise<PaginateThread> => {
   const query = `
-  SELECT t.*, u.username, u.display_id 
-  FROM threads t
-  JOIN users u 
-  ON t.user_id = u.id
-  WHERE t.group_id = $1`;
+    SELECT t.*, u.username, u.display_id 
+    FROM threads t
+    JOIN users u ON t.user_id = u.id
+    WHERE t.group_id = $1
+    ${cursor ? "AND (t.created_at, t.id::text) < ($3::timestamptz, $4)" : ""}
+    ORDER BY t.created_at DESC, t.id DESC
+    LIMIT $2
+  `;
 
-  const result = await pool.query<ThreadDetails>(query, [groupId]);
-  return result.rows;
+  const params = cursor
+    ? [groupId, limit, cursor.createdAt, cursor.id]
+    : [groupId, limit];
+
+  const result = await pool.query<ThreadDetails>(query, params);
+  const rows = result.rows;
+  const lastRow = rows[rows.length - 1];
+  const nextCursor =
+    rows.length === limit
+      ? { createdAt: lastRow!.created_at.toISOString(), id: lastRow!.id }
+      : null;
+  const items = [...rows].reverse();
+
+  return { items, nextCursor };
 };
 
 export const findThreadById = async ({

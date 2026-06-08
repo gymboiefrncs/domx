@@ -1,8 +1,11 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 import { fetchThreads } from "./api/thread.api";
+import type { ThreadCursor } from "@domx/shared";
 
 export const threadsQueryOptions = (groupId: string) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: ["threads", groupId] as const,
-    queryFn: () => fetchThreads(groupId),
+    queryFn: ({ pageParam }) => fetchThreads(groupId, pageParam),
+    initialPageParam: null as ThreadCursor | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
   });

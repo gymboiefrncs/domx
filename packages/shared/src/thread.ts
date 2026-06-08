@@ -1,4 +1,4 @@
-export type Thread = {
+export interface Thread {
   id: string;
   user_id: string;
   group_id: string;
@@ -6,9 +6,19 @@ export type Thread = {
   content: string;
   created_at: Date;
   updated_at: Date;
-};
+}
 
 export type ThreadDetails = Thread & {
   username: string;
   display_id: string;
 };
+
+export interface ThreadCursor {
+  createdAt: string;
+  id: string;
+}
+
+export interface PaginateThread {
+  items: ThreadDetails[];
+  nextCursor: ThreadCursor | null;
+}

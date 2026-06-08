@@ -7,7 +7,7 @@ import {
   updateThread,
 } from "./thread.repositories.js";
 import { performChecks } from "./thread.helpers.js";
-import type { ThreadDetails } from "@domx/shared";
+import type { PaginateThread, ThreadCursor, ThreadDetails } from "@domx/shared";
 import type {
   CreateThreadParams,
   GroupRequestContext,
@@ -15,23 +15,19 @@ import type {
   UpdateThreadParams,
 } from "./thread.types.js";
 
-/**
- * Fetches all posts in a group.
- * Any group member can view posts.
- */
 export const getGroupThreads = async ({
   groupId,
   requesterId,
-}: GroupRequestContext): Promise<ThreadDetails[]> => {
+  cursor,
+  limit,
+}: GroupRequestContext & {
+  cursor: ThreadCursor | null;
+  limit: number;
+}): Promise<PaginateThread> => {
   await performChecks(groupId, requesterId);
-  return getAllThreads(groupId);
+  return getAllThreads(groupId, cursor, limit);
 };
 
-/**
- * Creates a new post in a group.
- * Any group member can create a post.
- * Validates that the group exists and the requester is a member.
- */
 export const createThread = async ({
   title,
   content,

@@ -14,7 +14,6 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { groupMembersQueryOptions, groupsQueryOptions } from "../queries";
 import { meQueryOptions } from "@/features/profile/queries";
-import { threadsQueryOptions } from "@/features/threads/queries";
 
 export const useGroupSocketEvents = () => {
   const queryClient = useQueryClient();
@@ -69,13 +68,6 @@ export const useGroupSocketEvents = () => {
 
       queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
         return oldGroups?.filter((group) => group.group_id !== groupId);
-      });
-
-      queryClient.removeQueries({
-        queryKey: groupMembersQueryOptions(groupId).queryKey,
-      });
-      queryClient.removeQueries({
-        queryKey: threadsQueryOptions(groupId).queryKey,
       });
     };
 

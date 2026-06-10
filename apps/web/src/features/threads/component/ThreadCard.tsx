@@ -7,6 +7,7 @@ import { socket } from "@/shared/lib/socket/socket.client";
 import type { ThreadDetails } from "@domx/shared";
 import { Check, Clock, Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { threadsQueryOptions } from "../queries";
 
 interface PostCardProps {
   thread: ThreadDetails;
@@ -41,14 +42,20 @@ export const PostCard = ({ thread, isMe, canModify }: PostCardProps) => {
     if (!editTitle.trim() && !editBody.trim()) return;
 
     queryClient.setQueryData(
-      ["threads", thread.group_id],
-      (oldThread: ThreadDetails[] | undefined) => {
+      threadsQueryOptions(thread.group_id).queryKey,
+      (oldThread) => {
         if (!oldThread) return oldThread;
-        return oldThread.map((p) =>
-          p.id === thread.id
-            ? { ...p, title: editTitle, content: editBody }
-            : p,
-        );
+        return {
+          ...oldThread,
+          pages: oldThread.pages.map((page) => ({
+            ...page,
+            items: page.items.map((t) =>
+              t.id === thread.id
+                ? { ...t, title: editTitle, content: editBody }
+                : t,
+            ),
+          })),
+        };
       },
     );
 
@@ -63,12 +70,18 @@ export const PostCard = ({ thread, isMe, canModify }: PostCardProps) => {
 
   const handleDelete = () => {
     queryClient.setQueryData(
-      ["threads", thread.group_id],
-      (oldData: ThreadDetails[]) => {
-        return oldData.filter((p) => p.id !== thread.id);
+      threadsQueryOptions(thread.group_id).queryKey,
+      (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            items: page.items.filter((t) => t.id !== thread.id),
+          })),
+        };
       },
     );
-
     socket.emit("chat:delete", {
       groupId: thread.group_id,
       threadId: thread.id,

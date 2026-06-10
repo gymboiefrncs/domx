@@ -9,13 +9,13 @@ import { Check, Clock, Pencil, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { threadsQueryOptions } from "../queries";
 
-interface PostCardProps {
+interface ThreadCardProps {
   thread: ThreadDetails;
   isMe: boolean;
   canModify: boolean;
 }
 
-export const PostCard = ({ thread, isMe, canModify }: PostCardProps) => {
+export const ThreadCard = ({ thread, isMe, canModify }: ThreadCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(thread.title);
   const [editBody, setEditBody] = useState(thread.content);

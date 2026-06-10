@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { queryClient } from "@/shared/lib/queryClient";
 import { socket } from "@/shared/lib/socket/socket.client";
-import type { PaginateThread, ThreadDetails } from "@domx/shared";
 import { Send } from "lucide-react";
 import { useState } from "react";
-import { threadsQueryOptions } from "../queries";
-import type { InfiniteData } from "@tanstack/react-query";
 
 interface GroupChatInputProps {
   groupId: string;
@@ -15,12 +11,7 @@ interface GroupChatInputProps {
   userId?: string;
 }
 
-export const GroupChatInput = ({
-  groupId,
-  username,
-  displayId,
-  userId,
-}: GroupChatInputProps) => {
+export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 

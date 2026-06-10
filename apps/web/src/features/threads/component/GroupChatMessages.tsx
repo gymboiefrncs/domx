@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import type { GroupRole, ThreadDetails } from "@domx/shared";
 import { threadsQueryOptions } from "../queries";
-import { PostCard } from "./ThreadCard";
+import { ThreadCard } from "./ThreadCard";
 
 interface GroupChatMessagesProps {
   groupId: string;
@@ -130,7 +130,7 @@ export const GroupChatMessages = ({
         const isAdmin = role === "admin";
         const canModify = isMe || isAdmin;
         return (
-          <PostCard
+          <ThreadCard
             key={threads.id}
             thread={threads}
             isMe={isMe}

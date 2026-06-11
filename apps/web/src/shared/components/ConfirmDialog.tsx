@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 type Props = {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: string;
   description?: string;
   onConfirm: () => void;
@@ -19,12 +21,14 @@ type Props = {
 
 export const ConfirmDialog = ({
   trigger,
+  open,
+  onOpenChange,
   title,
   description,
   onConfirm,
 }: Props) => (
-  <AlertDialog>
-    <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{title}</AlertDialogTitle>

@@ -6,9 +6,6 @@ import { useState } from "react";
 
 interface GroupChatInputProps {
   groupId: string;
-  username?: string;
-  displayId?: string;
-  userId?: string;
 }
 
 export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
@@ -25,15 +22,22 @@ export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
   const handleSend = () => {
     if (!title.trim() && !content.trim()) return;
 
+    const currentTitle = title;
+    const currentContent = content;
+
     setTitle("");
     setContent("");
 
-    socket.emit("chat:send", { title, content, groupId }, (response) => {
-      if (!response.success) {
-        setTitle(title);
-        setContent(content);
-      }
-    });
+    socket.emit(
+      "chat:send",
+      { title: currentTitle, content: currentContent, groupId },
+      (response) => {
+        if (!response.success) {
+          setTitle(currentTitle);
+          setContent(currentContent);
+        }
+      },
+    );
   };
 
   return (

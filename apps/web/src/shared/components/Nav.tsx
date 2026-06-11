@@ -1,17 +1,34 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LogOut, GroupIcon, UserIcon } from "lucide-react";
+import { LogOut, GroupIcon, UserIcon, type LucideIcon } from "lucide-react";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { memo } from "react";
+
+interface NavButtonProps {
+  isActive: boolean;
+  label: string;
+  icon: LucideIcon;
+}
 
 const NAV_ITEMS = [
   { label: "Groups", href: "/groups", icon: GroupIcon },
   { label: "Profile", href: "/profile", icon: UserIcon },
-];
+] as const;
+
+const NavButton = memo(({ isActive, label, icon: Icon }: NavButtonProps) => {
+  return (
+    <Button
+      variant={isActive ? "secondary" : "ghost"}
+      className="w-full justify-center md:justify-start"
+    >
+      <Icon className="w-4 h-4" />
+      <span>{label}</span>
+    </Button>
+  );
+});
 
 export const Nav = () => {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
   const { handleLogout } = useLogout();
 
   return (
@@ -24,17 +41,13 @@ export const Nav = () => {
 
       <ul className="mx-auto flex w-full max-w-lg items-center justify-center gap-2 md:max-w-none md:flex-1 md:flex-col md:items-stretch md:justify-start md:gap-1.5">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const isActive = pathname.startsWith(href);
           return (
             <li key={href} className="flex-1 md:flex-none">
-              <Button
-                variant={isActive ? "secondary" : "ghost"}
-                onClick={() => navigate({ to: href })}
-                className="w-full justify-center md:justify-start"
-              >
-                <Icon className="w-4 h-4" />
-                <span>{label}</span>
-              </Button>
+              <Link to={href} activeOptions={{ exact: false }}>
+                {({ isActive }) => (
+                  <NavButton isActive={isActive} label={label} icon={Icon} />
+                )}
+              </Link>
             </li>
           );
         })}
@@ -54,7 +67,7 @@ export const Nav = () => {
         title="Log out?"
         description="You'll need to sign in again"
         onConfirm={handleLogout}
-      ></ConfirmDialog>
+      />
     </nav>
   );
 };

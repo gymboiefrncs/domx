@@ -22,7 +22,7 @@ export const GroupChatHeader = ({ groupId, group }: GroupChatHeaderProps) => {
         <ChevronLeft className="w-5 h-5" />
       </Button>
       <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-xs font-medium text-emerald-400 shrink-0">
-        {getInitials(group.name ?? "")}
+        {getInitials(group.name)}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">

@@ -1,20 +1,12 @@
 import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
 import { Nav } from "@/shared/components/Nav";
 import { meQueryOptions } from "@/features/profile/queries";
-import { useEffect } from "react";
-import { socket } from "@/shared/lib/socket/socket.client";
-import { useGroupSocketEvents } from "@/features/groups/hooks/useGroupSocketEvents";
-import { useThreadSocketEvents } from "@/features/threads/hooks/useThreadSocketEvents";
+import { SocketListener } from "@/shared/components/SocketListeners";
 
 function AuthenticatedLayout() {
-  useGroupSocketEvents();
-  useThreadSocketEvents();
-  useEffect(() => {
-    if (!socket.connected) socket.connect();
-  }, []);
-
   return (
     <div className="app-shell bg-background">
+      <SocketListener />
       <Nav />
       <div className="main-pane">
         <Outlet />

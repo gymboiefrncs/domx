@@ -107,9 +107,14 @@ export const updateMemberRole = async ({
   userId,
   groupId,
   con = pool,
-}: UpdateMemberRoleParams): Promise<void> => {
-  const query = `UPDATE group_members SET role = $1 WHERE group_id = $2 AND user_id = $3`;
-  await con.query(query, [role, groupId, userId]);
+}: UpdateMemberRoleParams): Promise<GroupRole> => {
+  const query = `UPDATE group_members SET role = $1 WHERE group_id = $2 AND user_id = $3 RETURNING role`;
+  const result = await con.query<{ role: GroupRole }>(query, [
+    role,
+    groupId,
+    userId,
+  ]);
+  return result.rows[0]!.role;
 };
 
 export const markSeenAt = async ({

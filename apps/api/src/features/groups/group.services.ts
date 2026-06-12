@@ -23,7 +23,7 @@ import {
   NotFoundError,
 } from "@api/shared/error.js";
 import { resolveGroupAction } from "./group-helper.js";
-import type { CreateGroup, Group, Member } from "@domx/shared";
+import type { CreateGroup, Group, GroupRole, Member } from "@domx/shared";
 import type {
   CreateGroupParams,
   GetUserGroupDetailsParams,
@@ -260,7 +260,7 @@ export const promoteMember = async ({
   groupId,
   displayId,
   requesterId,
-}: GroupMemberActionParams): Promise<void> => {
+}: GroupMemberActionParams): Promise<GroupRole> => {
   const { targetUserId } = await resolveGroupAction(
     groupId,
     requesterId,
@@ -277,7 +277,7 @@ export const promoteMember = async ({
   if (targetRole === "admin")
     throw new ConflictError("User is already an admin.");
 
-  await updateMemberRole({
+  return updateMemberRole({
     role: "admin",
     userId: targetUserId,
     groupId,
@@ -297,7 +297,7 @@ export const demoteMember = async ({
   groupId,
   displayId,
   requesterId,
-}: GroupMemberActionParams): Promise<void> => {
+}: GroupMemberActionParams): Promise<GroupRole> => {
   const { targetUserId } = await resolveGroupAction(
     groupId,
     requesterId,
@@ -317,7 +317,7 @@ export const demoteMember = async ({
     );
   }
 
-  await updateMemberRole({ role: "member", userId: targetUserId, groupId });
+  return updateMemberRole({ role: "member", userId: targetUserId, groupId });
 };
 
 export const removeGroup = async ({

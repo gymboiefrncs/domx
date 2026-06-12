@@ -47,12 +47,12 @@ const GroupRenameForm = ({
 
 interface Props {
   name: string;
-  role: GroupRole;
+  myRole: GroupRole;
   groupId: string;
   onAddMember: () => void;
 }
 
-export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
+export const GroupHero = ({ name, myRole, groupId, onAddMember }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
@@ -91,7 +91,7 @@ export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
 
       {/* Action Button Row */}
       <GroupActions
-        role={role}
+        role={myRole}
         onRename={handleRename}
         onAddMember={onAddMember}
         onLeave={handleLeave}

@@ -80,9 +80,13 @@ export const useGroupSocketEvents = () => {
 
       const isActor = me?.id === by;
 
-      queryClient.invalidateQueries({
-        queryKey: groupMembersQueryOptions(groupId).queryKey,
-      });
+      queryClient.setQueryData(
+        groupMembersQueryOptions(groupId).queryKey,
+        (oldMembers) => {
+          if (!oldMembers) return oldMembers;
+          return oldMembers.filter((member) => member.id !== by);
+        },
+      );
 
       queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
         if (!oldGroups) return undefined;
@@ -103,9 +107,13 @@ export const useGroupSocketEvents = () => {
       const me = queryClient.getQueryData(meQueryOptions.queryKey);
       const isTarget = me?.id === targetId;
 
-      queryClient.invalidateQueries({
-        queryKey: groupMembersQueryOptions(groupId).queryKey,
-      });
+      queryClient.setQueryData(
+        groupMembersQueryOptions(groupId).queryKey,
+        (oldMembers) => {
+          if (!oldMembers) return oldMembers;
+          return oldMembers.filter((member) => member.display_id !== targetId);
+        },
+      );
 
       queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
         if (!oldGroups) return undefined;
@@ -121,17 +129,55 @@ export const useGroupSocketEvents = () => {
     };
 
     const handlePromoteMember = (payload: GroupMemberResponse) => {
-      const { groupId } = payload.data;
-      queryClient.invalidateQueries({
-        queryKey: groupMembersQueryOptions(groupId).queryKey,
-      });
+      const { groupId, newRole, targetUserDisplayId } = payload.data;
+      const me = queryClient.getQueryData(meQueryOptions.queryKey);
+      const isTarget = me?.display_id === targetUserDisplayId;
+
+      queryClient.setQueryData(
+        groupMembersQueryOptions(groupId).queryKey,
+        (oldMembers) => {
+          if (!oldMembers) return oldMembers;
+          return oldMembers.map((member) =>
+            member.display_id === targetUserDisplayId
+              ? { ...member, role: newRole }
+              : member,
+          );
+        },
+      );
+
+      if (isTarget) {
+        queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
+          return oldGroups?.map((group) =>
+            group.group_id === groupId ? { ...group, role: newRole } : group,
+          );
+        });
+      }
     };
 
     const handleDemoteMember = (payload: GroupMemberResponse) => {
-      const { groupId } = payload.data;
-      queryClient.invalidateQueries({
-        queryKey: groupMembersQueryOptions(groupId).queryKey,
-      });
+      const { groupId, newRole, targetUserDisplayId } = payload.data;
+      const me = queryClient.getQueryData(meQueryOptions.queryKey);
+      const isTarget = me?.display_id === targetUserDisplayId;
+      queryClient.setQueryData(
+        groupMembersQueryOptions(groupId).queryKey,
+        (oldMembers) => {
+          if (!oldMembers) return oldMembers;
+          return oldMembers.map((member) =>
+            member.display_id === targetUserDisplayId
+              ? { ...member, role: newRole }
+              : member,
+          );
+        },
+      );
+
+      if (isTarget) {
+        queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
+          return oldGroups?.map((group) =>
+            // Fix: Use 'role' to match your Page component's selector layout
+            group.group_id === groupId ? { ...group, role: newRole } : group,
+          );
+        });
+      }
     };
 
     const handleGroupSeenAck = (payload: GroupSeenResponse) => {

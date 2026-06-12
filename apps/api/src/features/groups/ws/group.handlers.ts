@@ -156,13 +156,13 @@ export function registerGroupHandlers(
       try {
         await wsAdminActionLimiter.consume(`${actorId}:${groupId}`);
 
-        await promoteMember({
+        const newRole = await promoteMember({
           groupId,
           displayId: targetUserDisplayId,
           requesterId: actorId,
         });
         io.to(groupId).emit("group:member:promoted", {
-          data: { groupId, targetUserDisplayId },
+          data: { groupId, targetUserDisplayId, newRole },
           by: actorId,
         });
       } catch (error) {
@@ -177,13 +177,13 @@ export function registerGroupHandlers(
     try {
       await wsAdminActionLimiter.consume(`${actorId}:${groupId}`);
 
-      await demoteMember({
+      const newRole = await demoteMember({
         groupId,
         displayId: targetUserDisplayId,
         requesterId: actorId,
       });
       io.to(groupId).emit("group:member:demoted", {
-        data: { groupId, targetUserDisplayId },
+        data: { groupId, targetUserDisplayId, newRole },
         by: actorId,
       });
     } catch (error) {

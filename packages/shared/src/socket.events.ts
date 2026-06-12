@@ -1,4 +1,4 @@
-import type { Group, Member } from "./group.js";
+import type { Group, GroupRole, Member } from "./group.js";
 import type { ThreadDetails } from "./thread.js";
 
 export interface GroupMemberPayload {
@@ -40,7 +40,7 @@ export interface GroupRenameResponse {
   by: string;
 }
 export interface GroupMemberResponse {
-  data: { groupId: string; targetUserDisplayId: string };
+  data: { groupId: string; targetUserDisplayId: string; newRole: GroupRole };
   by: string;
 }
 export interface GroupDeleteResponse {

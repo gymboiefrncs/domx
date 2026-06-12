@@ -8,16 +8,13 @@ interface GroupChatInputProps {
   groupId: string;
 }
 
-export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
+interface ChatFormProps {
+  groupId: string;
+}
+
+const ChatForm = ({ groupId }: ChatFormProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  const handleSaveOnEnter = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
 
   const handleSend = () => {
     if (!title.trim() && !content.trim()) return;
@@ -40,33 +37,46 @@ export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
     );
   };
 
+  const handleSaveOnEnter = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1 border border-border rounded-xl overflow-hidden bg-muted/40">
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={handleSaveOnEnter}
+          placeholder="Title"
+          className="border-0 border-b border-border rounded-none bg-transparent font-medium focus-visible:ring-0 text-sm"
+        />
+        <Input
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleSaveOnEnter}
+          placeholder="Write a message..."
+          className="border-0 rounded-none bg-transparent focus-visible:ring-0 text-sm"
+        />
+      </div>
+      <Button
+        size="icon"
+        onClick={handleSend}
+        disabled={!title.trim() && !content.trim()}
+      >
+        <Send className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
+
+export const GroupChatInput = ({ groupId }: GroupChatInputProps) => {
   return (
     <div className="px-3 py-3 border-t border-border">
-      <div className="flex items-end gap-2">
-        <div className="flex-1 border border-border rounded-xl overflow-hidden bg-muted/40">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={handleSaveOnEnter}
-            placeholder="Title"
-            className="border-0 border-b border-border rounded-none bg-transparent font-medium focus-visible:ring-0 text-sm"
-          />
-          <Input
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleSaveOnEnter}
-            placeholder="Write a message..."
-            className="border-0 rounded-none bg-transparent focus-visible:ring-0 text-sm"
-          />
-        </div>
-        <Button
-          size="icon"
-          onClick={handleSend}
-          disabled={!title.trim() && !content.trim()}
-        >
-          <Send className="w-4 h-4" />
-        </Button>
-      </div>
+      <ChatForm groupId={groupId} />
     </div>
   );
 };

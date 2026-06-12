@@ -5,7 +5,7 @@ import type { PaginateThread, ThreadCursor } from "@domx/shared";
 export const fetchThreads = async (
   groupId: string,
   cursor: ThreadCursor | null = null,
-  limit = 20,
+  limit = 10,
 ): Promise<PaginateThread> => {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) {

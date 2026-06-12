@@ -6,6 +6,44 @@ import { useState } from "react";
 import { socket } from "@/shared/lib/socket/socket.client";
 import type { GroupRole } from "@domx/shared";
 
+interface GroupRenameFormProps {
+  name: string;
+  groupId: string;
+  setIsEditing: (isEditing: boolean) => void;
+}
+
+const GroupRenameForm = ({
+  name,
+  groupId,
+  setIsEditing,
+}: GroupRenameFormProps) => {
+  const [editedName, setEditedName] = useState(name);
+
+  const handleRename = (newName: string) => {
+    if (!newName.trim()) return;
+    socket.emit("group:rename", { groupId, newName });
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex items-center gap-2 w-full max-w-xs">
+      <Input
+        value={editedName}
+        onChange={(e) => setEditedName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleRename(editedName)}
+        className="text-center"
+        autoFocus
+      />
+      <Button size="sm" onClick={() => handleRename(editedName)}>
+        Save
+      </Button>
+      <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>
+        Cancel
+      </Button>
+    </div>
+  );
+};
+
 type Props = {
   name: string;
   role: GroupRole;
@@ -15,18 +53,6 @@ type Props = {
 
 export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(name);
-
-  const onEditStart = () => {
-    setEditedName(name);
-    setIsEditing(true);
-  };
-
-  const handleRename = (newName: string) => {
-    if (!newName.trim()) return;
-    socket.emit("group:rename", { groupId, newName });
-    setIsEditing(false);
-  };
 
   return (
     <div className="flex flex-col items-center gap-3 px-5 py-6 border-b border-border">
@@ -35,28 +61,18 @@ export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
       </div>
 
       {isEditing ? (
-        <div className="flex items-center gap-2 w-full max-w-xs">
-          <Input
-            value={editedName}
-            onChange={(e) => setEditedName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleRename(editedName)}
-            className="text-center"
-            autoFocus
-          />
-          <Button size="sm" onClick={() => handleRename(editedName)}>
-            Save
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)}>
-            Cancel
-          </Button>
-        </div>
+        <GroupRenameForm
+          name={name}
+          groupId={groupId}
+          setIsEditing={setIsEditing}
+        />
       ) : (
         <p className="text-xl font-medium text-foreground">{name}</p>
       )}
 
       <div className="flex items-center gap-6 mt-1">
         <button
-          onClick={onEditStart}
+          onClick={() => setIsEditing(true)}
           className={`flex-col items-center gap-1 cursor-pointer ${role === "admin" ? "flex" : "hidden"}`}
         >
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">

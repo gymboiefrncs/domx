@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { socket } from "@/shared/lib/socket/socket.client";
 import type { GroupRole } from "@domx/shared";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Check,
+  UserMinus,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -51,9 +58,10 @@ export const MemberListItem = ({
       <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
         {username.slice(0, 2).toUpperCase()}
       </div>
-      <p className="text-sm font-medium text-foreground">{username}</p>
-      <p className="text-xs text-muted-foreground">({displayId})</p>
-      <p className="text-xs text-muted-foreground">({groupRole})</p>
+      <div className="flex flex-col">
+        <p className="text-sm font-medium text-foreground">{username}</p>
+        <p className="text-xs text-muted-foreground">{groupRole}</p>
+      </div>
       {role === "admin" && (
         <div className="ml-auto flex items-center gap-2">
           {confirmAction === null ? (
@@ -65,25 +73,26 @@ export const MemberListItem = ({
                   setConfirmAction(groupRole === "admin" ? "demote" : "promote")
                 }
               >
-                {groupRole === "admin" ? "Demote" : "Promote"}
+                {groupRole === "admin" ? (
+                  <ArrowDownCircle />
+                ) : (
+                  <ArrowUpCircle />
+                )}
               </Button>
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={() => setConfirmAction("kick")}
               >
-                Kick
+                <UserMinus />
               </Button>
             </>
           ) : (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">
-                {confirmAction === "kick" &&
-                  `Are you sure you want to kick ${username}?`}
-                {confirmAction === "promote" &&
-                  `Are you sure you want to promote ${username} to admin?`}
-                {confirmAction === "demote" &&
-                  `Are you sure you want to demote ${username} from admin?`}
+                {confirmAction === "kick" && `Kick ${username}?`}
+                {confirmAction === "promote" && `Promote ${username}?`}
+                {confirmAction === "demote" && `Demote ${username}?`}
               </span>
               <Button
                 size="sm"
@@ -97,14 +106,14 @@ export const MemberListItem = ({
                   confirmAction === "kick" ? handleKick : handleRoleChange
                 }
               >
-                Yes
+                <Check />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setConfirmAction(null)}
               >
-                No
+                <X />
               </Button>
             </div>
           )}

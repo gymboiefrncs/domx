@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, UserPlus } from "lucide-react";
 import { getInitials } from "../main-page/GroupAvatar";
 import { useState } from "react";
 import { socket } from "@/shared/lib/socket/socket.client";
 import type { GroupRole } from "@domx/shared";
+import { useNavigate } from "@tanstack/react-router";
+import { GroupActions } from "./GroupActions";
 
 interface GroupRenameFormProps {
   name: string;
@@ -44,18 +45,36 @@ const GroupRenameForm = ({
   );
 };
 
-type Props = {
+interface Props {
   name: string;
   role: GroupRole;
   groupId: string;
   onAddMember: () => void;
-};
+}
 
 export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDelete = () => {
+    socket.emit("group:delete", groupId);
+    navigate({ to: "/groups" });
+  };
+
+  const handleLeave = () => {
+    socket.emit("group:member:leave", groupId, (response) => {
+      if (response.success) {
+        navigate({ to: "/groups" });
+      }
+    });
+  };
+
+  const handleRename = () => {
+    setIsEditing(true);
+  };
 
   return (
-    <div className="flex flex-col items-center gap-3 px-5 py-6 border-b border-border">
+    <div className="flex flex-col items-center gap-3 px-5">
       <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-2xl font-medium text-emerald-400 shrink-0">
         {getInitials(name)}
       </div>
@@ -70,26 +89,14 @@ export const GroupHero = ({ name, role, groupId, onAddMember }: Props) => {
         <p className="text-xl font-medium text-foreground">{name}</p>
       )}
 
-      <div className="flex items-center gap-6 mt-1">
-        <button
-          onClick={() => setIsEditing(true)}
-          className={`flex-col items-center gap-1 cursor-pointer ${role === "admin" ? "flex" : "hidden"}`}
-        >
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <Pencil className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <span className="text-xs text-muted-foreground">Rename</span>
-        </button>
-        <button
-          onClick={onAddMember}
-          className="flex flex-col items-center gap-1 cursor-pointer"
-        >
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <UserPlus className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <span className="text-xs text-muted-foreground">Add member</span>
-        </button>
-      </div>
+      {/* Action Button Row */}
+      <GroupActions
+        role={role}
+        onRename={handleRename}
+        onAddMember={onAddMember}
+        onLeave={handleLeave}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };

@@ -17,7 +17,6 @@ interface GroupFormProps {
   isPending: boolean;
 }
 const GroupForm = ({ onSubmit, isPending }: GroupFormProps) => {
-  console.log("GroupForm rendered");
   const [groupName, setGroupName] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,7 +47,6 @@ const GroupForm = ({ onSubmit, isPending }: GroupFormProps) => {
 };
 
 export const CreateGroupModal = () => {
-  console.log("CreateGroupModal rendered");
   const { activeModalId, closeModal } = useModalStore();
   const { mutate: createGroup, isPending } = useCreateGroup();
 

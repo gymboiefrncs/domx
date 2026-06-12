@@ -138,14 +138,17 @@ export const useGroupSocketEvents = () => {
       const { groupId, userId, seenAt } = payload.data;
       const me = queryClient.getQueryData(meQueryOptions.queryKey);
 
-      queryClient.setQueryData(
-        groupMembersQueryOptions(groupId).queryKey,
-        (oldMembers) => {
-          return oldMembers?.map((member) =>
-            member.id === userId ? { ...member, last_seen_at: seenAt } : member,
-          );
-        },
-      );
+      queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
+        return oldGroups?.map((group) => {
+          if (group.group_id !== groupId) return group;
+
+          if (userId === me?.id) {
+            return { ...group, last_seen_at: seenAt, unread_count: 0 };
+          }
+
+          return group;
+        });
+      });
 
       if (userId === me?.id) {
         queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {

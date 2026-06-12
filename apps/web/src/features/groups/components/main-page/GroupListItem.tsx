@@ -2,10 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { GroupAvatar } from "./GroupAvatar";
 import type { Group } from "@domx/shared";
+import { memo } from "react";
 
 type Props = { group: Group; index: number };
 
-export const GroupListItem = ({ group, index }: Props) => (
+export const GroupListItem = memo(({ group, index }: Props) => (
   <li className=" px-5 rounded">
     <Link
       to="/groups/$id/chat"
@@ -27,4 +28,4 @@ export const GroupListItem = ({ group, index }: Props) => (
       <ChevronRight className="w-4 h-4 text-muted-foreground" />
     </Link>
   </li>
-);
+));

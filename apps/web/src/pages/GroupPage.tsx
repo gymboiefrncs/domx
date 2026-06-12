@@ -5,18 +5,23 @@ import { GroupPageHeader } from "@/features/groups/components/main-page/GroupPag
 import { GroupListItem } from "@/features/groups/components/main-page/GroupListItem";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export const GroupPage = () => {
   const { data: groups } = useSuspenseQuery(groupsQueryOptions);
   const openModal = useModalStore((state) => state.openModal);
   const { handleLogout } = useLogout();
-
+  const handleCreateClick = useCallback(
+    () => openModal("create-group"),
+    [openModal],
+  );
+  const handleLogoutClick = useCallback(() => handleLogout(), [handleLogout]);
   return (
     <div className="flex flex-col h-full md:pb-6">
       <GroupPageHeader
         count={groups.length}
-        onCreateClick={() => openModal("create-group")}
-        onLogoutClick={() => handleLogout()}
+        onCreateClick={handleCreateClick}
+        onLogoutClick={handleLogoutClick}
       />
       {groups.length === 0 ? (
         <p className="px-5 py-12 text-sm text-center text-gray-400">

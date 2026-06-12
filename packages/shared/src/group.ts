@@ -3,7 +3,7 @@ export type GroupRole = "admin" | "member";
 export interface Group {
   group_id: string;
   name: string;
-  role: GroupRole;
+  role: GroupRole; // the role of the current user in this group
   last_seen_at: Date | null;
   unread_count: number;
   member_count: number;
@@ -15,7 +15,7 @@ export interface CreateGroup {
 
 export interface Member {
   id: string;
-  role: GroupRole;
+  role: GroupRole; // the role of this member in the group
   display_id: string;
   username: string;
   group_id: string;

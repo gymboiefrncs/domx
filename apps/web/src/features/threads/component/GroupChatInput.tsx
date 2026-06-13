@@ -62,14 +62,16 @@ const ChatForm = ({ groupId }: ChatFormProps) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleSaveOnEnter}
-          placeholder="Paste raw code or type a message..."
+          placeholder="Paste code or type a message..."
           className="w-full min-h-22.5 max-h-80 border-2 bg-transparent p-4 font-mono text-xs text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-offset-0 resize-none leading-relaxed selection:bg-zinc-800"
         />
       </div>
       <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-900 bg-zinc-900/10 text-[11px] text-zinc-500 font-mono select-none">
         <div className="flex items-center gap-1.5 text-zinc-400">
           <Code2 className="w-3.5 h-3.5 text-zinc-500" />
-          <span>Auto-detects syntax</span>
+          <span className="inline text-[10px]">
+            Start with ```language for syntax highlighting, e.g., ```python
+          </span>
         </div>
 
         <div className="flex items-center gap-3">

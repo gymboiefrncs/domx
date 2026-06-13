@@ -48,7 +48,7 @@ export const CollapsibleCard = ({
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="my-3 overflow-hidden rounded-lg border border-border bg-zinc-950 shadow-inner"
+      className="overflow-hidden shadow-inner"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2 select-none">
@@ -69,7 +69,7 @@ export const CollapsibleCard = ({
         <div
           className={cn(
             "transition-[max-height] duration-300 ease-out",
-            isOpen ? "max-h-[1000px]" : "max-h-[300px]",
+            isOpen ? "max-h-[1000px] overflow-auto" : "max-h-[300px]",
           )}
         >
           <div ref={contentRef} className="overflow-auto">
@@ -97,7 +97,7 @@ export const CollapsibleCard = ({
         )}
 
         {isCollapsible && isOpen && (
-          <div className="flex justify-center border-t border-zinc-800 bg-zinc-950 py-2">
+          <div className="flex justify-center py-2">
             <CollapsibleTrigger asChild>
               <Button
                 variant="link"

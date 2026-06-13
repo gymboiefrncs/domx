@@ -146,79 +146,90 @@ export const ThreadCard = memo(
 
     return (
       <div
-        className={cn(
-          "group relative flex flex-col overflow-hidden rounded-xl border",
-          "transition-all duration-200",
-          isMe
-            ? "border-primary/20 bg-primary/5"
-            : "border-border bg-card hover:bg-accent/5",
-        )}
+        className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium text-foreground">
-              {thread.username}
-            </span>
-            <span className="truncate text-xs text-muted-foreground">
-              @{thread.display_id}
-            </span>
-
-            {isMe && (
-              <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
-                You
-              </span>
+        <div
+          className={cn(
+            "flex flex-col gap-2 w-full max-w-[85%]",
+            isMe ? "items-end" : "items-start",
+          )}
+        >
+          <div
+            className={cn(
+              "group relative flex flex-col overflow-hidden rounded-xl border max-w-[85%]",
+              "transition-all duration-200",
+              isMe
+                ? "border-primary/20 bg-primary/5"
+                : "border-border bg-card hover:bg-accent/5",
             )}
-          </div>
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="truncate text-sm font-medium text-foreground">
+                  {thread.username}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  @{thread.display_id}
+                </span>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {canModify && !isEditing && (
-              <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={handleEdit}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                {isMe && (
+                  <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                    You
+                  </span>
+                )}
               </div>
-            )}
 
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{formattedTime}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {canModify && !isEditing && (
+                  <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={handleEdit}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={handleDelete}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{formattedTime}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 px-4 py-3">
+              {isEditing ? (
+                <ThreadEditForm
+                  initialTitle={thread.title}
+                  initialContent={thread.content}
+                  onSave={(t, c) => {
+                    handleSave(t, c);
+                  }}
+                  onCancel={handleCancel}
+                />
+              ) : (
+                <>
+                  <h3 className="text-sm font-normal tracking-wide text-foreground">
+                    {thread.title}
+                  </h3>
+
+                  <MarkdownRenderer content={thread.content} />
+                </>
+              )}
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col gap-2 px-4 py-3">
-          {isEditing ? (
-            <ThreadEditForm
-              initialTitle={thread.title}
-              initialContent={thread.content}
-              onSave={(t, c) => {
-                handleSave(t, c);
-              }}
-              onCancel={handleCancel}
-            />
-          ) : (
-            <>
-              <h3 className="text-sm font-normal tracking-wide text-foreground">
-                {thread.title}
-              </h3>
-
-              <MarkdownRenderer content={thread.content} />
-            </>
-          )}
         </div>
       </div>
     );

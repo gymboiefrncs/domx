@@ -6,7 +6,11 @@ import { socket } from "@/shared/lib/socket/socket.client";
 import type { ThreadDetails } from "@domx/shared";
 import { Check, Clock, Pencil, Trash2, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-import { threadsQueryOptions } from "../queries";
+import { threadsQueryOptions } from "../../queries";
+
+import "highlight.js/styles/github-dark.css";
+import { MarkdownRenderer } from "./MarkdownRenderer";
+import { cn } from "@/lib/utils";
 
 interface ThreadCardProps {
   thread: ThreadDetails;
@@ -128,6 +132,10 @@ export const ThreadCard = memo(
 
     const handleEdit = useCallback(() => setIsEditing(true), []);
     const handleCancel = useCallback(() => setIsEditing(false), []);
+    const handleDelete = useCallback(
+      () => onDeleteClick(thread),
+      [onDeleteClick, thread],
+    );
 
     const formattedTime = useMemo(() => {
       return new Date(thread.created_at).toLocaleTimeString([], {
@@ -138,89 +146,80 @@ export const ThreadCard = memo(
 
     return (
       <div
-        className={`group flex flex-col gap-2.5 p-4 rounded-xl border transition-all duration-200 ${
+        className={cn(
+          "group relative flex flex-col overflow-hidden rounded-xl border",
+          "transition-all duration-200",
           isMe
-            ? "border-primary/20 bg-primary/5 shadow-sm"
-            : "border-border bg-card hover:bg-accent/5"
-        }`}
+            ? "border-primary/20 bg-primary/5"
+            : "border-border bg-card hover:bg-accent/5",
+        )}
       >
-        {/* Header Info */}
-        <div
-          className={`flex items-center justify-between gap-4 ${isMe ? "flex-row-reverse" : ""}`}
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-semibold text-foreground truncate">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="truncate text-sm font-medium text-foreground">
               {thread.username}
             </span>
-            <span className="text-xs text-muted-foreground truncate">
+            <span className="truncate text-xs text-muted-foreground">
               @{thread.display_id}
             </span>
+
             {isMe && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-primary text-primary-foreground rounded-md uppercase tracking-wider scale-95">
+              <span className="rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
                 You
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0 font-medium">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {canModify && !isEditing && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
                   onClick={handleEdit}
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={() => onDeleteClick(thread)}
+                  onClick={handleDelete}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             )}
-            <div className="flex items-center gap-1 ml-1">
-              <Clock className="w-3 h-3" />
+
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
               <span>{formattedTime}</span>
             </div>
           </div>
         </div>
 
-        {isEditing ? (
-          <ThreadEditForm
-            initialTitle={thread.title}
-            initialContent={thread.content}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        ) : (
-          <>
-            <h3 className="text-base font-medium text-foreground tracking-tight px-0.5">
-              {thread.title}
-            </h3>
-            <div className="relative rounded-lg border border-border bg-zinc-950 dark:bg-zinc-900/50 overflow-hidden shadow-inner">
-              <div className="flex items-center justify-between px-4 py-1.5 bg-zinc-900 border-b border-zinc-800">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-zinc-700/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-zinc-700/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-zinc-700/60" />
-                </div>
-                <span className="text-[11px] text-zinc-400 font-mono tracking-wide uppercase">
-                  code
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre leading-relaxed selection:bg-zinc-800">
-                  <code>{thread.content}</code>
-                </pre>
-              </div>
-            </div>
-          </>
-        )}
+        <div className="flex flex-col gap-2 px-4 py-3">
+          {isEditing ? (
+            <ThreadEditForm
+              initialTitle={thread.title}
+              initialContent={thread.content}
+              onSave={(t, c) => {
+                handleSave(t, c);
+              }}
+              onCancel={handleCancel}
+            />
+          ) : (
+            <>
+              <h3 className="text-sm font-normal tracking-wide text-foreground">
+                {thread.title}
+              </h3>
+
+              <MarkdownRenderer content={thread.content} />
+            </>
+          )}
+        </div>
       </div>
     );
   },

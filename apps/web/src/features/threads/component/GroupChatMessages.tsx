@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { GroupRole, ThreadDetails } from "@domx/shared";
 import { threadsQueryOptions } from "../queries";
-import { ThreadCard } from "./ThreadCard";
+import { ThreadCard } from "./cards/ThreadCard";
 import { queryClient } from "@/shared/lib/queryClient";
 import { socket } from "@/shared/lib/socket/socket.client";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog";

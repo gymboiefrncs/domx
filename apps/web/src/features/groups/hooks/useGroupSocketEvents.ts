@@ -111,7 +111,7 @@ export const useGroupSocketEvents = () => {
         groupMembersQueryOptions(groupId).queryKey,
         (oldMembers) => {
           if (!oldMembers) return oldMembers;
-          return oldMembers.filter((member) => member.display_id !== targetId);
+          return oldMembers.filter((member) => member.id !== targetId);
         },
       );
 
@@ -173,7 +173,6 @@ export const useGroupSocketEvents = () => {
       if (isTarget) {
         queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
           return oldGroups?.map((group) =>
-            // Fix: Use 'role' to match your Page component's selector layout
             group.group_id === groupId ? { ...group, role: newRole } : group,
           );
         });
@@ -195,14 +194,6 @@ export const useGroupSocketEvents = () => {
           return group;
         });
       });
-
-      if (userId === me?.id) {
-        queryClient.setQueryData(groupsQueryOptions.queryKey, (oldGroups) => {
-          return oldGroups?.map((group) =>
-            group.group_id === groupId ? { ...group, unread_count: 0 } : group,
-          );
-        });
-      }
     };
 
     socket.on("group:summary", handleGroupSummary);
